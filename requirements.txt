@@ -1,0 +1,7 @@
+django==3.2
+djangorestframework
+django-phonenumber-field[phonenumberslite]
+django-phonenumber-field[phonenumbers]
+pymysql==1.1.0
+simpleui==4.0.2
+Pillow
