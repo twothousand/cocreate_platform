@@ -95,3 +95,7 @@ celerybeat-schedule.*
 
 # 虚拟环境
 venv/
+
+# migrations
+**/migrations/
+!**/migrations/__init__.py
