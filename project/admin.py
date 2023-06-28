@@ -3,11 +3,11 @@ from .models import Project
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = (
-        'name', 'desc', 'tags', 'type', 'status', 'cycles', 'link', 'views', 'likes', 'favorites', 'post_datetime'
-    )
-    search_fields = ['name', 'desc']
-    list_filter = ['tags', 'type', 'status']
+    list_display = [
+        'project_name', 'project_description', 'project_tags', 'project_type', 'project_status'
+    ]
+    search_fields = ['project_name', 'project_description']
+    list_filter = ['project_creator', 'project_tags', 'project_type', 'project_status']
     list_per_page = 10
 
 

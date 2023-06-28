@@ -1,16 +1,20 @@
-from django.conf.urls import re_path
-from django.urls import path
-
-from user import views
-from user.views import LoginView, UserInfoView
-
-from user.views import UserViewSet
+from django.urls import path, include
+from user.views import UserViewSet, UserInfoView, UserProjectsView
 from rest_framework.routers import DefaultRouter
 
-router = DefaultRouter()
-router.register(r'', UserViewSet, basename='user')
-# path('user-info/', UserInfoView.as_view(), name='user-info'),
-urlpatterns = router.urls
+# 自动生成路由方法, 必须使用视图集
+# router = SimpleRouter()  # 没有根路由  /user/ 无法识别
+router = DefaultRouter()  # 1.有根路由
+router.register(r'', UserViewSet, 'user')  # 2.配置路由
+
+urlpatterns = [
+    path("", include(router.urls)),
+    # path('forgot-password/', LoginView.as_view()),
+    # http://127.0.0.1:8000/api/users/1/projects/
+    path('<int:user_id>/projects/', UserProjectsView.as_view()),
+    path('user-info/', UserProjectsView.as_view(), name='user-info')
+]
+urlpatterns += router.urls
 
 # app_name = 'user'
 # urlpatterns = [

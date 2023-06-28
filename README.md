@@ -36,15 +36,16 @@ python manage.py runserver
 ```
 
 ## 技术架构
-Vue(3) + Django(3.2) + MySQL(8.0)
+Vue(3) + Django(3.2.5) + MySQL(8.0)
 
 Django REST framework 前后端分离模式
 
 ## 部分接口
-- 项目信息 http://127.0.0.1:8000/project/
-- 具体项目 http://127.0.0.1:8000/project/1/
-- 用户列表 http://127.0.0.1:8000/user/
-- 具体用户 http://127.0.0.1:8000/user/2/
+- 项目信息 http://127.0.0.1:8000/api/projects/
+- 具体项目 http://127.0.0.1:8000/api/projects/1/
+- 用户列表 http://127.0.0.1:8000/api/users/
+- 具体用户 http://127.0.0.1:8000/api/users/1/
+- 获取特定用户参与的所有项目 http://127.0.0.1:8000/api/users/1/projects/
 - 后台管理 http://127.0.0.1:8000/admin/
 
 ## 参考文档

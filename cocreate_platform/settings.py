@@ -37,11 +37,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',  # rest_framework 前后端分离
+    'django_filters',  # django 过滤器
     "phonenumber_field",  # 手机号码验证
-    'cocreate',  # 暂时未使用
     'user',  # 用户模块
     'project',  # 项目模块
 ]
+
+# rest_framework 配置
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'  # 自动化文档
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

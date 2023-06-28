@@ -15,7 +15,7 @@ from rest_framework.routers import DefaultRouter
 urlpatterns = []
 
 router = DefaultRouter()  # 可以处理视图的路由器
-router.register('', ProjectViewSet, basename='project')  # 向路由器中注册视图集
+router.register('', ProjectViewSet, 'project')  # 向路由器中注册视图集
 # router.register(r'type/(?P<project_type>\w+)/', ProjectTypeView, basename='project-type-search')
 
 # router.register('type', ProjectTypeView, basename='project_type')
