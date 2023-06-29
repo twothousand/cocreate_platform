@@ -41,12 +41,15 @@ Vue(3) + Django(3.2.5) + MySQL(8.0)
 Django REST framework 前后端分离模式
 
 ## 部分接口
+- swagger接口文档 http://127.0.0.1:8000/swagger/
+- 使用Redoc UI来显示API文档  http://127.0.0.1:8000/redoc/  
+- 后台管理 http://127.0.0.1:8000/admin/
 - 项目信息 http://127.0.0.1:8000/api/projects/
 - 具体项目 http://127.0.0.1:8000/api/projects/1/
 - 用户列表 http://127.0.0.1:8000/api/users/
 - 具体用户 http://127.0.0.1:8000/api/users/1/
 - 获取特定用户参与的所有项目 http://127.0.0.1:8000/api/users/1/projects/
-- 后台管理 http://127.0.0.1:8000/admin/
+
 
 ## 参考文档
 - [Django3.2文档](https://docs.djangoproject.com/zh-hans/3.2/)

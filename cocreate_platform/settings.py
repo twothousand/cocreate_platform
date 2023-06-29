@@ -26,8 +26,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Application definition
-
+# 定义app
 INSTALLED_APPS = [
     'simpleui',  # 后台管理界面美化
     'django.contrib.admin',
@@ -36,17 +35,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',  # rest_framework 前后端分离
-    'django_filters',  # django 过滤器
-    "phonenumber_field",  # 手机号码验证
+    'rest_framework',  # 前后端分离
+    'drf_yasg',  # Swagger
     'user',  # 用户模块
     'project',  # 项目模块
 ]
 
 # rest_framework 配置
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'  # 自动化文档
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+#     'PAGE_SIZE': 10,
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,16 +78,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cocreate_platform.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
 # MySQL数据库配置
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cocreate_platform',  # 数据库名称
         'USER': 'root',  # 用户名
-        'PASSWORD': '1qaz',  # 密码
+        # 'PASSWORD': '1qaz',  # 密码
+        'PASSWORD': '123456',  # 密码
         'HOST': '127.0.0.1',
         'PORT': 3306,
     }
@@ -125,40 +122,33 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
-# STATIC_URL = '/static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ----- SIMPLEUI -----
 # 离线模式
 SIMPLEUI_STATIC_OFFLINE = True
-# 隐藏主机信息
+# 隐藏项目链接
 SIMPLEUI_HOME_INFO = False
 
+# ----- STATIC -----
 STATIC_URL = '/static/'
 # 静态文件的存储目录
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
-MEDIA_URL = '/static/media/'
 # 存储用户主动上传的文件 用来记录上传文件的位置
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
 
-# STATIC_URL = '/static/'
-# MEDIA_URL = 'static/media/'
 if DEBUG:
     MEDIA_URL = 'media/'
-#
+else:
+    MEDIA_URL = '/static/media/'
+
 # 去除自动补/ get会帮忙加 post不会
 # APPEND_SLASH = False
-#
-# ALIPAY_KEY_DIRS = os.path.join(BASE_DIR, 'static/key_file/')
-# ALIPAY_APP_ID = "2016101700705690"
-#
+
+# ----- ckeditor -----
 # # 配置富文本编辑器ckeditor
 # CKEDITOR_UPLOAD_PATH = 'upload/'
 #
@@ -174,15 +164,8 @@ if DEBUG:
 #     },
 # }
 #
-# # 设置simpleUI为离线模式
-# SIMPLEUI_STATIC_OFFLINE = True
-# # 隐藏项目链接
-# SIMPLEUI_HOME_INFO = False
-# # 更改模块图标
-# SIMPLEUI_ICON = {
-#     '技术圈': 'far fa-comments',  # name: 模块名字，请注意不是model的命名，而是菜单栏上显示的文本   icon: 图标
-#     '项目分享': 'fas fa-user-tie'
-# }
+
+
 #
 # # 发送邮件设置
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 固定写法
@@ -191,9 +174,3 @@ if DEBUG:
 # EMAIL_HOST_USER = '2951121599@qq.com'  # 发送邮件的QQ邮箱
 # EMAIL_HOST_PASSWORD = 'zxnulqzuaafddebf'  # 在QQ邮箱->设置->帐户->“POP3/IMAP......服务” 里得到的在第三方登录QQ邮箱授权码
 # EMAIL_USE_TLS = True  # 与SMTP服务器通信时，是否启动TLS链接(安全链接)默认false  加密True
-
-# 分页允许您控制每页返回多少个对象
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-}

@@ -1,25 +1,15 @@
-import json
-
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
-from django.views import View
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .models import User
-from project.models import Project
-from .serializers import UserSerializer
-
-from user.serializers import UserSerializer, UserUnActiveSerializer
-from project.serializers import ProjectSerializer
+from django.http import HttpResponse
+from django.views import View
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from project.models import Project
+from project.serializers import ProjectSerializer
+from user.serializers import UserSerializer
+from .models import User
 
 
 # 用于列出或检索用户的视图集

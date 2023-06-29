@@ -152,24 +152,6 @@ def ErrorResponse(code, message):
     return JsonResponse(data)
 
 
-# def collection(request):
-#     if request.method == 'GET':
-#         passport_id = request.session.get('passport_id')  # 数据表中的id
-#         # user = User.objects.get(id=passport_id)
-#         collection_obj = Collection.objects.filter(user_id=passport_id)
-#         if not collection_obj:
-#             item = {}
-#             return render(request, 'user/collection.html', item)
-#         item = {}
-#         for project_obj in collection_obj:
-#             # print(project_obj.projects_id_id)  # <QuerySet [<Projects: 众筹系统源码购买>]>
-#             projects = Projects.objects.filter(id=project_obj.projects_id_id)
-#             # ..........获取数据库的N条数据 存储为字典
-#             item['projects'] = projects
-#             print(item)
-#             return render(request, 'user/collection.html', item)
-#     else:
-#         return HttpResponse('请使用GET进行请求!')
 def collection(request):
     if request.method == 'GET':
         passport_id = request.session.get('passport_id')  # 数据表中的id

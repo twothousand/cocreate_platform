@@ -14,12 +14,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include, re_path
-from rest_framework.documentation import include_docs_urls  # 自动生成API文档
+from django.urls import path, include
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+
+# 配置Swagger文档视图
+schema_view = get_schema_view(
+    openapi.Info(
+        title="CoCreate Platform API 文档",
+        default_version='v1',
+    ),
+    public=True,
+    # permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', include('user.urls')),
+
+    # http://127.0.0.1:8000/
+    # path('', include('project.urls'), name='project'),
 
     # http://127.0.0.1:8000/api/users/xxx
     path('api/users/', include('user.urls'), name='user'),
@@ -27,16 +41,9 @@ urlpatterns = [
     # http://127.0.0.1:8000/api/projects/xxx
     path('api/projects/', include('project.urls'), name='project'),
 
-    # http://127.0.0.1:8000/docs/
-    path('docs/', include_docs_urls(title='CoCreate API 文档', description='CoCreate API 文档')),  # 自动生成API文档
+    # http://127.0.0.1:8000/swagger/   swagger API 文档
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # http://127.0.0.1:8000/redoc/  使用Redoc UI来显示API文档
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
-    # # http://127.0.1:8000/schema/
-    # path('schema/', schema_view),  # 自动生成API文档
-
-    # http://127.0.0.1:8000/
-    # re_path(r'^', include('cocreate.urls')),
-
-    # path('index/', views.index, name='main-view'),
-    # path('bio/<username>/', views.bio, name='bio'),
 ]
-# urlpatterns += router.urls

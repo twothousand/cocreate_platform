@@ -4,7 +4,8 @@ from .models import Project
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = [
-        'project_name', 'project_description', 'project_tags', 'project_type', 'project_status'
+        'project_name', 'project_description', 'project_tags', 'project_type', 'project_status', 'project_cycles',
+        'project_source_link'
     ]
     search_fields = ['project_name', 'project_description']
     list_filter = ['project_creator', 'project_tags', 'project_type', 'project_status']

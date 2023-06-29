@@ -1,6 +1,6 @@
 from django.urls import path, include
-from user.views import UserViewSet, UserInfoView, UserProjectsView
 from rest_framework.routers import DefaultRouter
+from user.views import UserViewSet, UserProjectsView
 
 # 自动生成路由方法, 必须使用视图集
 # router = SimpleRouter()  # 没有根路由  /user/ 无法识别

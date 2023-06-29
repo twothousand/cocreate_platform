@@ -1,6 +1,6 @@
 from django.db import models
 from functions.get_hash import get_hash
-from phonenumber_field.modelfields import PhoneNumberField
+# from phonenumber_field.modelfields import PhoneNumberField
 
 
 # 用户表
@@ -16,8 +16,8 @@ class User(models.Model):
     location = models.CharField(max_length=50, verbose_name='所在地', blank=True, null=True)
     profile_image = models.ImageField(upload_to='profile_images/', verbose_name='头像', blank=True, null=True)
     last_login = models.DateTimeField(verbose_name='最后登录时间', blank=True, null=True)
-    created_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     class Meta:
         db_table = 'user'
