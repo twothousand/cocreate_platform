@@ -1,6 +1,8 @@
+"""
+用户表
+user 项目信息表
+"""
 from django.db import models
-from functions.get_hash import get_hash
-# from phonenumber_field.modelfields import PhoneNumberField
 
 
 # 用户表
@@ -19,10 +21,10 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
+    def __str__(self):
+        return f"用户名: {str(self.username)}"
+
     class Meta:
         db_table = 'user'
         verbose_name = "用户信息"
         verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return "用户 " + self.username

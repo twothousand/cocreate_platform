@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'drf_yasg',  # Swagger
     'user',  # 用户模块
     'project',  # 项目模块
+    'team',  # 组队模块
+    'product',  # 产品模块
+    'dim',  # 维度模块
 ]
 
 # rest_framework 配置
