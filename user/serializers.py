@@ -10,7 +10,20 @@
 把通过model查询的queryset对象转换成JSON格式
 """
 from rest_framework import serializers
-from user.models import User
+# from user.models import User
+from django.contrib.auth.models import User
+
+
+class UserRegSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        user = super(UserRegSerializer, self).create(validated_data=validated_data)
+        user.set_password(validated_data["password"])
+        user.save()
+        return user
+
+    class Meta:
+        model = User
+        fields = ("username", "password")
 
 
 # 构建项目序列化器

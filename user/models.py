@@ -3,12 +3,17 @@
 user 项目信息表
 """
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
 # 用户表
-class User(models.Model):
+class User(AbstractUser):
+    """
+    用户模型
+    """
     username = models.CharField(max_length=30, unique=True, verbose_name="用户名")
-    password = models.CharField(max_length=50, verbose_name="密码")
+    # 继承django自带的AbstractUser类后，不需要password字段，数据库中会自动添加password，且存储加密后的密码
+    # password = models.CharField(max_length=50, verbose_name="密码")
     email = models.EmailField(max_length=50, verbose_name='邮箱')
     name = models.CharField(max_length=50, verbose_name='真实姓名', blank=True, null=True)
     nickname = models.CharField(max_length=50, verbose_name='昵称', blank=True, null=True)

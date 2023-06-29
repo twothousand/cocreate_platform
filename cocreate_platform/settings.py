@@ -25,6 +25,7 @@ SECRET_KEY = 'django-insecure-)km-62r9w*s#ka(+e6m81nnteakm8l*m80l#i8sxa6ks9nxf2@
 DEBUG = True
 
 ALLOWED_HOSTS = []
+AUTH_USER_MODEL = "user.User"  # 覆盖掉django自带的用户模型
 
 # 定义app
 INSTALLED_APPS = [
