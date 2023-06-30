@@ -1,11 +1,15 @@
+# django库
 from django.urls import path, include
+# rest_framework库
 from rest_framework.routers import DefaultRouter
-from user.views import UserViewSet, UserProjectsView
+# app
+from user.views import UserViewSet, UserProjectsView, UserRegViewSet
 
 # 自动生成路由方法, 必须使用视图集
 # router = SimpleRouter()  # 没有根路由  /user/ 无法识别
 router = DefaultRouter()  # 1.有根路由
-router.register(r'', UserViewSet, 'user')  # 2.配置路由
+# router.register(r'', UserViewSet, 'user')  # 2.配置路由
+router.register(r"userReg", UserRegViewSet, 'userReg')
 
 urlpatterns = [
     path("", include(router.urls)),

@@ -1,15 +1,26 @@
+# django库
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views import View
+from django.contrib.auth import get_user_model
+# rest_framework库
 from rest_framework import viewsets
+from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+# app
 from project.models import Project
 from project.serializers import ProjectSerializer
 from user.serializers import UserSerializer
-from .models import User
+from user.serializers import UserRegSerializer
+
+User = get_user_model()
+
+
+class UserRegViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = UserRegSerializer
+    queryset = User.objects.all()
 
 
 # 用于列出或检索用户的视图集

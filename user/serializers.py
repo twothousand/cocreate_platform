@@ -9,9 +9,12 @@
 
 把通过model查询的queryset对象转换成JSON格式
 """
+# rest_framework库
 from rest_framework import serializers
-# from user.models import User
-from django.contrib.auth.models import User
+# django库
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class UserRegSerializer(serializers.ModelSerializer):
