@@ -58,8 +58,9 @@ class Application(models.Model):
 
 # 队伍成员表
 class Member(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name='成员ID')
+    id = models.AutoField(primary_key=True, verbose_name='ID')
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='成员ID')
     is_leader = models.BooleanField(default=False, verbose_name='是否队长')
     join_date = models.DateField(blank=True, null=True, verbose_name='加入日期')
     leave_date = models.DateField(blank=True, null=True, verbose_name='离开日期')
@@ -78,5 +79,5 @@ class Member(models.Model):
 
     class Meta:
         db_table = 'team_members'
-        verbose_name = '成员'
+        verbose_name = '队伍成员'
         verbose_name_plural = verbose_name

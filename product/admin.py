@@ -3,7 +3,7 @@ from .models import Product, Version, Comment, Reply, Like, Collect
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('project', 'name')
+    list_display = ('project', 'name', 'model', 'industry', 'ai_tag')
     list_filter = ('project', 'name')
     search_fields = ('project',)
     list_per_page = 20

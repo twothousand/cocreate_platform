@@ -9,6 +9,7 @@ product_collect	产品收藏表
 """
 from django.db import models
 
+from dim.models import Model, Industry, AITag
 from project.models import Project
 from user.models import User
 
@@ -17,6 +18,9 @@ from user.models import User
 class Product(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='产品ID')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='关联项目')
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, verbose_name="模型")
+    industry = models.ForeignKey(Industry, on_delete=models.CASCADE, verbose_name="行业")
+    ai_tag = models.ForeignKey(AITag, on_delete=models.CASCADE, verbose_name="AI标签")
     name = models.CharField(max_length=255, blank=True, verbose_name='产品名称')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 

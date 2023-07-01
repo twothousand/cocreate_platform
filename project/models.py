@@ -3,6 +3,8 @@
 project 项目信息表
 """
 from django.db import models
+
+from dim.models import Model, Industry, AITag
 from user.models import User
 from .conf import *
 
@@ -10,7 +12,10 @@ from .conf import *
 # 项目信息表
 class Project(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='项目ID')
-    project_creator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="项目创建者")  # 外键关联 用户表(一对多)
+    project_creator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="项目创建者")
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, verbose_name="模型")
+    industry = models.ForeignKey(Industry, on_delete=models.CASCADE, verbose_name="行业")
+    ai_tag = models.ForeignKey(AITag, on_delete=models.CASCADE, verbose_name="AI标签")
     project_name = models.CharField(max_length=100, verbose_name='项目名称')
     project_description = models.TextField(verbose_name='项目描述')
     project_tags = models.CharField(max_length=20, choices=PROJECT_TAG_CHOICES, verbose_name='项目标签')

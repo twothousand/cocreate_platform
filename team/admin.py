@@ -9,14 +9,14 @@ class TeamAdmin(admin.ModelAdmin):
 
 
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'project', 'created_at')
-    list_filter = ('user', 'project')
+    list_display = ('id', 'user', 'project', 'status', 'created_at')
+    list_filter = ('user', 'project', 'status')
     search_fields = ('user', 'project')
     list_per_page = 20
 
 
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ('id', 'team')
+    list_display = ('id', 'team', 'is_leader', 'member_status', 'user_id')
     list_filter = ('team',)
     search_fields = ('team',)
     list_per_page = 20
