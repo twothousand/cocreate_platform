@@ -48,7 +48,7 @@ class Application(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     def __str__(self):
-        return f"申请ID: {self.application_id}"
+        return f"申请ID: {self.id}"
 
     class Meta:
         db_table = 'team_application'
@@ -74,7 +74,7 @@ class Member(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     def __str__(self):
-        return f"成员ID: {self.member_id}"
+        return f"成员ID: {self.id}"
 
     class Meta:
         db_table = 'team_members'

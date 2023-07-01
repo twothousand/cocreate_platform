@@ -14,6 +14,7 @@ from project.models import Project
 from project.serializers import ProjectSerializer
 from user.serializers import UserSerializer
 from user.serializers import UserRegSerializer
+from team.models import Team
 
 User = get_user_model()
 
@@ -75,6 +76,35 @@ class UserProjectsView(APIView):
         return Response(serializer.data)
 
 
+# 获取特定用户管理的所有项目
+class UserManagedProjectsView(APIView):
+    def get(self, request, user_id):
+        print(user_id)
+        projects = Project.objects.filter(project_creator=user_id)  # 根据project_creator过滤项目
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data)
+
+
+# 获取特定用户加入的所有项目
+class UserJoinedProjectsView(APIView):
+    def get(self, request, user_id):
+        # 获取指定用户
+        user = User.objects.get(id=user_id)
+        # 通过队伍成员表查询用户参与的队伍
+        user_teams = Team.objects.filter(member__user=user)
+        # 通过队伍查询所属的项目
+        user_projects = Project.objects.filter(team__in=user_teams)
+        # 返回查询结果
+        response_data = []
+        for project in user_projects:
+            response_data.append({
+                'id': project.id,
+                'name': project.name,
+                'description': project.description,
+            })
+        return Response(response_data)
+
+
 #
 class LoginView(View):
     def get(self, request):
@@ -115,14 +145,13 @@ class LoginView(View):
         #     return JsonResponse({'res': 0})
 
 
-# 以rest_framework，查询个人信息
+# 忘记密码
+class ForgetPwdView(View):
+    def get(self, request):
+        return HttpResponse("ForgetPwdView GET")
 
-
-class UserInfoView(APIView):
-    def get(self, request, format=None):
-        user = User.objects.get(user=request.user)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+    def post(self, request):
+        return HttpResponse("ForgetPwdView POST")
 
 
 # 以rest_framework，修改个人信息
