@@ -9,7 +9,6 @@ from user.views import *
 # router = SimpleRouter()  # 没有根路由  /user/ 无法识别
 router = DefaultRouter()  # 1.有根路由
 router.register(r'', UserViewSet, 'user')  # 2.配置路由
-# router.register(r"userReg", UserRegViewSet, 'userReg')  # POST请求即为注册，无需配置路由
 
 urlpatterns = [
     path("", include(router.urls)),

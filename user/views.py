@@ -13,15 +13,9 @@ from rest_framework.views import APIView
 from project.models import Project
 from project.serializers import ProjectSerializer
 from user.serializers import UserSerializer
-from user.serializers import UserRegSerializer
 from team.models import Team
 
 User = get_user_model()
-
-
-class UserRegViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = UserRegSerializer
-    queryset = User.objects.all()
 
 
 # 用于列出或检索用户的视图集

@@ -17,20 +17,18 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class UserRegSerializer(serializers.ModelSerializer):
+# 构建项目序列化器
+class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
-        user = super(UserRegSerializer, self).create(validated_data=validated_data)
+        """
+        重写用户注册的post方法
+        @param validated_data:
+        @return:
+        """
+        user = super(UserSerializer, self).create(validated_data=validated_data)
         user.set_password(validated_data["password"])
         user.save()
         return user
-
-    class Meta:
-        model = User
-        fields = ("username", "password")
-
-
-# 构建项目序列化器
-class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
