@@ -1,19 +1,17 @@
 # django库
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views import View
 from django.contrib.auth import get_user_model
 # rest_framework库
 from rest_framework import viewsets
-from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 # app
 from project.models import Project
-from project.serializers import ProjectSerializer
+from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer, ProjectSerializer
 from user.serializers import UserSerializer
-from team.models import Team
+from team.models import Team, Member
 
 User = get_user_model()
 
@@ -62,81 +60,106 @@ class UserViewSet(viewsets.ModelViewSet):
     #     return Response(serializer.data)
 
 
-# 获取特定用户的所有项目（project_creator有问题）
-class UserProjectsView(APIView):
-    def get(self, request, user_id):
-        projects = Project.objects.filter(project_creator=user_id)  # 根据用户ID过滤项目
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
-
-
 # 获取特定用户管理的所有项目
 class UserManagedProjectsView(APIView):
+    # 获取特定用户管理的所有项目
     def get(self, request, user_id):
-        print(user_id)
-        projects = Project.objects.filter(project_creator=user_id)  # 根据project_creator过滤项目
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
+        # 获取特定用户管理的所有队伍ID列表
+        team_ids = Member.objects.filter(
+            user_id_id=user_id,
+            is_leader=True,
+            member_status="正常"
+        ).values('team_id').distinct()
+
+        # 查询与这些队伍关联的项目
+        managed_projects = Project.objects.filter(team__id__in=team_ids)
+
+        # 使用序列化器来序列化数据
+        serializer = UserManagedProjectsSerializer(managed_projects, many=True)
+        response_data = serializer.data
+
+        return Response(response_data)
+
+
+# 特定用户管理的特定项目的详细信息（获取、更新、删除）
+class UserManagedProjectDetailView(APIView):
+    # 检查特定用户是否管理该项目
+    def get_project(self, user_id, project_id):
+        try:
+            project = Project.objects.get(
+                id=project_id,
+                team__member__user_id=user_id,
+                team__member__is_leader=True
+            )
+            return project
+        except Project.DoesNotExist:
+            return None
+
+    def get(self, request, user_id, project_id):
+        project = self.get_project(user_id, project_id)
+        if project:
+            serializer = UserManagedProjectsSerializer(project)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "Project not found or user is not the manager."}, status=404)
+
+    def put(self, request, user_id, project_id):
+        project = self.get_project(user_id, project_id)
+        if project:
+            serializer = UserManagedProjectsSerializer(project, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=400)
+        else:
+            return Response({"error": "Project not found or user is not the manager."}, status=404)
+
+    def delete(self, request, user_id, project_id):
+        project = self.get_project(user_id, project_id)
+        if project:
+            project.delete()
+            return Response({"success": True, "message": "Project deleted successfully!"})
+        else:
+            return Response({"error": "Project not found or user is not the manager."}, status=404)
 
 
 # 获取特定用户加入的所有项目
 class UserJoinedProjectsView(APIView):
     def get(self, request, user_id):
-        # 获取指定用户
-        user = User.objects.get(id=user_id)
-        # 通过队伍成员表查询用户参与的队伍
-        user_teams = Team.objects.filter(member__user=user)
-        # 通过队伍查询所属的项目
-        user_projects = Project.objects.filter(team__in=user_teams)
-        # 返回查询结果
-        response_data = []
-        for project in user_projects:
-            response_data.append({
-                'id': project.id,
-                'name': project.name,
-                'description': project.description,
-            })
+        # 获取符合条件的队伍ID列表
+        team_ids = Member.objects.filter(
+            user_id_id=user_id,
+            is_leader=False,
+            member_status="正常"
+        ).values('team_id').distinct()
+
+        # 查询与这些队伍关联的项目
+        joined_projects = Project.objects.filter(team__id__in=team_ids)  # 通过team__id__in来筛选与给定队伍ID列表相关联的项目
+
+        # 使用序列化器来序列化数据
+        serializer = UserJoinedProjectsSerializer(joined_projects, many=True)
+        response_data = serializer.data
+
         return Response(response_data)
 
 
-#
+# 登录
 class LoginView(View):
     def get(self, request):
         return HttpResponse("LoginView GET")
 
     def post(self, request):
         return HttpResponse("LoginView POST")
-        # # 接收数据
-        # username = request.POST.get('username')
-        # password = request.POST.get('password')
-        # remember = request.POST.get('remember')
-        #
-        # # 校验数据
-        # if not all([username, password, remember]):
-        #     return JsonResponse({'res': 2})
-        #
-        # # 业务处理：登录校验
-        # passport = User.objects.get_one_passport(username=username, password=password)
-        # if passport:
-        #     next_url = reverse('cocreate:index')
-        #     jres = JsonResponse({'res': 1, 'next_url': next_url})
-        #
-        #     # 判断是否需要记住用户名
-        #     if remember == 'true':
-        #         # 记住用户名
-        #         jres.set_cookie('username', username, max_age=7 * 24 * 3600)
-        #     else:
-        #         # 不要记住用户名
-        #         jres.delete_cookie('username')
-        #
-        #     # 记住用户的登录状态
-        #     request.session['islogin'] = True
-        #     request.session['username'] = username
-        #     request.session['passport_id'] = passport.id
-        #     return jres
-        # else:
-        #     # 用户名或密码错误
-        #     return JsonResponse({'res': 0})
+
+
+# 退出登录
+class LogoutView(View):
+    def get(self, request):
+        return HttpResponse("LogoutView GET")
+
+    def post(self, request):
+        return HttpResponse("LogoutView POST")
 
 
 # 忘记密码
@@ -146,14 +169,3 @@ class ForgetPwdView(View):
 
     def post(self, request):
         return HttpResponse("ForgetPwdView POST")
-
-
-# 以rest_framework，修改个人信息
-class UserUpdateView(APIView):
-    def post(self, request, format=None):
-        user = User.objects.get(user=request.user)
-        serializer = UserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
