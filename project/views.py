@@ -1,10 +1,14 @@
 # django库
 from django.http import HttpResponse
 from django.views import View
+from django_filters.rest_framework import DjangoFilterBackend
 # rest_framework库
 from rest_framework import filters, permissions
+from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 # app
@@ -23,19 +27,35 @@ class ProjectViewSet(ModelViewSet):
     search_fields = ['project_name', 'project_description']
     ordering_fields = ['project_name', 'created_at']
 
-    def search(self, request, *args, **kwargs):
-        search_term = kwargs.get('keyword')
-        print(search_term)
-        queryset = self.filter_queryset(self.get_queryset())
 
-        if search_term:
-            queryset = queryset.filter(project_name__icontains=search_term) | queryset.filter(
-                project_description__icontains=search_term)
+# 按关键词搜索项目
+class ProjectSearchView(APIView):
+    def get(self, request, *args, **kwargs):
+        keyword = kwargs.get('keyword')
+        if keyword:
+            queryset = Project.objects.filter(project_name__icontains=keyword) | \
+                       Project.objects.filter(project_description__icontains=keyword)
             queryset = queryset.order_by('id')
-        print(queryset)
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
+            serializer = ProjectSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({'message': 'No keyword provided'})
+
+
+# 按参数过滤项目(未实现) TODO
+class ProjectFilterView(APIView):
+    serializer_class = ProjectSerializer
+    pagination_class = PageNumberPagination
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project_tags', 'project_type', 'project_status', 'model_used']  # 添加过滤字段
+
+    def get(self, request, *args, **kwargs):
+        print("test" * 10)
+        queryset = Project.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+
+        return Response(serializer.data)
 
 
 # 项目详情页
@@ -49,11 +69,13 @@ class ProjectDetailView(ModelViewSet):
         return Project.objects.filter(project_id=project_id)  # 返回查询集
 
 
+# 查看特定项目的成员列表
 class ProjectMembersView(APIView):
     def get(self, request, project_id):
         try:
             # 获取指定项目的成员列表
-            members = Member.objects.filter(team__project_id=project_id, member_status='正常', is_leader=False)
+            # members = Member.objects.filter(team__project_id=project_id, member_status='正常', is_leader=False)  # 不包含队长
+            members = Member.objects.filter(team__project_id=project_id, member_status='正常')  # 包含队长
 
             # 序列化成员列表数据
             serializer = ProjectMembersSerializer(members, many=True)

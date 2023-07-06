@@ -18,7 +18,7 @@ router.register(r'', UserViewSet, 'user')  # 2.配置路由
 
 urlpatterns = [
     # http://127.0.0.1:8000/api/users/
-    path("", include(router.urls)),
+    # path("", include(router.urls)),
     # http://127.0.0.1:8000/api/users/login/
     path('login/', LoginView.as_view()),  # 登录
     # http://127.0.0.1:8000/api/users/logout/
@@ -27,10 +27,12 @@ urlpatterns = [
     path('forgot_password/', ForgetPwdView.as_view()),  # 忘记密码
     # http://127.0.0.1:8000/api/users/1/managed_projects/
     path('<int:user_id>/managed_projects/', UserManagedProjectsView.as_view()),  # 管理的项目
-    # http://127.0.0.1:8000/api/users/1/joined_projects/
-    path('<int:user_id>/joined_projects/', UserJoinedProjectsView.as_view()),  # 参与的项目
     # http://127.0.0.1:8000/api/users/2/managed_projects/1  # 获取特定用户管理的特定项目的详细信息
     path('<int:user_id>/managed_projects/<int:project_id>', UserManagedProjectDetailView.as_view()),
+    # http://127.0.0.1:8000/api/users/1/joined_projects/
+    path('<int:user_id>/joined_projects/', UserJoinedProjectsView.as_view()),  # 参与的项目
+    # http://127.0.0.1:8000/api/users/2/joined_projects/1  # 获取特定用户参与的特定项目的详细信息
+    path('<int:user_id>/joined_projects/<int:project_id>', UserJoinedProjectDetailView.as_view()),
 
 ]
 urlpatterns += router.urls

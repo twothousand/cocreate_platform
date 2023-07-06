@@ -60,8 +60,16 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
         fields = ("id", "project_name", "project_creator_name", "project_description")
 
 
-# ProjectMembersSerializer的序列化器
 class ProjectMembersSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    team_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Member
-        fields = ['id', 'user_id', 'team_id', 'is_leader', 'member_status']  # 根据你的需要定义字段
+        fields = ['username', 'team_name', 'is_leader', 'member_status']
+
+    def get_username(self, obj):
+        return obj.user_id.username
+
+    def get_team_name(self, obj):
+        return obj.team.team_name

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'team',  # 组队模块
     'product',  # 产品模块
     'dim',  # 维度模块
+    'django_filters',  # 过滤器
 ]
 
 # rest_framework 配置
