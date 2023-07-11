@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views import View
 from django.contrib.auth import get_user_model
 # rest_framework库
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,12 +45,42 @@ class LogoutView(View):
 
 
 # 忘记密码
-class ForgetPwdView(View):
-    def get(self, request):
-        return HttpResponse("ForgetPwdView GET")
-
+class ForgetPwdView(APIView):
     def post(self, request):
-        return HttpResponse("ForgetPwdView POST")
+        """
+        忘记密码，通过手机验证码重制密码
+        @param request:
+        @return:
+        """
+        result = {"message": ""}
+        # 接收用户参数
+        username = request.data.get("username")
+        verification_code = request.data.get("verification_code")
+        password = request.data.get("password")
+        password_confirmation = request.data.get("password_confirmation")
+        # 参数校验
+        if not all([username, password, password_confirmation, verification_code]):
+            result["message"] = "参数不能为空"
+            return Response(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if password != password_confirmation:
+            result["message"] = "两次密码不一致"
+            return Response(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        # TODO: 验证码校验
+        if verification_code:
+            pass
+
+        # 修改密码
+        data = request.data
+        data.pop("verification_code")
+        user = UserSerializer(data=data)
+
+
+class UserView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer  # 优先使用 get_serializer_class 返回的序列化器
+    # permission_classes = [IsAuthenticated]
+
+
 
 
 # 用于列出或检索用户的视图集
@@ -82,7 +112,6 @@ class UserViewSet(viewsets.ModelViewSet):
         result = {"message": ""}
         # 接收用户参数
         username = request.data.get("username")
-        phone_number = request.data.get("phone_number")
         password = request.data.get("password")
         password_confirmation = request.data.get("password_confirmation")
         verification_code = request.data.get("verification_code")

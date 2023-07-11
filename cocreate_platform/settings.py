@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',  # 过滤器
     'rest_framework',  # 前后端分离
     'rest_framework_simplejwt',  # 用户鉴权
     'drf_yasg',  # Swagger
@@ -45,7 +46,6 @@ INSTALLED_APPS = [
     'team',  # 组队模块
     'product',  # 产品模块
     'dim',  # 维度模块
-    'django_filters',  # 过滤器
 ]
 
 # rest_framework 配置
