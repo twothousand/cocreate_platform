@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',  # 过滤器
     'rest_framework',  # 前后端分离
     'rest_framework_simplejwt',  # 用户鉴权
     'drf_yasg',  # Swagger
@@ -45,7 +46,6 @@ INSTALLED_APPS = [
     'team',  # 组队模块
     'product',  # 产品模块
     'dim',  # 维度模块
-    'django_filters',  # 过滤器
 ]
 
 # rest_framework 配置
@@ -140,9 +140,9 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 自定义用户认证类进行身份认证登录
-AUTHENTICATION_BACKENDS = [
-
-]
+# AUTHENTICATION_BACKENDS = [
+#
+# ]
 
 # JWT配置
 SIMPLE_JWT = {

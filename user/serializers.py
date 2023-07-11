@@ -19,20 +19,20 @@ User = get_user_model()
 
 # 构建项目序列化器
 class UserSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        """
-        重写用户注册的post方法
-        @param validated_data:
-        @return:
-        """
-        user = super(UserSerializer, self).create(validated_data=validated_data)
-        user.set_password(validated_data["password"])
-        user.save()
-        return user
+    # def create(self, validated_data):
+    #     """
+    #     重写用户注册的post方法
+    #     @param validated_data:
+    #     @return:
+    #     """
+    #     user = super(UserSerializer, self).create(validated_data=validated_data)
+    #     user.set_password(validated_data["password"])
+    #     user.save()
+    #     return user
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
-        fields = '__all__'  # 所有字段
+        fields = ["id", "username", "email", "profile_image", "location", "biography", "nickname"]
         # fields = ('id', )       # 临时添加字段也需要写在这里
         # exclude = ['id']  # 排除 id 字段
         # read_only_fields = ('',)  # 指定字段为 read_only,
