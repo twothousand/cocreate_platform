@@ -39,3 +39,17 @@ class User(AbstractUser):
         db_table = 'user'
         verbose_name = "用户信息"
         verbose_name_plural = verbose_name
+
+
+class VerifCode(models.Model):
+    """验证码模型"""
+    id = models.AutoField(primary_key=True, verbose_name='验证码ID')
+    mobile_phone = models.CharField(verbose_name="手机号码", max_length=11)
+    verif_code = models.CharField(verbose_name="验证码", max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='生成时间')
+    is_used = models.BooleanField(default=False, verbose_name='是否被使用')
+
+    class Meta:
+        db_table = 'verifcode'
+        verbose_name = "手机验证码"
+        verbose_name_plural = verbose_name

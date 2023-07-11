@@ -9,6 +9,8 @@ from rest_framework import permissions
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser:
+        if request.method in permissions.SAFE_METHODS:  # 如果不是拥有者只有读取权限
             return True
-        return obj.user == request.user
+        if request.user.is_superuser:  # 如果是超级管理员
+            return True
+        return obj == request.user

@@ -140,9 +140,9 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 自定义用户认证类进行身份认证登录
-AUTHENTICATION_BACKENDS = [
-
-]
+# AUTHENTICATION_BACKENDS = [
+#
+# ]
 
 # JWT配置
 SIMPLE_JWT = {
