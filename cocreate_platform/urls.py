@@ -36,7 +36,7 @@ urlpatterns = [
     # path('', include('user.urls')),
 
     # http://127.0.0.1:8000/
-    # path('', include('project.urls'), name='project'),
+    # path('', include('product.urls'), name='product'),
 
     # http://127.0.0.1:8000/api/users/xxx
     path('api/users/', include('user.urls'), name='user'),

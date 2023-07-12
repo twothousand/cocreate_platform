@@ -18,18 +18,20 @@ from user.models import User
 class Product(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='产品ID')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='关联项目')
-    model = models.ForeignKey(Model, on_delete=models.CASCADE, verbose_name="模型")
-    industry = models.ForeignKey(Industry, on_delete=models.CASCADE, verbose_name="行业")
-    ai_tag = models.ForeignKey(AITag, on_delete=models.CASCADE, verbose_name="AI标签")
+    SOURCE_CHOICES = (
+        ('主动创建', '主动创建'),
+        ('后台维护', '后台维护'),
+    )
+    product_source = models.CharField(max_length=50, choices=SOURCE_CHOICES, verbose_name='产品来源', default="主动创建")
     name = models.CharField(max_length=255, blank=True, verbose_name='产品名称')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     def __str__(self):
-        return f"产品ID: {self.id}"
+        return f"产品ID: {self.name}"
 
     class Meta:
         db_table = 'product'
-        verbose_name = '产品'
+        verbose_name = '产品关联项目'
         verbose_name_plural = verbose_name
 
 
@@ -37,14 +39,19 @@ class Product(models.Model):
 class Version(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='版本ID')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='产品')
-    version_number = models.CharField(max_length=20, verbose_name='版本号')
+    version_number = models.CharField(max_length=20, verbose_name='版本号', default='1.0.0')
     name = models.CharField(max_length=255, blank=True, verbose_name='产品名称')
     promotional_image = models.CharField(max_length=255, blank=True, verbose_name='产品宣传图')
     description = models.CharField(max_length=500, blank=True, verbose_name='产品简介')
     type = models.CharField(max_length=100, blank=True, verbose_name='产品类型')
-    industry = models.CharField(max_length=100, blank=True, verbose_name='行业')
-    ai_tags = models.CharField(max_length=255, blank=True, verbose_name='AI标签')
-    model_ids = models.CharField(max_length=255, verbose_name='模型IDs')
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, verbose_name="模型", default="")
+    industry = models.ForeignKey(Industry, on_delete=models.CASCADE, verbose_name="行业", default="")
+    ai_tag = models.ForeignKey(AITag, on_delete=models.CASCADE, verbose_name="AI标签", default="")
+    product_display_link = models.URLField(blank=True, null=True, verbose_name='产品展示链接')
+    product_display_qr_code = models.ImageField(upload_to='product_display_qr_code_images/',
+                                                blank=True, null=True, verbose_name='产品展示二维码')
+    test_group_qr_code = models.ImageField(upload_to='test_group_qr_code_images/', blank=True,
+                                           null=True, verbose_name='用户内测二维码')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     def __str__(self):
@@ -52,7 +59,7 @@ class Version(models.Model):
 
     class Meta:
         db_table = 'product_versions'
-        verbose_name = '版本'
+        verbose_name = '产品版本'
         verbose_name_plural = verbose_name
 
 

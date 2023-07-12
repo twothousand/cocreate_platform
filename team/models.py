@@ -40,11 +40,11 @@ class Application(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
     application_msg = models.CharField(max_length=255, verbose_name='申请消息')
     STATUS_CHOICES = (
-        ('待加入', '待加入'),
-        ('忽略', '忽略'),
-        ('已加入', '已加入'),
+        ('待审核', '待审核'),
+        ('拒绝', '拒绝'),
+        ('同意加入', '同意加入'),
     )
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name='申请状态')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name='申请状态', default="同意加入")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     def __str__(self):

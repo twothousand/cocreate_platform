@@ -3,11 +3,12 @@ import random
 import re
 import time
 # django模块
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.views import View
 from django.contrib.auth import get_user_model
 # rest_framework模块
 from rest_framework import viewsets, status, mixins
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -291,69 +292,44 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# ------------------------我管理的项目-------------------------
 # 获取特定用户管理的所有项目
 class UserManagedProjectsView(APIView):
     def get(self, request, user_id):
-        # 获取特定用户管理的所有队伍ID列表
-        team_ids = Member.objects.filter(
-            user_id_id=user_id,
-            is_leader=True,
-            member_status="正常"
-        ).values('team_id').distinct()
-
-        # 查询与这些队伍关联的项目
-        managed_projects = Project.objects.filter(team__id__in=team_ids)
-
-        # 使用序列化器来序列化数据
+        managed_projects = Project.objects.filter(project_creator_id=user_id)
         serializer = UserManagedProjectsSerializer(managed_projects, many=True)
         response_data = serializer.data
-
         return Response(response_data)
 
 
 # 特定用户管理的特定项目的详细信息（获取、更新、删除）
 class UserManagedProjectDetailView(APIView):
-    # 检查特定用户是否管理该项目
-    def get_project(self, user_id, project_id):
-        try:
-            project = Project.objects.get(
-                id=project_id,
-                team__member__user_id=user_id,
-                team__member__is_leader=True
-            )
-            return project
-        except Project.DoesNotExist:
-            return None
+    @staticmethod
+    def get_managed_project(user_id, project_id):
+        project = Project.objects.filter(id=project_id, project_creator_id=user_id).first()
+        if not project:
+            raise NotFound("项目未发现或不是项目管理者！")
+        return project
 
     def get(self, request, user_id, project_id):
-        project = self.get_project(user_id, project_id)
-        if project:
-            serializer = UserManagedProjectsSerializer(project)
-            return Response(serializer.data)
-        else:
-            return Response({"error": "Project not found or user is not the manager."}, status=404)
+        project = self.get_managed_project(user_id, project_id)
+        serializer = UserManagedProjectsSerializer(project)
+        return Response(serializer.data)
 
     def put(self, request, user_id, project_id):
-        project = self.get_project(user_id, project_id)
-        if project:
-            serializer = UserManagedProjectsSerializer(project, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors, status=400)
-        else:
-            return Response({"error": "Project not found or user is not the manager."}, status=404)
+        project = self.get_managed_project(user_id, project_id)
+        serializer = UserManagedProjectsSerializer(project, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def delete(self, request, user_id, project_id):
-        project = self.get_project(user_id, project_id)
-        if project:
-            project.delete()
-            return Response({"success": True, "message": "Project deleted successfully!"})
-        else:
-            return Response({"error": "Project not found or user is not the manager."}, status=404)
+        project = self.get_managed_project(user_id, project_id)
+        project.delete()
+        return Response({"success": True, "message": "项目删除成功!"})
 
 
+# ------------------------我加入的项目-------------------------
 # 获取特定用户加入的所有项目
 class UserJoinedProjectsView(APIView):
     def get(self, request, user_id):

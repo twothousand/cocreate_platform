@@ -7,7 +7,7 @@ router.register('', TeamViewSet, 'team')  # 向路由器中注册视图集
 
 urlpatterns = [
     # http://127.0.0.1:8000/api/team/
-    # path("", include(router.urls)),
+    path("", include(router.urls)),
     # path("application/", TeamViewSet, 'team'),  # 退出登录
     # path("member/", TeamViewSet, 'team'),  # 退出登录
     # # /api/projects/?search=关键词

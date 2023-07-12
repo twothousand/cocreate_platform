@@ -25,17 +25,20 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 # 获取特定用户管理的所有项目
 class UserManagedProjectsSerializer(serializers.ModelSerializer):
-    project_creator_name = serializers.CharField(source='project_creator.username', read_only=True)
-
+    """
+        项目封面(考虑流量，暂不获取)、项目名称、项目简介、成员数(从队伍成员表取，暂不获取)
+        以及一个”管理项目“的按钮（直接通过项目名称点进去即可） 和一个“删除项目“的按钮
+        “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
+    """
+    # project_creator_name = serializers.CharField(source='project_creator.username', read_only=True)
     class Meta:
         model = Project
-        # fields = ['id', 'project_name', 'project_creator_name', 'project_description']
-        fields = "__all__"
+        fields = ['project_name', 'project_description']
 
-    def update(self, instance, validated_data):
-        instance.project_description = validated_data.get('project_description', instance.project_description)
-        instance.save()
-        return instance
+    # def update(self, instance, validated_data):
+    #     instance.project_description = validated_data.get('project_description', instance.project_description)
+    #     instance.save()
+    #     return instance
 
 
 # # 创建新项目并将其分配给特定用户

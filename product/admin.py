@@ -3,16 +3,14 @@ from .models import Product, Version, Comment, Reply, Like, Collect
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('project', 'name', 'model', 'industry', 'ai_tag')
-    list_filter = ('project', 'name')
-    search_fields = ('project',)
+    list_display = ('project', 'name')
     list_per_page = 20
 
 
 class VersionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product', 'version_number', 'name')
-    list_filter = ('product', 'name')
-    search_fields = ('version_number',)
+    list_display = ('id', 'product', 'version_number', 'name', 'model', 'industry', 'ai_tag')
+    list_filter = ('model', 'industry', 'ai_tag', 'name')
+    search_fields = ('name',)
     list_per_page = 20
 
 
