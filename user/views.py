@@ -20,6 +20,8 @@ from common import Constant
 # functions
 from functions import TimeUtils
 # app
+from product.models import Product
+from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
 from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer, ProjectSerializer
 from user.serializers import UserSerializer
@@ -327,6 +329,35 @@ class UserManagedProjectDetailView(APIView):
         project = self.get_managed_project(user_id, project_id)
         project.delete()
         return Response({"success": True, "message": "项目删除成功!"})
+
+
+# ------------------------我发布的项目产品-------------------------
+# 特定用户管理的特定产品的详细信息（获取、更新）
+class UserPublishedProductDetailView(APIView):
+    @staticmethod
+    def get_managed_product(user_id, project_id):
+        project = Project.objects.filter(id=project_id, project_creator_id=user_id).first()
+        if not project:
+            raise NotFound("项目未发现或不是项目管理者！")
+        return project
+
+    def get(self, request, user_id, project_id):
+        product = Product.objects.create(project_id=project_id)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+
+    def post(self, request, user_id, project_id):
+        serializer = VersionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+    def put(self, request, user_id, project_id):
+        serializer = VersionDetailSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 # ------------------------我加入的项目-------------------------

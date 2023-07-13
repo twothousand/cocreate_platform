@@ -27,7 +27,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     def __str__(self):
-        return f"产品ID: {self.name}"
+        return f"产品名称: {self.name}"
 
     class Meta:
         db_table = 'product'

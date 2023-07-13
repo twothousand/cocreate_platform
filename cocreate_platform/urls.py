@@ -35,8 +35,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', include('user.urls')),
 
-    # http://127.0.0.1:8000/
-    # path('', include('product.urls'), name='product'),
+    # http://127.0.0.1:8000/api/products/
+    path('api/products/', include('product.urls'), name='product'),
 
     # http://127.0.0.1:8000/api/users/xxx
     path('api/users/', include('user.urls'), name='user'),
