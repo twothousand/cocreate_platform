@@ -9,10 +9,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 # common
 from common.common_fields import UUIDField
+from common.base_model import BaseModel
 
 
 # 用户表
-class User(AbstractUser):
+class User(AbstractUser, BaseModel):
     """
     用户模型
     """
@@ -29,7 +30,6 @@ class User(AbstractUser):
     location = models.CharField(max_length=50, verbose_name='所在地', blank=True, null=True)
     profile_image = models.ImageField(upload_to='profile_images/', verbose_name='头像', blank=True, null=True)
     last_login = models.DateTimeField(verbose_name='最后登录时间', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     def __str__(self):
@@ -41,13 +41,11 @@ class User(AbstractUser):
         verbose_name_plural = verbose_name
 
 
-class VerifCode(models.Model):
+class VerifCode(BaseModel):
     """验证码模型"""
     id = models.AutoField(primary_key=True, verbose_name='验证码ID')
     mobile_phone = models.CharField(verbose_name="手机号码", max_length=11)
     verif_code = models.CharField(verbose_name="验证码", max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='生成时间')
-    is_used = models.BooleanField(default=False, verbose_name='是否被使用')
 
     class Meta:
         db_table = 'verifcode'

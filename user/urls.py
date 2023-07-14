@@ -17,30 +17,20 @@ from user import views
 
 # 自动生成路由方法, 必须使用视图集
 # router = SimpleRouter()  # 没有根路由  /user/ 无法识别
-# router = DefaultRouter()  # 1.有根路由
-# router.register(r'', views.UserViewSet, 'user')  # 2.配置路由
+router = DefaultRouter()  # 1.有根路由
+router.register(r'', views.UserViewSet, 'user')  # 2.配置路由
 
 urlpatterns = [
     # http://127.0.0.1:8000/api/users/
     # path("", include(router.urls)),
-    # http://127.0.0.1:8000/api/users/register/
-    path('register/', views.RegisterView.as_view()),  # 注册
     # http://127.0.0.1:8000/api/users/login/
     path('login/', views.LoginView.as_view()),  # 登录
-    # http://127.0.0.1:8000/api/users/logout/
-    path('logout/', views.LogoutView.as_view()),  # 退出登录
     # http://127.0.0.1:8000/api/users/refresh_token/
     path('refresh_token/', TokenRefreshView.as_view()),  # 刷新Token
     # http://127.0.0.1:8000/api/users/verify_token/
     path('verify_token/', TokenVerifyView.as_view()),  # 校验Token
     # http://127.0.0.1:8000/api/users/sendsms/  # 发送短信验证码
     path('sendsms/', views.SendSMSView.as_view()),
-    # http://127.0.0.1:8000/api/users/{id}/
-    path('<str:pk>/', views.UserView.as_view({"get": "retrieve"})),  # 获取单个用户信息
-    # http://127.0.0.1:8000/api/users/{id}/upload_avatar/
-    path('<str:pk>/upload_avatar/', views.UserView.as_view({"post": "upload_avatar"})),  # 上传用户头像
-    # http://127.0.0.1:8000/api/users/{id}/update_password/
-    path('<str:pk>/update_password/', views.UserView.as_view({"put": "update_password"})),  # 修改密码
 
     # http://127.0.0.1:8000/api/users/1/managed_projects/
     path('<str:user_id>/managed_projects/', views.UserManagedProjectsView.as_view()),  # 管理的项目
@@ -56,4 +46,4 @@ urlpatterns = [
 
 
 ]
-# urlpatterns += router.urls
+urlpatterns += router.urls
