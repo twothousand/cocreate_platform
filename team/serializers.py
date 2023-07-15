@@ -6,8 +6,7 @@ member_name字段和team_name字段是只读字段，它们源自member.username
 is_approved字段是可写字段，用于表示队伍成员是否已经被审核通过。
 """
 from rest_framework import serializers
-from .models import Member, Team
-
+from team.models import Team, Member, Application
 
 class TeamSerializer(serializers.ModelSerializer):
     team_leader_id = serializers.ReadOnlyField(source='team_leader_id.username')
@@ -15,7 +14,7 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ['team_name', 'team_leader_id']
-    
+
     # TODO
     def create(self, validated_data):
         project_id = self.context['request'].user.id
@@ -32,3 +31,45 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['id', 'member_name', 'team_name', 'is_approved']
+
+
+
+class TeamRecruitmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ['id','project','team_leader','is_recruitment_open','recruitment_requirements', 'recruitment_end_date']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        team_leader = validated_data['team_leader']
+
+        team = Team.objects.create(
+            project=validated_data['project'],
+            team_leader=team_leader,
+            is_recruitment_open=validated_data['is_recruitment_open'],
+            recruitment_requirements=validated_data['recruitment_requirements'],
+            recruitment_end_date=validated_data['recruitment_end_date'],
+        )
+
+        # 创建组队招募后，将当前用户添加为成员并设置为队长
+        member = Member.objects.create(team=team, user=team_leader, is_leader=True, member_status='正常')
+        member.join_date = team.created_at
+        member.save()
+
+        return team
+
+    def update(self, instance, validated_data):
+        instance.project = validated_data.get('project', instance.project)
+        instance.is_recruitment_open = validated_data.get('is_recruitment_open', instance.is_recruitment_open)
+        instance.recruitment_requirements = validated_data.get('recruitment_requirements',
+                                                               instance.recruitment_requirements)
+        instance.recruitment_end_date = validated_data.get('recruitment_end_date', instance.recruitment_end_date)
+        instance.save()
+        return instance
+
+class TeamApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = ['user', 'project', 'team', 'application_msg', 'status', 'created_at']
+        read_only_fields = ['status', 'created_at']

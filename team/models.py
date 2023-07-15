@@ -4,15 +4,18 @@ team 队伍信息表
 team_application 队伍申请表
 team_members 队伍成员表
 """
+# 系统模块
+import uuid
+# django 模块
 from django.db import models
-
 from project.models import Project
 from user.models import User
-
-
+# common
+from common.common_fields import UUIDField
+from common.base_model import BaseModel
 # 队伍信息表
-class Team(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name='队伍ID')
+class Team(BaseModel):
+    id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="队伍ID")
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='项目ID')
     team_leader = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='队伍负责人')
     team_name = models.CharField(max_length=100, verbose_name='队伍名称')
@@ -33,8 +36,9 @@ class Team(models.Model):
 
 
 # 队伍申请表
-class Application(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name='申请ID')
+class Application(BaseModel):
+    # id = models.AutoField(primary_key=True, verbose_name='申请ID')
+    id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="申请ID")
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='项目')
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
@@ -44,7 +48,7 @@ class Application(models.Model):
         ('拒绝', '拒绝'),
         ('同意加入', '同意加入'),
     )
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name='申请状态', default="同意加入")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name='申请状态', default="待审核")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     def __str__(self):
@@ -57,11 +61,12 @@ class Application(models.Model):
 
 
 # 队伍成员表
-class Member(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name='ID')
+class Member(BaseModel):
+    # id = models.AutoField(primary_key=True, verbose_name='ID')
+    id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="队伍成员ID")
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='成员ID')
-    is_leader = models.BooleanField(default=False, verbose_name='是否队长')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户ID')
+    is_leader = models.IntegerField(default=0, verbose_name='是否队长')
     join_date = models.DateField(blank=True, null=True, verbose_name='加入日期')
     leave_date = models.DateField(blank=True, null=True, verbose_name='离开日期')
     MEMBER_STATUS_CHOICES = (
