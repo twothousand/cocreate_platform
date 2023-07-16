@@ -27,7 +27,7 @@ class BaseModelFunc:
 
 class BaseModel(models.Model, BaseModelFunc):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    is_delete = models.BooleanField(default=False, verbose_name="是否删除")
+    is_deleted = models.BooleanField(default=False, verbose_name="是否删除")
 
     class Meta:
         abstract = True

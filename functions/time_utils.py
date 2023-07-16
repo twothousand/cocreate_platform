@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-@File : TimeUtils.py
+@File : time_utils.py
 Description: 时间工具类
 @Time : 2023/7/11 16:29
 """
 import datetime
+# django
+from django.utils import timezone
 
 
 def is_within_valid_period(event_time, valid_period=10):
@@ -19,3 +21,11 @@ def is_within_valid_period(event_time, valid_period=10):
         return True
     else:
         return False
+
+
+def get_current_time():
+    """
+    获取当前时间
+    @return:
+    """
+    return timezone.now()

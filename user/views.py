@@ -12,19 +12,18 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 # common
 from common.aliyun_message import AliyunSMS
 from common import constant
 # functions
-from functions import TimeUtils
+from functions import time_utils
 # app
 from product.models import Product
 from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
 from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer, ProjectSerializer
-from user.serializers import UserSerializer, UserRegAndPwdChangeSerializer
+from user.serializers import UserSerializer, UserRegAndPwdChangeSerializer, UserLoginSerializer
 from user.permissions import IsOwnerOrReadOnly
 from user.models import VerifCode
 from team.models import Team, Member
@@ -34,20 +33,18 @@ User = get_user_model()
 
 # 登录
 class LoginView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            raise InvalidToken(e.args[0])
-        # 自定义登录成功返回的结果
-        result = serializer.validated_data
-        # result["token"] = result.pop("access")
-        # TODO 看前端需要什么字段
-        result["id"] = serializer.user.id
-        result["username"] = serializer.user.username
+    serializer_class = UserLoginSerializer
 
-        return Response(result, status=status.HTTP_200_OK)
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        # 成功登录后更新last_login
+        user = self.request.user
+        if user.is_authenticated:
+            user.last_login = time_utils.get_current_time()
+            user.save(update_fields=['last_login'])
+
+        return response
 
 
 class SendSMSView(APIView):
@@ -86,7 +83,7 @@ class SendSMSView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     # serializer_class = UserSerializer  # 优先使用 get_serializer_class 返回的序列化器
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
         """
@@ -96,7 +93,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':  # 如果操作是 'create' （对应POST请求，即注册）
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         else:  # 其他操作
-            permission_classes = [IsAuthenticated]  # 需要用户被认证
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
@@ -104,6 +101,16 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserRegAndPwdChangeSerializer
         else:
             return UserSerializer
+
+    def perform_destroy(self, instance):
+        """
+        重写删除方法，改为逻辑删除
+        @param instance:
+        @return:
+        """
+        instance.is_deleted = True
+        # TODO: 关联项目需要特殊处理
+        instance.save()
 
 
 # ------------------------我管理的项目-------------------------
