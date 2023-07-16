@@ -10,20 +10,20 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets, status, mixins
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 # common
-from common.aliyun_message import AliyunSMS
-from common import constant
+
 # functions
-from functions import time_utils
+from functions import time_utils, re_utils
 # app
 from product.models import Product
 from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
 from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer, ProjectSerializer
-from user.serializers import UserSerializer, UserRegAndPwdChangeSerializer, UserLoginSerializer
+from user import serializers
 from user.permissions import IsOwnerOrReadOnly
 from user.models import VerifCode
 from team.models import Team, Member
@@ -33,7 +33,7 @@ User = get_user_model()
 
 # 登录
 class LoginView(TokenObtainPairView):
-    serializer_class = UserLoginSerializer
+    serializer_class = serializers.UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
@@ -47,36 +47,10 @@ class LoginView(TokenObtainPairView):
         return response
 
 
-class SendSMSView(APIView):
-    def post(self, request):
-        result = {}
-        # 获取手机号码
-        phone = request.data.get("phone", "")
-        # 手机号码校验
-        res = re.match(r"^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$", phone)
-        if not res:
-            result["error"] = "无效的手机号码"
-            return Response(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        # 随机生成六位数验证码
-        code = self.get_random_code()
-        # 发送短信验证码
-        aliyun_sms = AliyunSMS()
-        res = aliyun_sms.send_msg(phone=phone, code=code)
-        if res["code"] == "OK":
-            obj = VerifCode.objects.create(mobile_phone=phone, verif_code=code)
-            res["code_id"] = obj.id
-            return Response(res, status=status.HTTP_200_OK)
-        else:
-            return Response(res, status=status.HTTP_400_BAD_REQUEST)
-
-    def get_random_code(self):
-        """
-        随机生成六位数验证码
-        @return:
-        """
-        code = "".join([str(random.choice(range(10))) for _ in range(6)])
-        return code
+class VerifCodeViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.VerifCodeSerializer
+    throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
+    permission_classes = [AllowAny, ]
 
 
 # 用于列出或检索用户的视图集
@@ -98,9 +72,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'partial_update':
-            return UserRegAndPwdChangeSerializer
+            return serializers.UserRegAndPwdChangeSerializer
         else:
-            return UserSerializer
+            return serializers.UserSerializer
 
     def perform_destroy(self, instance):
         """

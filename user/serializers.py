@@ -10,16 +10,17 @@
 把通过model查询的queryset对象转换成JSON格式
 """
 # 系统模块
-import re
+import random
 # rest_framework库
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
 # common
+from common.aliyun_message import AliyunSMS
 from common import constant
 # functions
-from functions import time_utils
+from functions import time_utils, re_utils
 # app
 from user.models import VerifCode
 
@@ -37,15 +38,15 @@ def check_verif_code(mobile_phone: str, code_id: int, verification_code: str) ->
     @return: 如果验证码有效，返回True，否则返回False
     """
     result = {}
-    if VerifCode.filter(id=code_id, verif_code=verification_code, mobile_phone=mobile_phone).exists():  # 验证码存在
+    if VerifCode.filter(id=code_id, verification_code=verification_code, mobile_phone=mobile_phone).exists():  # 验证码存在
         obj = VerifCode.get(id=code_id)
-        if obj.is_delete:
+        if obj.is_deleted:
             result["error"] = "验证码已被使用，请重新获取验证码"
             return False, result
         if not time_utils.is_within_valid_period(obj.created_at, valid_period=constant.CAPTCHA_TIMEOUT):
             result["error"] = "验证码已过期，请重新获取验证码"
             return False, result
-        obj.is_delete = True  # 设置为被使用过了
+        obj.is_deleted = True  # 设置为被使用过了
         obj.save()
     else:
         result["error"] = "验证码验证失败，请重新获取验证码"
@@ -100,7 +101,7 @@ class UserRegAndPwdChangeSerializer(serializers.ModelSerializer):
         """
         校验手机号码是否有效
         """
-        res = re.match(r"^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$", value)
+        res = re_utils.validate_phone(phone=value)
         if not res:
             raise serializers.ValidationError("无效的手机号码")
         return value
@@ -145,8 +146,6 @@ class UserRegAndPwdChangeSerializer(serializers.ModelSerializer):
         @param validated_data:
         @return:
         """
-        validated_data.pop('verification_code')
-        validated_data.pop('code_id')
         # 调用父类方法
         user = super(UserRegAndPwdChangeSerializer, self).update(instance=instance, validated_data=validated_data)
         user.set_password(validated_data["password"])
@@ -161,3 +160,50 @@ class UserRegAndPwdChangeSerializer(serializers.ModelSerializer):
         }
 
 
+class VerifCodeSerializer(serializers.ModelSerializer):
+    code_id = serializers.SerializerMethodField()
+
+    def validate_mobile_phone(self, value):
+        """
+        校验手机号码是否有效
+        @param value:
+        @return:
+        """
+        res = re_utils.validate_phone(phone=value)
+        if not res:
+            return serializers.ValidationError("无效的手机号码")
+        return value
+
+    def create(self, validated_data):
+        # 随机生成六位数验证码
+        code = VerifCodeSerializer.get_random_code()
+        validated_data["verification_code"] = code
+        # 发送短信验证码
+        aliyun_sms = AliyunSMS()
+        res = aliyun_sms.send_msg(**validated_data)
+        if res["status"] == "success":
+            verif_code = super(VerifCodeSerializer, self).create(validated_data=validated_data)
+            return verif_code
+        else:
+            return serializers.ValidationError(res)
+
+    @staticmethod
+    def get_random_code():
+        """
+        随机生成六位数验证码
+        @return:
+        """
+        code = "".join([str(random.choice(range(10))) for _ in range(6)])
+        return code
+
+    def get_code_id(self, obj):
+        """
+        将id映射为code_id输出给前端
+        @param obj:
+        @return:
+        """
+        return int(obj.id)
+
+    class Meta:
+        model = VerifCode
+        fields = ['code_id', 'mobile_phone']
