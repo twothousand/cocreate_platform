@@ -30,7 +30,7 @@ urlpatterns = [
     # http://127.0.0.1:8000/api/users/verify_token/
     path('verify_token/', TokenVerifyView.as_view()),  # 校验Token
     # http://127.0.0.1:8000/api/users/sendsms/  # 发送短信验证码
-    path('sendsms/', views.SendSMSView.as_view()),
+    path('send_sms/', views.VerifCodeViewSet.as_view({'post': 'create'})),
 
     # http://127.0.0.1:8000/api/users/1/managed_projects/
     path('<str:user_id>/managed_projects/', views.UserManagedProjectsView.as_view()),  # 管理的项目

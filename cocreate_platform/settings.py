@@ -60,7 +60,12 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
-    ]
+    ],
+
+    # 配置限流频率功能
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "1/minute"
+    }
 }
 
 MIDDLEWARE = [

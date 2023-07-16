@@ -30,21 +30,22 @@ class AliyunSMS:
             endpoint=self.endpoint
         )
 
-    def send_msg(self, phone: str, code: str):
+    def send_msg(self, mobile_phone: str, verification_code: str):
         """
         发送验证码
-        @param phone: 手机号
-        @param code: 验证码
+        @param mobile_phone: 手机号
+        @param verification_code: 验证码
         @return:
         """
+        print("send_msg:", mobile_phone, verification_code)
         # 创建客户端
         client = Client(self.config)
         # 创建短信请求对象
         send_sms_request = SendSmsRequest(
-            phone_numbers=phone,
+            phone_numbers=mobile_phone,
             sign_name=self.sign_name,
             template_code=self.template_code,
-            template_param=json.dumps({"code": code})
+            template_param=json.dumps({"code": verification_code})
         )
         # 设置允许时间选项
         runtime = RuntimeOptions()
@@ -52,11 +53,11 @@ class AliyunSMS:
         try:
             res = client.send_sms_with_options(send_sms_request, runtime)
             if res.body.code == "OK":
-                return {"code": "OK", "message": "短信发送成功"}
+                return {"status": "success", "message": "验证码发送成功"}
             else:
-                return {"code": "NO", "error": res.body.message}
+                return {"status": "failure", "error": res.body.message}
         except Exception as e:
-            return {"code": "NO", "error": "短信发送失败"}
+            return {"status": "failure", "error": "验证码发送失败"}
 
 
 if __name__ == '__main__':

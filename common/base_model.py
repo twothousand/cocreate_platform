@@ -16,10 +16,10 @@ class BaseModelFunc:
     def get(cls, **kwargs):
         return cls.objects.get(**kwargs)
 
-    # @classmethod
-    # def get(cls, **kwargs):
-    #     return cls.objects.get(**kwargs)
-    #
+    @classmethod
+    def create(cls, **kwargs):
+        return cls.objects.create(**kwargs)
+
     # @classmethod
     # def get(cls, **kwargs):
     #     return cls.objects.get(**kwargs)
