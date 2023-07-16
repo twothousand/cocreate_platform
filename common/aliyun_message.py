@@ -37,7 +37,6 @@ class AliyunSMS:
         @param verification_code: 验证码
         @return:
         """
-        print("send_msg:", mobile_phone, verification_code)
         # 创建客户端
         client = Client(self.config)
         # 创建短信请求对象

@@ -175,13 +175,11 @@ class VerifCodeSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        print("create: ",validated_data)
         # 随机生成六位数验证码
         code = VerifCodeSerializer.get_random_code()
         validated_data["verification_code"] = code
         # 发送短信验证码
         aliyun_sms = AliyunSMS()
-        print("create2: ", validated_data)
         res = aliyun_sms.send_msg(**validated_data)
         if res["status"] == "success":
             verif_code = super(VerifCodeSerializer, self).create(validated_data=validated_data)

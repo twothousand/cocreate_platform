@@ -49,7 +49,8 @@ class LoginView(TokenObtainPairView):
 
 class VerifCodeViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.VerifCodeSerializer
-    throttle_classes = [AnonRateThrottle,]
+    throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
+    permission_classes = [AllowAny, ]
 
 
 # 用于列出或检索用户的视图集
