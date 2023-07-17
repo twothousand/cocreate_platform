@@ -52,6 +52,16 @@ class VerifCodeViewSet(viewsets.ModelViewSet):
     throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
     permission_classes = [AllowAny, ]
 
+    def send_sms_test(self, request, *args, **kwargs):
+        mobile_phone = request.data.get("mobile_phone")
+        verification_code = request.data.get("verification_code")
+        verif_code = VerifCode.create(mobile_phone=mobile_phone, verification_code=verification_code)
+        result = {
+            "id": verif_code.id,
+            "mobile_phone": verif_code.mobile_phone
+        }
+        return Response(result, status=status.HTTP_200_OK)
+
 
 # 用于列出或检索用户的视图集
 class UserViewSet(viewsets.ModelViewSet):
