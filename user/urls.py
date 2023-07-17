@@ -21,8 +21,6 @@ router = DefaultRouter()  # 1.有根路由
 router.register(r'', views.UserViewSet, 'user')  # 2.配置路由
 
 urlpatterns = [
-    # http://127.0.0.1:8000/api/users/
-    # path("", include(router.urls)),
     # http://127.0.0.1:8000/api/users/login/
     path('login/', views.LoginView.as_view()),  # 登录
     # http://127.0.0.1:8000/api/users/refresh_token/

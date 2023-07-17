@@ -8,9 +8,9 @@ admin.site.site_title = "后台管理界面"
 
 
 class UserManager(admin.ModelAdmin):
-    list_display = ['username', 'id', 'email', 'nickname', 'name']
-    list_filter = ['username', 'nickname', 'name']
+    list_display = ['username', 'id', 'email', 'name', 'nickname', 'biography', 'professional_career', 'location']
     search_fields = ['username', 'nickname', 'name']
+    list_filter = ['location', 'professional_career']
     list_per_page = 10
 
 

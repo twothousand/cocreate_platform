@@ -140,7 +140,7 @@ class UserPublishedProductDetailView(APIView):
         return project
 
     def get(self, request, user_id, project_id):
-        product = Product.objects.create(project_id=project_id)
+        product = Product.objects.get(project_id=project_id)
         serializer = ProductSerializer(product)
         return Response(serializer.data)
 

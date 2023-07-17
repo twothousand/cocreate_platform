@@ -7,9 +7,9 @@ INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) V
 INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(5, 'AI视频', '2023-07-17 14:48:06.224635000', '2023-07-17 14:48:06.224805000');
 INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(6, 'AI语音', '2023-07-17 14:48:11.996570000', '2023-07-17 14:48:11.996672000');
 INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(7, 'AI图像', '2023-07-17 14:48:26.004937000', '2023-07-17 14:48:26.004978000');
-INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(8, 'AI数据分析', '2023-07-17 14:49:00.736098000', '2023-07-17 14:49:00.736253000');
-INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(9, 'AI思维导图', '2023-07-17 14:49:50.263937000', '2023-07-17 14:49:50.264064000');
-INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(10, 'AI语言翻译', '2023-07-17 14:49:58.635972000', '2023-07-17 14:49:58.636010000');
+INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(8, 'AI医疗', '2023-07-17 14:49:00.736098000', '2023-07-17 16:12:18.924040000');
+INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(9, 'AI游戏', '2023-07-17 14:49:50.263937000', '2023-07-17 16:12:11.169088000');
+INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(10, 'AI翻译', '2023-07-17 14:49:58.635972000', '2023-07-17 16:11:28.692371000');
 INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(11, 'AI金融', '2023-07-17 14:50:16.366522000', '2023-07-17 14:50:16.366670000');
 INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(12, 'AI法律', '2023-07-17 14:50:20.311391000', '2023-07-17 14:50:20.311500000');
 INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at) VALUES(13, 'AI数字人', '2023-07-17 14:50:41.962546000', '2023-07-17 14:50:41.962632000');
