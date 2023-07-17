@@ -3,7 +3,7 @@ from .models import Project
 from team.models import Member
 
 
-# 构建项目序列化器
+# 项目序列化器
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
@@ -12,15 +12,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     # 创建新项目并将其分配给特定用户
     # 将project_creator_id添加到team_members，并设置is_leader=True
-    def create(self, validated_data):
-        project = Project.objects.create(**validated_data)
-        # 将项目创建者添加到团队成员中，并设置为leader
-        Member.objects.create(
-            project=project,
-            user_id=project.project_creator_id,
-            is_leader=True
-        )
-        return project
+    # def create(self, validated_data):
+    #     project = Project.objects.create(**validated_data)
+    #     # 将项目创建者添加到团队成员中，并设置为leader
+    #     Member.objects.create(
+    #         project=project,
+    #         user_id=project.project_creator_id,
+    #         is_leader=True
+    #     )
+    #     return project
 
 
 # 获取特定用户管理的所有项目
@@ -30,6 +30,7 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
         以及一个”管理项目“的按钮（直接通过项目名称点进去即可） 和一个“删除项目“的按钮
         “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
     """
+
     # project_creator_name = serializers.CharField(source='project_creator.username', read_only=True)
     class Meta:
         model = Project
@@ -41,19 +42,6 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
     #     return instance
 
 
-# # 创建新项目并将其分配给特定用户
-# class CreateProjectSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Project
-#         fields = "__all__"
-#
-#     def create(self, validated_data):
-#         # 在保存项目之前，可以进行一些额外的处理
-#         # 例如，设置默认值、关联其他模型等
-#         project = Project.objects.create(**validated_data)
-#         return project
-
-
 # 获取特定用户加入的所有项目
 class UserJoinedProjectsSerializer(serializers.ModelSerializer):
     project_creator_name = serializers.CharField(source='project_creator.username', read_only=True)
@@ -63,6 +51,7 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
         fields = ("id", "project_name", "project_creator_name", "project_description")
 
 
+# 项目成员列表
 class ProjectMembersSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     team_name = serializers.SerializerMethodField()
