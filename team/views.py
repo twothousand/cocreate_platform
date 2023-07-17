@@ -14,7 +14,7 @@ from django.shortcuts import render
 """
 在这个示例中，MembershipView继承自APIView，提供了处理队伍申请和审核的POST、PUT和DELETE方法。
 
-对于POST方法，用户可以向队伍发出申请。我们首先检查队伍是否正在招募，然后检查用户是否已经是队伍的成员。如果都通过了验证，就创建一个新的Member对象，并将其保存到数据库中。
+对于POST方法，用户可以向队伍发出申请。我们首先检查队伍是否正在招募，然后xx检查用户是否已经是队伍的成员。如果都通过了验证，就创建一个新的Member对象，并将其保存到数据库中。
 
 对于PUT方法，队长可以通过审核队伍成员的申请。我们首先检查队伍和队伍成员是否存在，然后检查当前用户是否是队长。如果通过了验证，就将is_approved字段设置为True，并保存到数据库中。
 
@@ -24,8 +24,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Team, Member
-from .serializers import MemberSerializer, TeamSerializer
+from team.models import Team, Member
+from team.serializers import *
 
 
 # POST：提交招募信息
@@ -106,3 +106,93 @@ class MembershipView(APIView):
 
         team_member.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TeamRecruitmentView(APIView):
+    def get(self, request):
+        try:
+            project_id = request.data.get('project')
+            team_recruitment = Team.objects.get(project=project_id)
+        except Team.DoesNotExist:
+            response_data = {
+                'success': False,
+                'message': '组队招募数据不存在',
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TeamRecruitmentSerializer(team_recruitment)
+        response_data = {
+            'success': True,
+            'message': '组队招募数据获取成功',
+            'data': serializer.data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = TeamRecruitmentSerializer(method='insert', data=request.data)
+        if serializer.is_valid():
+            # 根据当前用户创建组队招募数据
+            user = request.user
+            team_recruitment = serializer.save(created_by=user)
+
+            # 执行其他逻辑或返回响应
+            response_data = {
+                'success': True,
+                'message': '组队招募数据创建成功',
+                'data': serializer.data  # 包含创建成功后的数据
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            response_data = {
+                'success': False,
+                'message': '组队招募数据创建失败',
+                'errors': serializer.errors  # 包含序列化器错误信息
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        try:
+            project_id = request.data.get('project')
+            team_recruitment = Team.objects.get(project=project_id)
+        except Team.DoesNotExist:
+            response_data = {
+                'success': False,
+                'message': '组队招募数据不存在',
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {
+                'success': True,
+                'message': '组队招募数据更新成功',
+                'data': serializer.data,
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            response_data = {
+                'success': False,
+                'message': '组队招募数据更新失败',
+                'errors': serializer.errors,
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+class TeamApplicationView(APIView):
+    def post(self, request):
+        serializer = TeamApplicationSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            application = serializer.save()
+            response_data = {
+                'success': True,
+                'message': '队伍申请提交成功',
+                'data': {'application_id': application.id}
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            response_data = {
+                'success': False,
+                'message': '队伍申请提交失败',
+                'errors': serializer.errors
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
