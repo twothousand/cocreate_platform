@@ -48,7 +48,8 @@ class ProjectFilterView(APIView):
     pagination_class = PageNumberPagination
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['project_tags', 'project_type', 'project_status', 'model_used']  # 添加过滤字段
+    filterset_fields = ['industry__industry', 'ai_tag__ai_tag', 'project_type', 'project_status',
+                        'model__model_name']  # 添加过滤字段
 
     def get(self, request, *args, **kwargs):
         print("test" * 10)
@@ -83,57 +84,3 @@ class ProjectMembersView(APIView):
             return Response(serializer.data)
         except Member.DoesNotExist:
             return Response(status=404)
-
-
-# 以rest_framework，按照项目类型搜索项目
-class ProjectTypeView(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):  # 重写get_queryset方法
-        project_type = self.request.query_params.get('type')  # 获取请求参数
-        print("project_type：-----", project_type)
-        return Project.objects.filter(type=project_type)  # 返回查询集
-
-
-# 按照标签搜索项目
-class ProjectTagView(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):  # 重写get_queryset方法
-        project_tag = self.request.query_params.get('tag')  # 获取请求参数
-        print("project_tag：-----", project_tag)
-        return Project.objects.filter(tags=project_tag)  # 返回查询集
-
-
-# 查询阅读量前十的项目
-class ProjectViewsTopTen(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Project.objects.order_by('-views')[:10]
-
-
-# 查询点赞量前十的项目
-class ProjectLikesTopTen(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Project.objects.order_by('-likes')[:10]
-
-
-# 查询收藏量前十的项目
-class ProjectFavoritesTopTen(ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Project.objects.order_by('-favorites')[:10]

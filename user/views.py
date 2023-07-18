@@ -1,32 +1,26 @@
-# 系统模块
-import random
-import re
-import time
 # django模块
-from django.http import HttpResponse
-from django.views import View
 from django.contrib.auth import get_user_model
+
 # rest_framework模块
-from rest_framework import viewsets, status, mixins
-from rest_framework.exceptions import NotFound
+from rest_framework import viewsets, status
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-# common
 
-# functions
-from functions import time_utils, re_utils
 # app
 from product.models import Product
 from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
-from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer, ProjectSerializer
+from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer
+from team.models import Member
 from user import serializers
 from user.permissions import IsOwnerOrReadOnly
-from user.models import VerifCode
-from team.models import Team, Member
+
+# functions
+from functions import time_utils
 
 User = get_user_model()
 
@@ -66,6 +60,7 @@ class VerifCodeViewSet(viewsets.ModelViewSet):
 # 用于列出或检索用户的视图集
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
+
     # serializer_class = UserSerializer  # 优先使用 get_serializer_class 返回的序列化器
     # permission_classes = [IsAuthenticated]
 
@@ -121,7 +116,7 @@ class UserManagedProjectDetailView(APIView):
         serializer = UserManagedProjectsSerializer(project)
         return Response(serializer.data)
 
-    def put(self, request, user_id, project_id):
+    def patch(self, request, user_id, project_id):
         project = self.get_managed_project(user_id, project_id)
         serializer = UserManagedProjectsSerializer(project, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -145,7 +140,7 @@ class UserPublishedProductDetailView(APIView):
         return project
 
     def get(self, request, user_id, project_id):
-        product = Product.objects.create(project_id=project_id)
+        product = Product.objects.get(project_id=project_id)
         serializer = ProductSerializer(product)
         return Response(serializer.data)
 
@@ -153,8 +148,8 @@ class UserPublishedProductDetailView(APIView):
         serializer = VersionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, user_id, project_id):
         serializer = VersionDetailSerializer(data=request.data, partial=True)
@@ -169,8 +164,8 @@ class UserJoinedProjectsView(APIView):
     def get(self, request, user_id):
         # 获取符合条件的队伍ID列表
         team_ids = Member.objects.filter(
-            user_id_id=user_id,
-            is_leader=False,
+            user_id=user_id,
+            is_leader=0,
             member_status="正常"
         ).values('team_id').distinct()
 
@@ -184,7 +179,7 @@ class UserJoinedProjectsView(APIView):
         return Response(response_data)
 
 
-# 特定用户参与的特定项目的详细信息（获取、更新、删除）
+# 特定用户参与的特定项目的详细信息（获取、更新、退出）
 class UserJoinedProjectDetailView(APIView):
     # 检查特定用户是否参与该项目
     def get_project(self, user_id, project_id):
@@ -192,7 +187,7 @@ class UserJoinedProjectDetailView(APIView):
             project = Project.objects.get(
                 id=project_id,
                 team__member__user_id=user_id,
-                team__member__is_leader=True
+                team__member__is_leader=0
             )
             return project
         except Project.DoesNotExist:
@@ -204,9 +199,9 @@ class UserJoinedProjectDetailView(APIView):
             serializer = UserJoinedProjectsSerializer(project)
             return Response(serializer.data)
         else:
-            return Response({"error": "Project not found or user is not the manager."}, status=404)
+            return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, user_id, project_id):
+    def patch(self, request, user_id, project_id):
         project = self.get_project(user_id, project_id)
         if project:
             serializer = UserJoinedProjectsSerializer(project, data=request.data)
@@ -214,14 +209,17 @@ class UserJoinedProjectDetailView(APIView):
                 serializer.save()
                 return Response(serializer.data)
             else:
-                return Response(serializer.errors, status=400)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"error": "Project not found or user is not the manager."}, status=404)
+            return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, user_id, project_id):
         project = self.get_project(user_id, project_id)
         if project:
-            project.delete()
-            return Response({"success": True, "message": "Project deleted successfully!"})
+            team_member = Member.objects.get(team__project_id=project, user_id=user_id)
+            if team_member.is_leader:
+                raise PermissionDenied("项目负责人无法退出项目！")
+            team_member.delete()
+            return Response({"message": "退出成功！"}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({"error": "Project not found or user is not the manager."}, status=404)
+            return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)

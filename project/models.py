@@ -6,7 +6,7 @@ from django.db import models
 
 from dim.models import Model, Industry, AITag
 from user.models import User
-from .conf import *
+from .conf import PROJECT_TYPE_CHOICES, PROJECT_STATUS_CHOICES
 
 
 # 项目信息表
@@ -18,7 +18,6 @@ class Project(models.Model):
     ai_tag = models.ForeignKey(AITag, on_delete=models.CASCADE, verbose_name="AI标签")
     project_name = models.CharField(max_length=100, verbose_name='项目名称')
     project_description = models.TextField(verbose_name='项目描述')
-    project_tags = models.CharField(max_length=20, choices=PROJECT_TAG_CHOICES, verbose_name='项目标签')
     project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, verbose_name='项目类型')
     project_status = models.CharField(max_length=20, choices=PROJECT_STATUS_CHOICES, verbose_name='项目状态')
     project_cycles = models.IntegerField(verbose_name="项目开发周期", blank=True, null=True)
