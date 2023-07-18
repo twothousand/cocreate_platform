@@ -17,6 +17,7 @@ from project.models import Project
 from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer
 from team.models import Member
 from user import serializers
+from user.models import VerifCode
 from user.permissions import IsOwnerOrReadOnly
 
 # functions
@@ -223,3 +224,5 @@ class UserJoinedProjectDetailView(APIView):
             return Response({"message": "退出成功！"}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)
+
+
