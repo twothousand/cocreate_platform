@@ -37,7 +37,7 @@ class LoginView(TokenObtainPairView):
         user = self.request.user
         if user.is_authenticated:
             user.last_login = time_utils.get_current_time()
-            user.save(update_fields=['last_login'])
+            user.save()
 
         return response
 

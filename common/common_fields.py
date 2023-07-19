@@ -21,7 +21,7 @@ class UUIDField(models.Field):
         return self.to_python(value)
 
     def db_type(self, connection):
-        return 'char(32)'  # 长度36改为32，因为去掉'-'后的UUID长度为32。
+        return 'char(36)'
 
     def to_python(self, value):
         if value == '':
@@ -39,4 +39,4 @@ class UUIDField(models.Field):
         if value is None:
             return value
         # 将 UUID 的 '-' 符号去掉
-        return str(value).replace('-', '')
+        return str(value)
