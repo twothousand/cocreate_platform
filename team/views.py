@@ -37,7 +37,7 @@ class TeamRecruitmentView(APIView):
 
     # 创建组队招募信息
     def post(self, request):
-        serializer = TeamRecruitmentSerializer(method='insert', data=request.data)
+        serializer = TeamRecruitmentSerializer(data=request.data) #method='insert',
         if serializer.is_valid():
             # 根据当前用户创建组队招募数据
             user = request.user
@@ -155,8 +155,16 @@ class TeamApplicationView(ModelViewSet):
     def update(self, request, *args, **kwargs):
         application_id = kwargs['id']
         application_instance = get_object_or_404(Application, id=application_id)
-        status = request.data.get('status')
-        if status == '同意加入':
+        # 如果不是待审核状态则返回
+        if application_instance.status != '待审核':
+            response_data = {
+                'code': 400,
+                'message': '当前申请不是待审核状态',
+                'data': None,
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        application_status = request.data.get('status')
+        if application_status == '同意加入':
             # 更改申请状态为同意加入
             application_instance.status = '同意加入'
             application_instance.save()
@@ -164,6 +172,37 @@ class TeamApplicationView(ModelViewSet):
             team_instance = Team.objects.get(id=application_instance.team_id)
             # 获取对应的User实例
             user_instance = get_object_or_404(User, id=application_instance.user_id)
+            # 检查用户是否已经是队伍成员且状态正常
+            existing_member = Member.objects.filter(
+                team=team_instance,
+                user=user_instance,
+                member_status='正常'
+            ).first()
+            if existing_member:
+                response_data = {
+                    'code': 400,
+                    'message': '该用户已经是队伍成员。',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            #  检查用户是否已经是队伍成员非状态正常
+            leave_member = Member.objects.filter(
+                Q(team=team_instance) &
+                Q(user=user_instance) &
+                (Q(member_status='已离开') | Q(member_status='被移除'))
+            ).first()
+
+            if leave_member:
+                leave_member.member_status = '正常'
+                leave_member.save()
+                response_data = {
+                    'code': 200,
+                    'message': '已重新添加该用户',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+
             # 在成员表中插入一条数据
             Member.objects.create(
                 team=team_instance,
@@ -180,7 +219,7 @@ class TeamApplicationView(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
-        elif status == '拒绝':
+        elif application_status == '拒绝':
             # 更改申请状态为拒绝
             application_instance.status = '拒绝'
             application_instance.save()
@@ -195,7 +234,7 @@ class TeamApplicationView(ModelViewSet):
         else:
             response_data = {
                 'code': 400,
-                'message': '无效的状态',
+                'message': '无效的状态，status有效值为待审核、拒绝、同意加入',
                 'data': None,
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
