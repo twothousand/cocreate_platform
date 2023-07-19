@@ -1,10 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from team.views import TeamViewSet, TeamRecruitmentView, TeamApplicationView, TeamMemberViewSet
+from team.views import  TeamRecruitmentView, TeamApplicationView, TeamMemberViewSet
 
 # 创建一个路由器并注册TeamViewSet和TeamMemberViewSet
 router = DefaultRouter()
-router.register('team', TseamViewSet, 'team')  # 注册TeamViewSet
+
 
 urlpatterns = [
     # 将router.urls添加到urlpatterns中
