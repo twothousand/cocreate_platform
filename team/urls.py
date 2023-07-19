@@ -4,7 +4,7 @@ from team.views import TeamViewSet, TeamRecruitmentView, TeamApplicationView, Te
 
 # 创建一个路由器并注册TeamViewSet和TeamMemberViewSet
 router = DefaultRouter()
-router.register('team', TeamViewSet, 'team')  # 注册TeamViewSet
+router.register('team', TseamViewSet, 'team')  # 注册TeamViewSet
 
 urlpatterns = [
     # 将router.urls添加到urlpatterns中
