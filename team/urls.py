@@ -1,20 +1,33 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from team.views import *
+from team.views import TeamViewSet, TeamRecruitmentView, TeamApplicationView, TeamMemberViewSet
 
-router = DefaultRouter()  # 可以处理视图的路由器
-router.register('', TeamViewSet, 'team')  # 向路由器中注册视图集
+# 创建一个路由器并注册TeamViewSet和TeamMemberViewSet
+router = DefaultRouter()
+router.register('team', TeamViewSet, 'team')  # 注册TeamViewSet
 
 urlpatterns = [
-    # http://127.0.0.1:8000/api/team/
-    # path("", include(router.urls)),
-    # path("application/", TeamViewSet, 'team'),  # 退出登录
-    # path("member/", TeamViewSet, 'team'),  # 退出登录
-    # # /api/projects/?search=关键词
-    # path("search/<str:keyword>/", TeamViewSet.as_view({"get": "search"}), name="project-search"),
-    # # http://127.0.0.1:8000/api/projects/1/members/ 向特定项目添加新成员。（报名）
-    # path('<int:project_id>/members/', ProjectMembersView.as_view()),  # 项目成员
+    # 将router.urls添加到urlpatterns中
+    path('', include(router.urls)),
+
+    # http://127.0.0.1:8000/api/team/recruitment/
     path('recruitment/', TeamRecruitmentView.as_view(), name='team_recruitment'),
-    path('application/', TeamApplicationView.as_view(), name='team_application'),
+
+    # 不带id参数的情况,创建申请表单
+    path('application/', TeamApplicationView.as_view({'post': 'create'}), name='team_application_create'),
+
+    # 带有id参数的情况，修改申请表单
+    path('application/<str:id>/', TeamApplicationView.as_view({'put': 'update'}), name='team_application_update'),
+
+    # 队伍管理：转让队长
+    path('transfer_leadership/', TeamMemberViewSet.as_view({'put': 'transfer_leadership'}), name='transfer_leadership'),
+
+    # 队伍管理：移除队员
+    path('remove_member/', TeamMemberViewSet.as_view({'put': 'remove_member'}), name='remove_member'),
+
+    # 队伍管理：自动退出
+    path('auto_exit/', TeamMemberViewSet.as_view({'put': 'auto_exit'}), name='auto_exit'),
+
+    # 队伍管理：添加队员
+    path('add_member/', TeamMemberViewSet.as_view({'post': 'add_member'}), name='add_member'),
 ]
-urlpatterns += router.urls  # 将路由器中的所以路由信息追到到django的路由列表中

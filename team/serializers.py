@@ -71,5 +71,11 @@ class TeamRecruitmentSerializer(serializers.ModelSerializer):
 class TeamApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
-        fields = ['user', 'project', 'team', 'application_msg', 'status', 'created_at']
-        read_only_fields = ['status', 'created_at']
+        fields = ['id', 'user', 'project', 'team', 'application_msg', 'status', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at']
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['id', 'is_leader', 'join_date', 'leave_date', 'member_status', 'created_at', 'team', 'user']
+        read_only_fields = ['id', 'created_at']

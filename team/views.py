@@ -24,9 +24,13 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from team.models import Team, Member
+from user.models import User
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from team.serializers import *
-
+from datetime import date
 
 # POST：提交招募信息
 class TeamViewSet(ModelViewSet):
@@ -107,8 +111,9 @@ class MembershipView(APIView):
         team_member.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
+#组队招募
 class TeamRecruitmentView(APIView):
+    #获得组队招募信息
     def get(self, request):
         try:
             project_id = request.data.get('project')
@@ -128,6 +133,7 @@ class TeamRecruitmentView(APIView):
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
+    #创建组队招募信息
     def post(self, request):
         serializer = TeamRecruitmentSerializer(method='insert', data=request.data)
         if serializer.is_valid():
@@ -149,7 +155,7 @@ class TeamRecruitmentView(APIView):
                 'errors': serializer.errors  # 包含序列化器错误信息
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+    #更新组队招募
     def put(self, request):
         try:
             project_id = request.data.get('project')
@@ -178,21 +184,315 @@ class TeamRecruitmentView(APIView):
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-class TeamApplicationView(APIView):
-    def post(self, request):
-        serializer = TeamApplicationSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            application = serializer.save()
-            response_data = {
-                'success': True,
-                'message': '队伍申请提交成功',
-                'data': {'application_id': application.id}
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
+# 组队申请：提交组队申请（可多次，覆盖）
+class TeamApplicationView(ModelViewSet):
+    queryset = Application.objects.all()
+    serializer_class = TeamApplicationSerializer
+    lookup_field = 'id'
+
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user_id = serializer.validated_data['user']
+            print('serializer.validated_data',serializer.validated_data)
+            print('user_id',user_id)
+            project_id = serializer.validated_data['project']
+            team_id = serializer.validated_data['team']
+
+            # Check if the user is already in the team and their status is normal
+            existing_user = Member.objects.filter(
+                Q(team=team_id) &
+                Q(user=user_id) &
+                Q(member_status='正常')
+            ).first()
+
+            if existing_user:
+                response_data = {
+                    'success': False,
+                    'message': '您已经在队伍中，无需继续申请。',
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the application already exists
+            existing_application = Application.objects.filter(
+                Q(user=user_id) &
+                Q(project=project_id) &
+                Q(team=team_id)
+            ).first()
+
+            if existing_application:
+                # If an application already exists, update its content
+                existing_application.application_msg = serializer.validated_data['application_msg']
+                existing_application.status = '待审核'
+                # Add other fields that need to be updated
+
+                existing_application.save()
+                application = existing_application
+            else:
+                # If no application exists, create a new one
+                application = serializer.save()
+
+        except Exception as e:
             response_data = {
                 'success': False,
                 'message': '队伍申请提交失败',
-                'errors': serializer.errors
+                'errors': str(e)
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        response_data = {
+            'success': True,
+            'message': '队伍申请提交成功',
+            'data': {'application_id': application.id}
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        application_id = kwargs['id']
+        application_instance = get_object_or_404(Application, id=application_id)
+        status = request.data.get('status')
+        if status == '同意加入':
+            # 更改申请状态为同意加入
+            application_instance.status = '同意加入'
+            application_instance.save()
+            # 获取对应的Team实例
+            team_instance = Team.objects.get(id=application_instance.team_id)
+            # 获取对应的User实例
+            user_instance = get_object_or_404(User, id=application_instance.user_id)
+            # 在成员表中插入一条数据
+            Member.objects.create(
+                team=team_instance,
+                user=user_instance,
+                is_leader=0,
+                join_date=date.today(),
+                member_status='正常'
+            )
+
+            response_data = {
+                'success': True,
+                'message': '队伍申请已同意',
+            }
+            return Response(response_data, status=200)
+
+        elif status == '拒绝':
+            # 更改申请状态为拒绝
+            application_instance.status = '拒绝'
+            application_instance.save()
+
+            response_data = {
+                'success': True,
+                'message': '队伍申请已拒绝',
+            }
+            return Response(response_data, status=200)
+
+        else:
+            response_data = {
+                'success': False,
+                'message': '无效的状态',
+            }
+            return Response(response_data, status=400)
+
+
+## 队伍管理
+class TeamMemberViewSet(ModelViewSet):
+    serializer_class = MemberSerializer
+
+    # 接口1：转让队长（PUT）
+    @action(methods=['PUT'], detail=True)
+    def transfer_leadership(self, request, *args, **kwargs):
+        print('转让队长（PUT） request.data',request.data)
+        team_id = request.data.get('team_id')
+        new_leader_id = request.data.get('new_leader_id')
+        user_id = request.data.get('user_id')  # 当前用户的ID
+
+        team_instance = get_object_or_404(Team, id=team_id)
+        new_leader_instance = get_object_or_404(User, id=new_leader_id)
+        current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
+
+
+        # 检查当前用户是否是队长
+        is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
+        print('is_leader', is_leader)
+        if not is_leader:
+            response_data = {
+                'success': False,
+                'message': '只有队长才有权限进行转让。',
+            }
+            return Response(response_data, status=403)
+
+        # 检查新队长是否已经是队伍成员且状态正常
+        existing_member = Member.objects.filter(
+            team=team_instance,
+            user=new_leader_instance,
+            member_status='正常'
+        ).first()
+
+        if not existing_member:
+            response_data = {
+                'success': False,
+                'message': '指定的新队长不是有效的队伍成员。',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        # 更新原队长的is_leader字段为False，新队长的is_leader字段为True
+        current_user_member = Member.objects.get(team=team_instance, user=current_user_instance)
+        print('current_user_member',current_user_member)
+        current_user_member.is_leader = False
+        current_user_member.save()
+
+        existing_member.is_leader = True
+        print('existing_member', current_user_member)
+        existing_member.save()
+
+        # 序列化并返回数据
+        serializer = self.get_serializer(existing_member)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 接口2：移除队员（PUT）
+    @action(methods=['PUT'], detail=True)
+    def remove_member(self, request, *args, **kwargs):
+        team_id = request.data.get('team_id')
+        member_id = request.data.get('member_id')
+        user_id = request.data.get('user_id')  # 当前用户的ID
+        team_instance = get_object_or_404(Team, id=team_id)
+        current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
+        member_instance = get_object_or_404(User, id=member_id)  # 获取被操作用户
+
+        # 检查当前用户是否是队长
+        is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
+        print('is_leader', is_leader)
+        if not is_leader:
+            response_data = {
+                'success': False,
+                'message': '只有队长才有权限移除队员。',
+            }
+            return Response(response_data, status=403)
+
+        # 检查队员是否是有效的队伍成员
+        existing_member = Member.objects.filter(
+            team=team_instance,
+            user=member_instance,
+            member_status='正常'
+        ).first()
+
+        if not existing_member:
+            response_data = {
+                'success': False,
+                'message': '指定的队员不是有效的队伍成员。',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        # 将队员状态设为'被移除'
+        existing_member.member_status = '被移除'
+        existing_member.leave_date = date.today()
+        existing_member.save()
+
+        # 序列化并返回数据
+        serializer = self.get_serializer(existing_member)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 接口3：自动退出（PUT）
+    @action(methods=['PUT'], detail=True)
+    def auto_exit(self, request, *args, **kwargs):
+        team_id = request.data.get('team_id')
+        user_id = request.data.get('user_id')
+        team_instance = get_object_or_404(Team, id=team_id)
+        current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
+
+        # 检查用户是否是有效的队伍成员
+        existing_member = Member.objects.filter(
+            team=team_instance,
+            user=current_user_instance,
+            member_status='正常'
+        ).first()
+
+        if not existing_member:
+            response_data = {
+                'success': False,
+                'message': '您不是有效的队伍成员。',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        # 检查当前用户是否是队长, 如果是队长，先转让队长，才能退出
+        is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
+        if is_leader:
+            response_data = {
+                'success': False,
+                'message': '队长需先转让队长身份，才能退出团队',
+            }
+            return Response(response_data, status=403)
+
+        # 将用户状态设为'已离开'
+        existing_member.member_status = '已离开'
+        existing_member.leave_date = date.today()
+        existing_member.save()
+
+        # 序列化并返回数据
+        serializer = self.get_serializer(existing_member)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 接口4：添加队员（POST）
+    @action(methods=['POST'], detail=True)
+    def add_member(self, request, *args, **kwargs):
+        team_id = request.data.get('team_id')
+        user_id = request.data.get('user_id')
+        member_id = request.data.get('member_id')
+        team_instance = get_object_or_404(Team, id=team_id)
+        current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
+        member_instance = get_object_or_404(User, id=member_id)
+
+        # 检查当前用户是否是队长
+        is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
+        print('is_leader', is_leader)
+        if not is_leader:
+            response_data = {
+                'success': False,
+                'message': '只有队长才有权限添加队员。',
+            }
+            return Response(response_data, status=403)
+
+        # 检查被添加用户是否已经是队伍成员且状态正常
+        existing_member = Member.objects.filter(
+            team=team_instance,
+            user=member_instance,
+            member_status='正常'
+        ).first()
+
+        if existing_member:
+            response_data = {
+                'success': False,
+                'message': '该用户已经是队伍成员。',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        #  检查用户是否已经是队伍成员非状态正常
+        leave_member = Member.objects.filter(
+            Q(team=team_instance) &
+            Q(user=member_instance) &
+            (Q(member_status='已离开') | Q(member_status='被移除'))
+        ).first()
+
+        if leave_member:
+            leave_member.member_status = '正常'
+            leave_member.save()
+            response_data = {
+                'success': True,
+                'message': '已重新添加该用户',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        # 将用户添加为队伍的新成员
+        Member.objects.create(
+            team=team_instance,
+            user=member_instance,
+            is_leader=0,
+            join_date=date.today(),
+            member_status='正常'
+        )
+
+        response_data = {
+            'success': True,
+            'message': '已添加该用户',
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
