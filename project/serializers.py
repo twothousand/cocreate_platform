@@ -5,22 +5,16 @@ from team.models import Member
 
 # 项目序列化器
 class ProjectSerializer(serializers.ModelSerializer):
+    model = serializers.StringRelatedField()
+    industry = serializers.StringRelatedField()
+    ai_tag = serializers.StringRelatedField()
+    project_creator = serializers.StringRelatedField()
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
     class Meta:
         model = Project
         fields = "__all__"
-        # fields = ("id", "project_name", "project_desc")
-
-    # 创建新项目并将其分配给特定用户
-    # 将project_creator_id添加到team_members，并设置is_leader=True
-    # def create(self, validated_data):
-    #     project = Project.objects.create(**validated_data)
-    #     # 将项目创建者添加到团队成员中，并设置为leader
-    #     Member.objects.create(
-    #         project=project,
-    #         user_id=project.project_creator_id,
-    #         is_leader=True
-    #     )
-    #     return project
 
 
 # 获取特定用户管理的所有项目

@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 # rest_framework库
-from rest_framework import filters, permissions
+from rest_framework import filters, permissions, status
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -25,7 +25,37 @@ class ProjectViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     search_fields = ['project_name', 'project_description']
-    ordering_fields = ['project_name', 'created_at']
+    ordering = ['-id']
+
+    def list(self, request, *args, **kwargs):
+        try:
+            response = super().list(request, *args, **kwargs)
+            response_data = {
+                'message': '请求成功',
+                'data': response.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'error_message': '请求失败',
+                'details': str(e)
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            response = super().create(request, *args, **kwargs)
+            response_data = {
+                'message': '请求成功',
+                'data': response.data
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            response_data = {
+                'error_message': '请求失败',
+                'details': str(e)
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 按关键词搜索项目
