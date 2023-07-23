@@ -45,17 +45,17 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
         fields = ("id", "project_name", "project_creator_name", "project_description")
 
 
-# 项目成员列表
+# 获取项目成员列表
 class ProjectMembersSerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField()
-    team_name = serializers.SerializerMethodField()
+    team_name = serializers.ReadOnlyField(source='team.team_name')
+    username = serializers.ReadOnlyField(source='user.username')
+    name = serializers.ReadOnlyField(source='user.name')
+    user_id = serializers.ReadOnlyField(source='user.id')
+    professional_career = serializers.ReadOnlyField(source='user.professional_career')
+    location = serializers.ReadOnlyField(source='user.location')
+    email = serializers.ReadOnlyField(source='user.email')
 
     class Meta:
         model = Member
-        fields = ['username', 'team_name', 'is_leader', 'member_status']
-
-    def get_username(self, obj):
-        return obj.user_id.username
-
-    def get_team_name(self, obj):
-        return obj.team.team_name
+        fields = ['team_name', 'is_leader', 'member_status', 'user_id', 'username', 'name', 'professional_career',
+                  'location', 'email']
