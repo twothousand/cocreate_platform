@@ -8,7 +8,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class VersionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product', 'version_number', 'name', 'model', 'industry', 'ai_tag')
+    list_display = ('id', 'product', 'version_number', 'name')
     list_filter = ('model', 'industry', 'ai_tag', 'name')
     search_fields = ('name',)
     list_per_page = 20
