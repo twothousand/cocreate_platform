@@ -1,15 +1,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from product.views import ProductViewSet
 
-from product import views
-from product.views import VersionViewSet
+# 创建一个路由器并注册TeamViewSet和TeamMemberViewSet
+router = DefaultRouter()
 
-router = DefaultRouter()  # 可以处理视图的路由器
-router.register('', VersionViewSet, 'product')  # 向路由器中注册视图集
 
 urlpatterns = [
-    # path('product_detail/<int:product_id>', ProductDetailView.as_view()),
-    # http://127.0.0.1:8000/api/product/
-    # path("", include(router.urls)),
+    # 将router.urls添加到urlpatterns中
+    path('', include(router.urls)),
+    # 队伍管理：查询队员信息
+    path('create_product_with_version/', ProductViewSet.as_view({'post': 'create_product_with_version'}), name='create_product_with_version'),
+    path('update_product_with_version/', ProductViewSet.as_view({'put': 'update_product_with_version'}), name='update_product_with_version'),
+    path('get_product_info/', ProductViewSet.as_view({'get': 'get_product_info'}), name='get_product_info'),
 ]
-urlpatterns += router.urls  # 将路由器中的所以路由信息追到到django的路由列表中

@@ -1,5 +1,11 @@
 from rest_framework import serializers
 from team.models import Team, Member, Application
+from user.models import User
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'nickname', 'professional_career', 'biography', 'location', 'profile_image')
 
 class TeamRecruitmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,6 +34,7 @@ class TeamRecruitmentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.project = validated_data.get('project', instance.project)
+        instance.user = validated_data.get('user', instance.team_leader)
         instance.is_recruitment_open = validated_data.get('is_recruitment_open', instance.is_recruitment_open)
         instance.recruitment_requirements = validated_data.get('recruitment_requirements',
                                                                instance.recruitment_requirements)
@@ -36,12 +43,14 @@ class TeamRecruitmentSerializer(serializers.ModelSerializer):
         return instance
 
 class TeamApplicationSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     class Meta:
         model = Application
         fields = ['id', 'user', 'project', 'team', 'application_msg', 'status', 'created_at']
         read_only_fields = ['id', 'status', 'created_at']
 
 class MemberSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     class Meta:
         model = Member
         fields = ['id', 'is_leader', 'join_date', 'leave_date', 'member_status', 'created_at', 'team', 'user']
