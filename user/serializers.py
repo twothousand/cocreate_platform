@@ -82,6 +82,10 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         model = User
         fields = ["id", "username"]
 
+    class Meta:
+        model = User
+        fields = ["id", "username"]
+
 
 # 构建项目序列化器
 class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
@@ -164,7 +168,6 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
     class Meta:
         model = User
         fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id']
-
         extra_kwargs = {
             'username': {
                 'validators': [  # 官方文档 validators
