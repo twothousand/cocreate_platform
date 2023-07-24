@@ -24,6 +24,7 @@ from user.permissions import IsOwnerOrReadOnly
 from common.mixins import my_mixins
 from common.utils import time_utils
 from common.utils.decorators import disallow_methods, disallow_actions
+from datetime import datetime
 
 User = get_user_model()
 
@@ -121,10 +122,20 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
 # 获取特定用户管理的所有项目
 class UserManagedProjectsView(APIView):
     def get(self, request, user_id):
-        managed_projects = Project.objects.filter(project_creator_id=user_id)
-        serializer = UserManagedProjectsSerializer(managed_projects, many=True)
-        response_data = serializer.data
-        return Response(response_data)
+        try:
+            managed_projects = Project.objects.filter(project_creator_id=user_id)
+            serializer = UserManagedProjectsSerializer(managed_projects, many=True)
+            response_data = {
+                'message': '已成功检索到用户管理的项目！',
+                'data': serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': '检索用户管理的项目失败！！！',
+                'data': str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # 特定用户管理的特定项目的详细信息（获取、更新、删除）
@@ -137,21 +148,66 @@ class UserManagedProjectDetailView(APIView):
         return project
 
     def get(self, request, user_id, project_id):
-        project = self.get_managed_project(user_id, project_id)
-        serializer = UserManagedProjectsSerializer(project)
-        return Response(serializer.data)
+        try:
+            project = self.get_managed_project(user_id, project_id)
+            serializer = UserManagedProjectsSerializer(project)
+            response_data = {
+                "message": "获取项目信息成功！",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except NotFound as e:
+            response_data = {
+                "message": str(e),
+                "data": None
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, user_id, project_id):
-        project = self.get_managed_project(user_id, project_id)
-        serializer = UserManagedProjectsSerializer(project, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        try:
+            project = self.get_managed_project(user_id, project_id)
+            serializer = UserManagedProjectsSerializer(project, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            response_data = {
+                "message": "更新项目信息成功！",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except NotFound as e:
+            response_data = {
+                "message": str(e),
+                "data": None
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                "message": "更新项目信息失败！！！",
+                "data": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, user_id, project_id):
-        project = self.get_managed_project(user_id, project_id)
-        project.delete()
-        return Response({"success": True, "message": "项目删除成功!"})
+        try:
+            project = self.get_managed_project(user_id, project_id)
+            project.delete()
+            response_data = {
+                "message": "项目删除成功！",
+                "data": None
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except NotFound as e:
+            response_data = {
+                "message": str(e),
+                "data": None
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                "message": "项目删除失败！！！",
+                "data": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ------------------------我发布的项目产品-------------------------
@@ -187,66 +243,102 @@ class UserPublishedProductDetailView(APIView):
 # 获取特定用户加入的所有项目
 class UserJoinedProjectsView(APIView):
     def get(self, request, user_id):
-        # 获取符合条件的队伍ID列表
-        team_ids = Member.objects.filter(
-            user_id=user_id,
-            is_leader=0,
-            member_status="正常"
-        ).values('team_id').distinct()
+        try:
+            # 获取符合条件的队伍ID列表
+            team_ids = Member.objects.filter(
+                user_id=user_id,
+                is_leader=0,
+                member_status="正常"
+            ).values('team_id').distinct()
+            # 用户ID不存在的情况
+            if not team_ids.exists():
+                response_data = {
+                    'message': '用户ID不存在！',
+                    'data': None
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            # 查询与这些队伍关联的项目
+            joined_projects = Project.objects.filter(team__id__in=team_ids)  # 通过team__id__in来筛选与给定队伍ID列表相关联的项目
 
-        # 查询与这些队伍关联的项目
-        joined_projects = Project.objects.filter(team__id__in=team_ids)  # 通过team__id__in来筛选与给定队伍ID列表相关联的项目
+            # 使用序列化器来序列化数据
+            serializer = UserJoinedProjectsSerializer(joined_projects, many=True)
+            response_data = {
+                'message': '已成功检索到用户加入的项目！',
+                'data': serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': '检索用户加入的项目失败！！！',
+                'data': str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # 使用序列化器来序列化数据
-        serializer = UserJoinedProjectsSerializer(joined_projects, many=True)
-        response_data = serializer.data
 
-        return Response(response_data)
-
-
-# 特定用户参与的特定项目的详细信息（获取、更新、退出）
+# 特定用户参与的特定项目的详细信息（获取、退出）
 class UserJoinedProjectDetailView(APIView):
-    # 检查特定用户是否参与该项目
+    # 根据user_id和project_id获取相应的项目
     def get_project(self, user_id, project_id):
         try:
-            project = Project.objects.get(
-                id=project_id,
-                team__member__user_id=user_id,
-                team__member__is_leader=0
-            )
+            project = Project.objects.get(id=project_id)
+            team_member = Member.objects.get(team__project=project, user_id=user_id)
+            if team_member.is_leader:
+                raise PermissionDenied("你是项目管理者！！！")
             return project
-        except Project.DoesNotExist:
-            return None
+        except (Project.DoesNotExist, Member.DoesNotExist):
+            raise NotFound("你还未加入该项目！！！")
 
     def get(self, request, user_id, project_id):
-        project = self.get_project(user_id, project_id)
-        if project:
+        try:
+            project = self.get_project(user_id, project_id)
             serializer = UserJoinedProjectsSerializer(project)
-            return Response(serializer.data)
-        else:
-            return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)
-
-    def patch(self, request, user_id, project_id):
-        project = self.get_project(user_id, project_id)
-        if project:
-            serializer = UserJoinedProjectsSerializer(project, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)
+            response_data = {
+                "message": "获取加入的具体项目成功！",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                "message": "获取加入的具体项目失败！！！",
+                "data": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, user_id, project_id):
-        project = self.get_project(user_id, project_id)
-        if project:
-            team_member = Member.objects.get(team__project_id=project, user_id=user_id)
-            if team_member.is_leader:
-                raise PermissionDenied("项目负责人无法退出项目！")
-            team_member.delete()
-            return Response({"message": "退出成功！"}, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({"error": "你是项目管理者 或 还未加入该项目！"}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            project = self.get_project(user_id, project_id)
 
+            # 判断用户是否为项目负责人
+            member = Member.objects.get(user_id=user_id, team__project=project_id)
+            if member.is_leader:
+                response_data = {
+                    "message": "项目负责人无法退出项目！",
+                    "data": None
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+            # 更新Member表中的member_status为"已离开"，leave_date为当前日期
+            member.member_status = "已离开"
+            member.leave_date = datetime.now()
+            member.save()
+
+            serializer = UserJoinedProjectsSerializer(project)
+            response_data = {
+                "message": "退出加入的项目成功！",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Member.DoesNotExist:
+            response_data = {
+                "message": "用户未加入该项目！",
+                "data": None
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            response_data = {
+                "message": "退出加入的项目失败！",
+                "data": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

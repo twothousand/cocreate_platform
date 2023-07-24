@@ -25,24 +25,27 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
         “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
     """
 
-    # project_creator_name = serializers.CharField(source='project_creator.username', read_only=True)
+    model = serializers.StringRelatedField()
+    industry = serializers.StringRelatedField()
+    ai_tag = serializers.StringRelatedField()
+    project_creator = serializers.StringRelatedField()
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    project_views = serializers.ReadOnlyField()
+
     class Meta:
         model = Project
-        fields = ['project_name', 'project_description']
-
-    # def update(self, instance, validated_data):
-    #     instance.project_description = validated_data.get('project_description', instance.project_description)
-    #     instance.save()
-    #     return instance
+        fields = '__all__'
 
 
 # 获取特定用户加入的所有项目
 class UserJoinedProjectsSerializer(serializers.ModelSerializer):
-    project_creator_name = serializers.CharField(source='project_creator.username', read_only=True)
+    project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
 
     class Meta:
         model = Project
-        fields = ("id", "project_name", "project_creator_name", "project_description")
+        fields = ("id", "project_creator_name", "project_description", "project_name", "project_type", "project_status",
+                  "project_cycles")
 
 
 # 获取项目成员列表

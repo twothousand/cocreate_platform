@@ -1,7 +1,5 @@
 # django库
-from django.conf import settings
 from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend
 # rest_framework库
 from rest_framework import filters, permissions, status
 from rest_framework.pagination import PageNumberPagination
@@ -214,13 +212,16 @@ class ProjectFilterView(APIView):
 class ProjectMembersView(APIView):
     def get(self, request, project_id):
         try:
-            # 获取指定项目的成员列表
-            # members = Member.objects.filter(team__project_id=project_id, member_status='正常', is_leader=False)  # 不包含队长
             members = Member.objects.filter(team__project_id=project_id, member_status='正常')  # 包含队长
-
-            # 序列化成员列表数据
             serializer = ProjectMembersSerializer(members, many=True)
-
-            return Response(serializer.data)
+            response_data = {
+                "message": "成功获取项目成员列表！",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         except Member.DoesNotExist:
-            return Response(status=404)
+            response_data = {
+                "message": "找不到指定项目！！！",
+                "data": None
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
