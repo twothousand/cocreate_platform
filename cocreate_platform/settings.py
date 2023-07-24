@@ -63,7 +63,7 @@ REST_FRAMEWORK = {
     ],
 
     # 异常处理
-    'EXCEPTION_HANDLER': 'common.mixins.my_mixins.custom_exception_handler',
+    # 'EXCEPTION_HANDLER': 'common.mixins.my_mixins.custom_exception_handler',
 
     # 配置限流频率功能
     "DEFAULT_THROTTLE_RATES": {
@@ -143,7 +143,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False  # USE_TZ=True本地使用的是'Asia/Shanghai'时间，但是写到数据库中的时间会自动转换为UTC时间，读取的时候也会自动转换为本地时间
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -163,12 +163,12 @@ SIMPLE_JWT = {
     # 是否自动刷新Refresh Token
     'ROTATE_REFRESH_TOKENS': False,
     # 刷新Refresh Token时是否将旧Token加入黑名单，如果设置为False，则旧的刷新令牌仍然可以用于获取新的访问令牌。需要将'rest_framework_simplejwt.token_blacklist'加入到'INSTALLED_APPS'的配置中
-    'BLACKLIST_AFTER_ROTATION': False,
+    'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',  # 加密算法
     'SIGNING_KEY': SECRET_KEY,  # 签名密匙，这里使用Django的SECRET_KEY
 
     # 如为True，则在每次使用访问令牌进行身份验证时，更新用户最后登录时间
-    "UPDATE_LAST_LOGIN": False,
+    "UPDATE_LAST_LOGIN": True,
     # 用于验证JWT签名的密钥返回的内容。可以是字符串形式的密钥，也可以是一个字典。
     "VERIFYING_KEY": "",
     "AUDIENCE": None,  # JWT中的"Audience"声明,用于指定该JWT的预期接收者。

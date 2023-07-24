@@ -6,13 +6,11 @@ Description: 存放装饰器
 """
 # rest_framework
 from rest_framework.exceptions import MethodNotAllowed
-from rest_framework import serializers
-from rest_framework.views import exception_handler
 
 
 def disallow_methods(methods):
     """
-    禁用ModelViewSet中的某些方法
+    禁用ModelViewSet中的某些方法（暂未使用）
     @param methods:
     @return:
     """
@@ -30,6 +28,11 @@ def disallow_methods(methods):
 
 
 def disallow_actions(actions):
+    """
+    禁用ModelViewSet中的某些action（暂未使用）
+    @param methods:
+    @return:
+    """
     actions = [a.lower() for a in actions]
 
     def decorator(view_func):

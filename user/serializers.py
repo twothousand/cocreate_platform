@@ -61,8 +61,8 @@ class UserLoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         # TODO 看前端需要什么字段
-        # data['id'] = self.user.id
-        # data['username'] = self.user.username
+        data["user_id"] = self.user.id
+        data["username"] = self.user.username
 
         return data
 
@@ -86,7 +86,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "profile_image", "location", "biography", "nickname"]
         # fields = ('id', )       # 临时添加字段也需要写在这里
         # exclude = ['id']  # 排除 id 字段
-        # read_only_fields = ('',)  # 指定字段为 read_only,
+        # read_only_fields = ('id', "username")  # 指定字段为 read_only,
 
 
 class UserUnActiveSerializer(serializers.ModelSerializer):

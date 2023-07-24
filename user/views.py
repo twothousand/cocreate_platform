@@ -20,7 +20,7 @@ from user import serializers
 from user.models import VerifCode
 from user.permissions import IsOwnerOrReadOnly
 
-# functions
+# common
 from common.mixins import my_mixins
 from common.utils import time_utils
 from common.utils.decorators import disallow_methods, disallow_actions
@@ -29,10 +29,11 @@ User = get_user_model()
 
 
 # 登录
-class LoginView(TokenObtainPairView):
+class LoginView(my_mixins.CustomResponseMixin, TokenObtainPairView):
     serializer_class = serializers.UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
+        self.custom_message = "登录成功！"
         response = super().post(request, *args, **kwargs)
 
         # 成功登录后更新last_login
@@ -44,14 +45,15 @@ class LoginView(TokenObtainPairView):
         return response
 
 
-class VerifCodeViewSet(viewsets.ModelViewSet):
+class VerifCodeViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatModelViewSet):
     serializer_class = serializers.VerifCodeSerializer
     throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
     permission_classes = [AllowAny, ]
+    custom_message = "验证码发送成功！"
 
     def send_sms_test(self, request, *args, **kwargs):
         mobile_phone = request.data.get("mobile_phone")
-        verification_code = request.data.get("verification_code")
+        verification_code = "123456"  # request.data.get("verification_code")
         verif_code = VerifCode.create(mobile_phone=mobile_phone, verification_code=verification_code)
         result = {
             "id": verif_code.id,
@@ -61,7 +63,7 @@ class VerifCodeViewSet(viewsets.ModelViewSet):
 
 
 # 用于列出或检索用户的视图集
-class UserViewSet(my_mixins.CustomResponseMixin, viewsets.ModelViewSet):
+class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = User.objects.all()
 
     # serializer_class = UserSerializer  # 优先使用 get_serializer_class 返回的序列化器
@@ -84,22 +86,25 @@ class UserViewSet(my_mixins.CustomResponseMixin, viewsets.ModelViewSet):
         else:
             return serializers.UserSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        self.custom_message = "用户信息获取成功"
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         self.custom_message = "用户注册成功"
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        self.custom_message = "用户密码修改成功"
-        return super().create(request, *args, **kwargs)
+        if str(request.method).lower() == "patch":
+            self.custom_message = "用户密码修改成功"
+        else:
+            self.custom_message = "用户信息修改成功"
+        return super().update(request, *args, **kwargs)
 
-    def partial_update(self, request, *args, **kwargs):
-        self.custom_message = "用户信息修改成功"
-        return super().create(request, *args, **kwargs)
-
-    @disallow_methods(['DELETE'])
-    # @disallow_actions(['list'])
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+    # @disallow_methods(['DELETE'])
+    # # @disallow_actions(['list'])
+    # def dispatch(self, request, *args, **kwargs):
+    #     return super().dispatch(request, *args, **kwargs)
 
     # def perform_destroy(self, instance):
     #     """
