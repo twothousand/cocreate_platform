@@ -8,8 +8,8 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 # common
-from common.common_fields import UUIDField
-from common.base_model import BaseModel
+from common.mixins.common_fields import UUIDField
+from common.mixins.base_model import BaseModel
 
 
 # 用户表
@@ -24,6 +24,7 @@ class User(AbstractUser, BaseModel):
     email = models.EmailField(max_length=50, verbose_name='邮箱', blank=True, null=True)
     name = models.CharField(max_length=50, verbose_name='真实姓名', blank=True, null=True)
     nickname = models.CharField(max_length=50, verbose_name='账户名', blank=True, null=True)
+    wechat_id = models.CharField(max_length=50, verbose_name='微信id', blank=True, null=True)
     # phone_number = models.CharField(max_length=50, unique=True, verbose_name='手机号码', blank=True, null=True)
     biography = models.TextField(max_length=300, verbose_name='个人简介', blank=True, null=True)
     professional_career = models.TextField(max_length=50, verbose_name='专业职业', blank=True, null=True)
