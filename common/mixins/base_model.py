@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @File : base_models.py
-Description: Description of your file.
+Description: 抽象数据模型类
 @Time : 2023/7/14 11:05
 """
 from django.db import models

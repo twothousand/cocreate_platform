@@ -17,10 +17,10 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
 # common
-from common.aliyun_message import AliyunSMS
+from common.utils.aliyun_message import AliyunSMS
 from common import constant
 # functions
-from functions import time_utils, re_utils
+from common.utils import re_utils, time_utils
 # app
 from user.models import VerifCode
 
@@ -56,12 +56,13 @@ def check_verif_code(mobile_phone: str, code_id: int, verification_code: str) ->
 
 # =============================================== Serializer ===============================================
 class UserLoginSerializer(TokenObtainPairSerializer):
+    username = serializers.CharField(min_length=11, max_length=11)
 
     def validate(self, attrs):
         data = super().validate(attrs)
         # TODO 看前端需要什么字段
-        data['id'] = self.user.id
-        data['username'] = self.user.username
+        # data['id'] = self.user.id
+        # data['username'] = self.user.username
 
         return data
 
@@ -72,6 +73,10 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         token['username'] = self.user.username
 
         return token
+
+    class Meta:
+        model = User
+        fields = ["id", "username"]
 
 
 # 构建项目序列化器
@@ -154,7 +159,7 @@ class UserRegAndPwdChangeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'verification_code', 'code_id']
+        fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id']
         extra_kwargs = {
             'password': {'write_only': True},
         }

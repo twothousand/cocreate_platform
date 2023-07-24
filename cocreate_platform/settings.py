@@ -62,6 +62,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
 
+    # 异常处理
+    'EXCEPTION_HANDLER': 'common.mixins.my_mixins.custom_exception_handler',
+
     # 配置限流频率功能
     "DEFAULT_THROTTLE_RATES": {
         "anon": "1/minute"

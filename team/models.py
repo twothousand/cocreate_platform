@@ -11,8 +11,8 @@ from django.db import models
 from project.models import Project
 from user.models import User
 # common
-from common.common_fields import UUIDField
-from common.base_model import BaseModel
+from common.mixins.common_fields import UUIDField
+from common.mixins.base_model import BaseModel
 # 队伍信息表
 class Team(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="队伍ID")

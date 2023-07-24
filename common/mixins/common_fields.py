@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @File : common_fields.py
-Description: Description of your file.
+Description: UUID数据模型字段类
 @Time : 2023/7/7 15:25
 """
 # 系统模块

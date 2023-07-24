@@ -21,7 +21,9 @@ from user.models import VerifCode
 from user.permissions import IsOwnerOrReadOnly
 
 # functions
-from functions import time_utils
+from common.mixins import my_mixins
+from common.utils import time_utils
+from common.utils.decorators import disallow_methods, disallow_actions
 
 User = get_user_model()
 
@@ -59,7 +61,7 @@ class VerifCodeViewSet(viewsets.ModelViewSet):
 
 
 # 用于列出或检索用户的视图集
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(my_mixins.CustomResponseMixin, viewsets.ModelViewSet):
     queryset = User.objects.all()
 
     # serializer_class = UserSerializer  # 优先使用 get_serializer_class 返回的序列化器
@@ -82,15 +84,32 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return serializers.UserSerializer
 
-    def perform_destroy(self, instance):
-        """
-        重写删除方法，改为逻辑删除
-        @param instance:
-        @return:
-        """
-        instance.is_deleted = True
-        # TODO: 关联项目需要特殊处理
-        instance.save()
+    def create(self, request, *args, **kwargs):
+        self.custom_message = "用户注册成功"
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        self.custom_message = "用户密码修改成功"
+        return super().create(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self.custom_message = "用户信息修改成功"
+        return super().create(request, *args, **kwargs)
+
+    @disallow_methods(['DELETE'])
+    # @disallow_actions(['list'])
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    # def perform_destroy(self, instance):
+    #     """
+    #     重写删除方法，改为逻辑删除
+    #     @param instance:
+    #     @return:
+    #     """
+    #     instance.is_deleted = True
+    #     # TODO: 关联项目需要特殊处理
+    #     instance.save()
 
 
 # ------------------------我管理的项目-------------------------
