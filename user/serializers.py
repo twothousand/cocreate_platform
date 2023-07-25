@@ -168,6 +168,7 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
     class Meta:
         model = User
         fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id']
+
         extra_kwargs = {
             'username': {
                 'validators': [  # 官方文档 validators
