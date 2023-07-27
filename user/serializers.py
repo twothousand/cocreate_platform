@@ -110,14 +110,14 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
     verification_code = serializers.CharField(max_length=6, write_only=True)  # write_only=True表示不会序列化输出给前端
     code_id = serializers.IntegerField(write_only=True)
 
-    # def validate_username(self, value):
-    #     """
-    #     校验手机号码是否有效
-    #     """
-    #     res = re_utils.validate_phone(phone=value)
-    #     if not res:
-    #         raise serializers.ValidationError("无效的手机号码")
-    #     return value
+    def validate_username(self, value):
+        """
+        校验手机号码是否有效
+        """
+        res = re_utils.validate_phone(phone=value)
+        if not res:
+            raise serializers.ValidationError("无效的手机号码")
+        return value
 
     def validate(self, data):
         """
