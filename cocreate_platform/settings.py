@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'project',  # 项目模块
     'team',  # 组队模块
     'product',  # 产品模块
+    'feedback',  # 反馈模块
     'dim',  # 维度模块
 ]
 
