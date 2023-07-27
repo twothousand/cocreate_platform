@@ -12,13 +12,13 @@ from alibabacloud_tea_openapi.models import Config
 from alibabacloud_dysmsapi20170525.models import SendSmsRequest
 from alibabacloud_tea_util.models import RuntimeOptions
 # common
-from common.config import aliyun_sms_access_key_id, aliyun_sms_access_key_secret
+from common.config import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
 
 
 class AliyunSMS:
     # TODO: 申请后都要换掉
-    access_key_id = aliyun_sms_access_key_id
-    access_key_secret = aliyun_sms_access_key_secret
+    access_key_id = ALIBABA_CLOUD_ACCESS_KEY_ID
+    access_key_secret = ALIBABA_CLOUD_ACCESS_KEY_SECRET
     endpoint = "dysmsapi.aliyuncs.com"
     sign_name = "阿里云短信测试"
     template_code = "SMS_154950909"
