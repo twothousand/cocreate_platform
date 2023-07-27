@@ -99,7 +99,7 @@ class ProductViewSet(ModelViewSet):
 
 
 
-    # 接口：更新产品信息（PUT）
+    # 更新产品信息（PUT）
     @action(methods=['PUT'], detail=True)
     def update_product_with_version(self, request, *args, **kwargs):
         try:
@@ -172,6 +172,7 @@ class ProductViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # 获取产品信息（GET）
     @action(methods=['GET'], detail=False)
     def get_product_info(self, request, *args, **kwargs):
         try:
