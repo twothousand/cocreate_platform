@@ -61,4 +61,4 @@ class AliyunSMS:
 
 if __name__ == '__main__':
     aliyun_sms = AliyunSMS()
-    print(aliyun_sms.send_msg(phone="", code="435643"))
+    print(aliyun_sms.send_msg(mobile_phone="15812603566", verification_code="435643"))
