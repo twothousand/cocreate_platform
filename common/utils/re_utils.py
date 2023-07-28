@@ -13,4 +13,4 @@ def validate_phone(phone):
     @param phone:
     @return:
     """
-    return re.match(r"^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$", phone)
+    return re.match(r"^1(3\d|4[5-9]|5[0-35-9]|6[567]|7[0-8]|8\d|9[0-35-9])\d{8}$", phone)

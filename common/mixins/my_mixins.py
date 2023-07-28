@@ -5,7 +5,7 @@ Description: 一些抽象类以及自定义rest_framework配置（在settings.py
 @Time : 2023/7/20 21:34
 """
 # rest_framework
-from rest_framework import status, mixins
+from rest_framework import status, mixins, serializers
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import exception_handler
@@ -13,6 +13,8 @@ from rest_framework.exceptions import APIException
 # django
 from django.utils import timezone
 from rest_framework.viewsets import GenericViewSet
+# common
+from common.utils import tools
 
 
 # ========================== 自定义rest_framework配置 ==========================
@@ -32,7 +34,7 @@ from rest_framework.viewsets import GenericViewSet
 #     return response
 
 
-# ========================== 一些抽象类 ==========================
+# ========================== ModelViewSet抽象类 ==========================
 class CreatRetrieveUpdateModelViewSet(mixins.CreateModelMixin,
                                       mixins.RetrieveModelMixin,
                                       mixins.UpdateModelMixin,
@@ -93,3 +95,24 @@ class CustomResponseMixin:
                 "message": getattr(self, 'custom_message', '请求成功')  # 获取自定义的 message
             }
         return super().finalize_response(request, response, *args, **kwargs)
+
+
+# ========================== 序列化抽象类 ==========================
+class SanitizeModelSerializer:
+
+    def to_representation(self, instance):
+        """
+        处理返回前端的数据（脱敏处理）
+        @param instance:
+        @return:
+        """
+        data = super().to_representation(instance)
+        username = data.get('username', None)
+        if username:
+            data['username'] = tools.sanitize_phone_number(data['username'])
+        return data
+
+
+class MyModelSerializer(SanitizeModelSerializer):
+    """总的序列化器"""
+    pass

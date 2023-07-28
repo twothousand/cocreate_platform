@@ -1,5 +1,10 @@
+# 系统模块
+from datetime import datetime
+import logging
+
 # django模块
 from django.contrib.auth import get_user_model
+from django.db import transaction
 
 # rest_framework模块
 from rest_framework import viewsets, status
@@ -23,8 +28,11 @@ from user.permissions import IsOwnerOrReadOnly
 # common
 from common.mixins import my_mixins
 from common.utils import time_utils
+from common.utils import tools
 from common.utils.decorators import disallow_methods, disallow_actions
-from datetime import datetime
+
+# 获得一个logger实体对象
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -33,15 +41,17 @@ User = get_user_model()
 class LoginView(my_mixins.CustomResponseMixin, TokenObtainPairView):
     serializer_class = serializers.UserLoginSerializer
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
-        self.custom_message = "登录成功！"
-        response = super().post(request, *args, **kwargs)
+        # 处理敏感数据
+        request_data = tools.sanitize_data(request.data.copy())
+        logger.info("LoginView::post , request.data = %s " % (request_data))
 
-        # 成功登录后更新last_login
-        user = self.request.user
-        if user.is_authenticated:
-            user.last_login = time_utils.get_current_time()
-            user.save()
+        # 自定义响应message
+        self.custom_message = "登录成功！"
+
+        # 执行父类方法
+        response = super().post(request, *args, **kwargs)
 
         return response
 
@@ -91,6 +101,7 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         self.custom_message = "用户信息获取成功"
         return super().retrieve(request, *args, **kwargs)
 
+    # @transaction.atomic
     def create(self, request, *args, **kwargs):
         self.custom_message = "用户注册成功"
         return super().create(request, *args, **kwargs)
@@ -103,9 +114,10 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         return super().update(request, *args, **kwargs)
 
     # @disallow_methods(['DELETE'])
-    # # @disallow_actions(['list'])
-    # def dispatch(self, request, *args, **kwargs):
-    #     return super().dispatch(request, *args, **kwargs)
+    # @disallow_actions(['list'])
+    @transaction.atomic
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     # def perform_destroy(self, instance):
     #     """

@@ -13,14 +13,18 @@
 import random
 # rest_framework库
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
+
 # common
 from common.utils.aliyun_message import AliyunSMS
-from common import constant
-# functions
 from common.utils import re_utils, time_utils
+from common import constant
+from common.mixins import my_mixins
+# functions
+
 # app
 from user.models import VerifCode
 
@@ -63,16 +67,16 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         # TODO 看前端需要什么字段
         data["user_id"] = self.user.id
         data["username"] = self.user.username
+        data["nickname"] = self.user.nickname
 
         return data
 
-    @property
-    def token(self):
-        # 如果要向令牌添加更多数据
-        token = super().token
-        token['username'] = self.user.username
-
-        return token
+    # @property
+    # def token(self):
+    #     # 如果要向令牌添加更多数据
+    #     token = super().token
+    #
+    #     return token
 
     class Meta:
         model = User
@@ -80,7 +84,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
 
 
 # 构建项目序列化器
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = User  # 具体对哪个表进行序列化
         fields = ["id", "username", "email", "profile_image", "location", "biography", "nickname"]
@@ -95,21 +99,21 @@ class UserUnActiveSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'is_active')  # 临时添加字段也需要写在这里
 
 
-class UserRegAndPwdChangeSerializer(serializers.ModelSerializer):
+class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     """
     用户注册和修改密码Serializer
     """
     verification_code = serializers.CharField(max_length=6, write_only=True)  # write_only=True表示不会序列化输出给前端
     code_id = serializers.IntegerField(write_only=True)
 
-    def validate_username(self, value):
-        """
-        校验手机号码是否有效
-        """
-        res = re_utils.validate_phone(phone=value)
-        if not res:
-            raise serializers.ValidationError("无效的手机号码")
-        return value
+    # def validate_username(self, value):
+    #     """
+    #     校验手机号码是否有效
+    #     """
+    #     res = re_utils.validate_phone(phone=value)
+    #     if not res:
+    #         raise serializers.ValidationError("无效的手机号码")
+    #     return value
 
     def validate(self, data):
         """
@@ -160,8 +164,19 @@ class UserRegAndPwdChangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id']
+
         extra_kwargs = {
-            'password': {'write_only': True},
+            'username': {
+                'validators': [  # 官方文档 validators
+                    UniqueValidator(
+                        queryset=User.objects.all(),
+                        message='该手机号码已注册'
+                    )
+                ],
+            },
+            'password': {
+                'write_only': True
+            },
         }
 
 

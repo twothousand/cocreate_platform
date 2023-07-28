@@ -38,5 +38,4 @@ class UUIDField(models.Field):
     def get_prep_value(self, value):
         if value is None:
             return value
-        # 将 UUID 的 '-' 符号去掉
         return str(value)
