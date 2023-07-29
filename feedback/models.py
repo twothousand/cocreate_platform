@@ -9,6 +9,7 @@ from user.models import User
 from common.mixins.common_fields import UUIDField
 from common.mixins.base_model import BaseModel
 
+
 # 反馈表
 class Feedback(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='反馈ID')
@@ -30,5 +31,3 @@ class Feedback(BaseModel):
         db_table = 'feedback'
         verbose_name = '反馈建议'
         verbose_name_plural = verbose_name
-
-

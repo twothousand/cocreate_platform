@@ -6,6 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'nickname', 'professional_career', 'biography', 'location', 'profile_image')
+        ref_name = "team_user"
 
 class TeamRecruitmentSerializer(serializers.ModelSerializer):
     class Meta:
