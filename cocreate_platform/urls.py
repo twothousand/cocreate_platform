@@ -50,6 +50,9 @@ urlpatterns = [
     # http://127.0.0.1:8000/api/feedback/xxx
     path('api/feedback/', include('feedback.urls'), name='feedback'),
 
+    # http://127.0.0.1:8000/api/feedback/xxx
+    path('api/function/', include('function.urls'), name='function'),
+
     # http://127.0.0.1:8000/swagger/   swagger API 文档
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     # http://127.0.0.1:8000/redoc/  使用Redoc UI来显示API文档
