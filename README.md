@@ -23,6 +23,9 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # 在cocreate_platform/setting.py文件中找到数据库配置，在本地按照配置文件，新建好数据库后
+
+# 运行前，需要在config.py里填上阿里云key的相关配置
+
 # django数据库表结构迁移
 python manage.py makemigrations
 python manage.py migrate

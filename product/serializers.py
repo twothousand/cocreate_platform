@@ -37,3 +37,6 @@ class VersionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
         fields = "__all__"
+
+class ImageUploadSerializer(serializers.Serializer):
+    file = serializers.ImageField()
