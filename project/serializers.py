@@ -5,16 +5,24 @@ from team.models import Member
 
 # 项目序列化器
 class ProjectSerializer(serializers.ModelSerializer):
-    model = serializers.StringRelatedField()
-    industry = serializers.StringRelatedField()
-    ai_tag = serializers.StringRelatedField()
-    project_creator = serializers.StringRelatedField()
+    model_name = serializers.SerializerMethodField()
+    industry_name = serializers.SerializerMethodField()
+    ai_tag_name = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
     class Meta:
         model = Project
         fields = "__all__"
+
+    def get_model_name(self, obj):
+        return obj.model.model_name
+
+    def get_industry_name(self, obj):
+        return obj.industry.industry
+
+    def get_ai_tag_name(self, obj):
+        return obj.ai_tag.ai_tag
 
 
 # 获取特定用户管理的所有项目

@@ -45,11 +45,14 @@ class ProjectViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # 重写create方法，创建项目 TODO：(1048, "Column 'project_creator_id' cannot be null")
+    # 重写create方法，创建项目
     def create(self, request, *args, **kwargs):
         try:
             # 设置项目创建者ID为当前登录用户的ID
-            request.data['project_creator_id'] = request.user.id
+            request.data['project_creator'] = request.user.id
+            print(request.user.id)
+            print(request.data)
+            # __import__('pdb').set_trace()
             response = super().create(request, *args, **kwargs)
             response_data = {
                 'message': '创建项目成功！',
