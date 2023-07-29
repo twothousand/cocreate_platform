@@ -1,16 +1,15 @@
-from .models import Product, Version
-from .serializers import ProductSerializer
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from dim.models import Model, Industry, AITag
 from team.models import Team, Member
 from user.models import User
-from project.models import Project
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from datetime import date
-from dim.models import Model, Industry, AITag
+from .models import Product, Version
+from .serializers import ProductSerializer
+
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()

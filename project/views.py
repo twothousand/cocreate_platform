@@ -13,12 +13,18 @@ from .serializers import ProjectSerializer, ProjectMembersSerializer
 from team.models import Member
 
 
+class CustomPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 # 项目视图集
 class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    pagination_class = PageNumberPagination
-    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
+    # permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     search_fields = ['project_name', 'project_description']
     ordering = ['-id']
@@ -186,6 +192,62 @@ class ProjectFilterView(APIView):
                 filter_conditions &= Q(ai_tag__ai_tag__icontains=ai_tag)
 
             queryset = Project.objects.filter(filter_conditions).order_by('-id')
+            serializer = ProjectSerializer(queryset, many=True)
+
+            if serializer.data:
+                response_data = {
+                    'message': '已成功检索到项目！',
+                    'data': serializer.data
+                }
+            else:
+                response_data = {
+                    'message': '未检索到任何符合的项目！',
+                    'data': serializer.data
+                }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': str(e),
+                'data': []
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# 过滤和搜索项目
+class ProjectFilterAndSearchView(APIView):
+    # 在搜索时使用已过滤的结果集进行搜索操作
+    def get(self, request, *args, **kwargs):
+        try:
+            keyword = self.request.GET.get('keyword')
+            industry = self.request.GET.get('industry')
+            ai_tag = self.request.GET.get('ai_tag')
+            project_type = self.request.GET.get('project_type')
+            project_status = self.request.GET.get('project_status')
+            model_name = self.request.GET.get('model_name')
+
+            queryset = Project.objects.all()
+
+            # 应用过滤条件
+            if project_status:
+                queryset = queryset.filter(project_status__icontains=project_status)
+            if project_type:
+                queryset = queryset.filter(project_type__icontains=project_type)
+            if model_name:
+                queryset = queryset.filter(model__model_name__icontains=model_name)
+            if industry:
+                queryset = queryset.filter(industry__industry__icontains=industry)
+            if ai_tag:
+                queryset = queryset.filter(ai_tag__ai_tag__icontains=ai_tag)
+
+            # 应用搜索条件
+            if keyword:
+                queryset = queryset.filter(
+                    Q(project_name__icontains=keyword) |
+                    Q(project_description__icontains=keyword)
+                )
+
+            queryset = queryset.order_by('-id')
             serializer = ProjectSerializer(queryset, many=True)
 
             if serializer.data:
