@@ -7,6 +7,7 @@ dim_ai_tags AI标签维度表
 from django.db import models
 from common.mixins.base_model import BaseModel
 
+
 # 模型维度表
 class Model(BaseModel):
     id = models.AutoField(primary_key=True, verbose_name='模型ID')
@@ -55,6 +56,7 @@ class AITag(BaseModel):
         verbose_name = 'AI标签'
         verbose_name_plural = verbose_name
 
+
 # 图片表
 class Image(BaseModel):
     id = models.AutoField(primary_key=True, verbose_name='图片ID')
@@ -68,3 +70,18 @@ class Image(BaseModel):
         db_table = 'image'
         verbose_name = '图片'
         verbose_name_plural = verbose_name
+
+
+# 获取模型维度表
+def get_model():
+    return Model.objects.all().values('id', 'model_name')
+
+
+# 获取行业维度表
+def get_industry():
+    return Industry.objects.all().values('id', 'industry')
+
+
+# 获取AI标签维度表
+def get_ai_tag():
+    return AITag.objects.all().values('id', 'ai_tag')
