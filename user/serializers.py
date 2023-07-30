@@ -33,6 +33,7 @@ User = get_user_model()
 
 # =============================================== 公共校验函数 ===============================================
 
+
 def check_verif_code(mobile_phone: str, code_id: int, verification_code: str) -> (bool, dict):
     """
     校验验证码
@@ -68,6 +69,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         data["user_id"] = self.user.id
         data["username"] = self.user.username
         data["nickname"] = self.user.nickname
+        data["profile_image"] = self.user.profile_image
 
         return data
 
@@ -167,7 +169,7 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id']
+        fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id', 'professional_career', 'wechat_id']
 
         extra_kwargs = {
             'username': {
