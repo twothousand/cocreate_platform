@@ -3,10 +3,10 @@ from PIL import Image
 import oss2
 from common.config import *
 
-
 # 初始化OSS客户端
 auth = oss2.Auth(ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET)
 bucket = oss2.Bucket(auth, ALIBABA_OSS_ENDPOINT, ALIBABA_OSS_BUCKET_NAME)
+
 
 def compress_and_upload_image(image_data, target_folder, filename, img_format, target_max_size=2 * 1024 * 1024):
     try:
