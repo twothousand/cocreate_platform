@@ -35,6 +35,17 @@ from common.utils import tools
 
 
 # ========================== ModelViewSet抽象类 ==========================
+class ListCreatRetrieveUpdateModelViewSet(mixins.ListModelMixin,
+                                          mixins.CreateModelMixin,
+                                          mixins.RetrieveModelMixin,
+                                          mixins.UpdateModelMixin,
+                                          GenericViewSet):
+    """
+    list(), create(), update(), partial_update()
+    """
+    pass
+
+
 class CreatRetrieveUpdateModelViewSet(mixins.CreateModelMixin,
                                       mixins.RetrieveModelMixin,
                                       mixins.UpdateModelMixin,
