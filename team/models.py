@@ -16,7 +16,7 @@ from common.mixins.base_model import BaseModel
 # 队伍信息表
 class Team(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="队伍ID")
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='项目ID')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='team', verbose_name='项目ID')
     team_leader = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='队伍负责人')
     team_name = models.CharField(max_length=100, verbose_name='队伍名称')
     is_recruitment_open = models.BooleanField(verbose_name='是否开启招募', default=True)
@@ -37,7 +37,6 @@ class Team(BaseModel):
 
 # 队伍申请表
 class Application(BaseModel):
-    # id = models.AutoField(primary_key=True, verbose_name='申请ID')
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="申请ID")
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='项目')
@@ -62,7 +61,6 @@ class Application(BaseModel):
 
 # 队伍成员表
 class Member(BaseModel):
-    # id = models.AutoField(primary_key=True, verbose_name='ID')
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="队伍成员ID")
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户ID')
@@ -75,7 +73,7 @@ class Member(BaseModel):
         ('被移除', '被移除'),
     )
     member_status = models.CharField(max_length=10, choices=MEMBER_STATUS_CHOICES, blank=True, null=True,
-                                     verbose_name='成员状态')
+                                     verbose_name='成员状态', default="正常")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
