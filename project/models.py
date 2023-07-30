@@ -7,11 +7,13 @@ from django.db import models
 from dim.models import Model, Industry, AITag
 from user.models import User
 from .conf import PROJECT_TYPE_CHOICES, PROJECT_STATUS_CHOICES
-
+from common.mixins.common_fields import UUIDField
+from common.mixins.base_model import BaseModel
+import uuid
 
 # 项目信息表
-class Project(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name='项目ID')
+class Project(BaseModel):
+    id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='项目ID')
     project_creator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="项目创建者")
     model = models.ForeignKey(Model, on_delete=models.CASCADE, verbose_name="模型")
     industry = models.ForeignKey(Industry, on_delete=models.CASCADE, verbose_name="行业")
