@@ -36,6 +36,18 @@ python manage.py createsuperuser
 # 运行项目
 python manage.py runserver
 # 打开页面http://127.0.0.1:8000/admin/ ，用刚刚创建的超级管理员账号登录
+
+
+# 部署服务器
+pip install gunicorn
+
+# -c  指定一个配置文件(py文件)
+# -b  与指定的socket进行绑定
+# -D 以守护进程形式来运行Gunicorn进程，其实就是将这个服务放到后台去运行
+# -w 工作的进程数量 ；gunicorn -w 2 untitled.wsgi -b 0.0.0.0:8000
+# -k 工作进程类型，sync（默认）, eventlet, gevent, or tornado, gthread, gaiohttp
+
+gunicorn -c gunicorn_config.py cocreate_platform.wsgi:application -D
 ```
 
 ## 技术架构
