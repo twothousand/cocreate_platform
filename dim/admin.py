@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Model, Industry, AITag
+from .models import Model, Industry, AITag, Image
 
 
 class ModelAdmin(admin.ModelAdmin):
@@ -20,7 +20,12 @@ class AITagAdmin(admin.ModelAdmin):
     search_fields = ('ai_tag',)
     list_per_page = 20
 
+class ImageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'image_url', 'created_at')
+    search_fields = ('image_url',)
+    list_per_page = 20
 
 admin.site.register(Model, ModelAdmin)
 admin.site.register(Industry, IndustryAdmin)
 admin.site.register(AITag, AITagAdmin)
+admin.site.register(Image, ImageAdmin)

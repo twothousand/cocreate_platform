@@ -3,8 +3,9 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
-from dim.models import Model, Industry, AITag
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from user.permissions import IsOwnerOrReadOnly
+from dim.models import Model, Industry, AITag, Image
 from team.models import Team, Member
 from user.models import User
 from .models import Product, Version
@@ -14,6 +15,12 @@ from .serializers import ProductSerializer
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        else:  # 对于其他请求方法，比如GET、PATCH等
+            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
+        return [permission() for permission in permission_classes]
 
     # 接口：产品发布（POST）
     @action(methods=['POST'], detail=True)
@@ -22,8 +29,9 @@ class ProductViewSet(ModelViewSet):
             # Extract data from the request data
             version_data = request.data
             # Check if the user is leader
+            user_id = request.user.id
             team_instance = get_object_or_404(Team, project_id=version_data['project_id'])
-            current_user_instance = get_object_or_404(User, id=version_data['user_id'])  # 获取当前用户
+            current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
 
             # 检查当前用户是否是队长
             is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
@@ -38,18 +46,18 @@ class ProductViewSet(ModelViewSet):
             product_instance, created = Product.objects.get_or_create(project_id=project_id)
             # 如果产品存在，返回
             product_serializer = ProductSerializer(product_instance)
-            if created:
-                response_data = {
-                    'message': '产品已创建过，请调用产品更新接口',
-                    'data': {
-                        'product': product_serializer.data,
-                    },
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
+            # if created==False:
+            #     response_data = {
+            #         'message': '产品已创建过，请调用产品更新接口',
+            #         'data': {
+            #             'product': product_serializer.data,
+            #         },
+            #     }
+            #     return Response(response_data, status=status.HTTP_200_OK)
             # 更新或创建产品信息
             product_instance.name = version_data['name']
             product_instance.product_source = version_data['product_source']
-            product_instance.promotional_image = version_data['promotional_image']
+            # product_instance.promotional_image = version_data['promotional_image']
             product_instance.description = version_data['description']
             product_instance.type = version_data['type']
             product_instance.product_display_link = version_data['product_display_link']
@@ -57,13 +65,14 @@ class ProductViewSet(ModelViewSet):
             product_instance.test_group_qr_code = version_data['test_group_qr_code']
             product_instance.save()
 
-            model_instances = Model.objects.filter(id__in=version_data['model'])
+            image_instances = Image.objects.filter(id__in=version_data['promotional_image'])
+            model_instances = AITag.objects.filter(id__in=version_data['model'])
             industry_instances = Industry.objects.filter(id__in=version_data['industry'])
             aitag_instances = AITag.objects.filter(id__in=version_data['ai_tag'])
             version_instance = Version.objects.create(product=product_instance,
                                                       version_number=version_data['version_number'],
                                                       name=version_data['name'],
-                                                      promotional_image=version_data['promotional_image'],
+                                                      # promotional_image=version_data['promotional_image'],
                                                       description=version_data['description'],
                                                       type=version_data['type'],
                                                       product_display_link=version_data["product_display_link"],
@@ -71,10 +80,12 @@ class ProductViewSet(ModelViewSet):
                                                       test_group_qr_code=version_data["test_group_qr_code"]
                                                       )
             #更新版本与标签关系
+            version_instance.promotional_image.set(image_instances)
             version_instance.model.set(model_instances)
             version_instance.industry.set(industry_instances)
             version_instance.ai_tag.set(aitag_instances)
             # 更新产品与标签关系
+            product_instance.promotional_image.set(image_instances)
             product_instance.model.set(model_instances)
             product_instance.industry.set(industry_instances)
             product_instance.ai_tag.set(aitag_instances)
@@ -105,9 +116,10 @@ class ProductViewSet(ModelViewSet):
             # Extract data from the request data
             version_data = request.data
             # Check if the user is leader
+            user_id = request.user.id
             product_instance = get_object_or_404(Product, id=version_data['product_id'])
             team_instance = get_object_or_404(Team, project_id=product_instance.project_id)
-            current_user_instance = get_object_or_404(User, id=version_data['user_id'])  # 获取当前用户
+            current_user_instance = get_object_or_404(User, id=user_id )  # 获取当前用户
 
             # 检查当前用户是否是队长
             is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
@@ -124,7 +136,7 @@ class ProductViewSet(ModelViewSet):
             # 更新产品信息
             product_instance.name = version_data['name']
             product_instance.product_source = version_data['product_source']
-            product_instance.promotional_image = version_data['promotional_image']
+            # product_instance.promotional_image = version_data['promotional_image']
             product_instance.description = version_data['description']
             product_instance.type = version_data['type']
             product_instance.product_display_link = version_data['product_display_link']
@@ -132,13 +144,14 @@ class ProductViewSet(ModelViewSet):
             product_instance.test_group_qr_code = version_data['test_group_qr_code']
             product_instance.save()
 
+            image_instances = Image.objects.filter(id__in=version_data['promotional_image'])
             model_instances = Model.objects.filter(id__in=version_data['model'])
             industry_instances = Industry.objects.filter(id__in=version_data['industry'])
             aitag_instances = AITag.objects.filter(id__in=version_data['ai_tag'])
             version_instance = Version.objects.create(product=product_instance,
                                                       version_number=version_data['version_number'],
                                                       name=version_data['name'],
-                                                      promotional_image=version_data['promotional_image'],
+                                                      # promotional_image=version_data['promotional_image'],
                                                       description=version_data['description'],
                                                       type=version_data['type'],
                                                       product_display_link=version_data["product_display_link"],
@@ -149,10 +162,13 @@ class ProductViewSet(ModelViewSet):
             version_instance.model.set(model_instances)
             version_instance.industry.set(industry_instances)
             version_instance.ai_tag.set(aitag_instances)
+            version_instance.promotional_image.set(image_instances)
+
             # 更新产品与标签关系
             product_instance.model.set(model_instances)
             product_instance.industry.set(industry_instances)
             product_instance.ai_tag.set(aitag_instances)
+            product_instance.promotional_image.set(image_instances)
 
             # Serialize and return the data
             product_serializer = ProductSerializer(product_instance)
