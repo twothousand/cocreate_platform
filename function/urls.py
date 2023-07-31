@@ -10,4 +10,5 @@ urlpatterns = [
     path('', include(router.urls)),
     # 上传图片
     path('upload_image/', ImageViewSet.as_view({'post': 'upload_image'}), name='upload_image'),
+    path('delete_image/', ImageViewSet.as_view({'delete': 'delete_image'}), name='delete_image'),
 ]
