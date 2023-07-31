@@ -1,8 +1,12 @@
+# 系统模块
+import re
 from io import BytesIO
 from PIL import Image
+# 阿里云oss服务模块
 import oss2
+# common
 from common.config import *
-import re
+
 
 # 初始化OSS客户端
 auth = oss2.Auth(ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET)
