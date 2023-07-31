@@ -100,3 +100,30 @@ class ImageViewSet(ModelViewSet):
                 'data': {'errors': str(e)},
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(methods=['DELETE'], detail=False)
+    def delete_image(self, request, *args, **kwargs):
+        try:
+            # Get the JSON data from the request
+            image_url = request.data.get('image_url', None)
+            msg = delete_image_from_oss(image_url)
+
+            if msg == "图片删除成功":
+                response_data = {
+                    'message': '图片删除成功。',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                response_data = {
+                    'message': msg,
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            message = '图片删除失败。'
+            response_data = {
+                'message': message,
+                'data': {'errors': str(e)},
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

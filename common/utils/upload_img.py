@@ -46,3 +46,19 @@ def compress_and_upload_image(image_data, target_folder, filename, img_format, t
     except Exception as e:
         print("图片处理和上传到OSS失败：", e)
         return None
+
+def delete_image_from_oss(image_url):
+    try:
+        pattern = r"https://.*?/(.*)"
+        match = re.match(pattern, image_url)
+        if match:
+            object_key = match.group(1)
+        else:
+            return '图片路径错误'
+        # Delete the object from OSS
+        bucket.delete_object(object_key)
+
+        return "图片删除成功"
+    except Exception as e:
+        error_msg = "删除失败: "+e
+        return error_msg
