@@ -13,3 +13,4 @@ coreapi==2.3.3
 drf-yasg==1.21.6
 alibabacloud_dysmsapi20170525==2.0.23
 alibabacloud_green20220302==1.0.7
+oss2==2.18.1

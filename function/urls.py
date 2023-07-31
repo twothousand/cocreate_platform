@@ -1,10 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+
 from function.views import ImageViewSet
 
-# 创建一个路由器并注册TeamViewSet和TeamMemberViewSet
 router = DefaultRouter()
-
 
 urlpatterns = [
     # 将router.urls添加到urlpatterns中

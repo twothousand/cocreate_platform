@@ -1,223 +1,88 @@
+# 系统模块
+import logging
+
 # django库
+from django.db import transaction
 from django.db.models import Q
 # rest_framework库
-from rest_framework import filters, permissions, status
+from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
+from rest_framework.views import APIView
+
+# common
+from common.mixins import my_mixins
+from project import serializers
+from team.models import Member
+from user.permissions import IsOwnerOrReadOnly
 # app
 from .models import Project
-from .serializers import ProjectSerializer, ProjectMembersSerializer
-from team.models import Member
+
+# 获得一个logger实体对象
+logger = logging.getLogger(__name__)
 
 
+# 自定义分页器
 class CustomPagination(PageNumberPagination):
     page_size = 12
     page_size_query_param = 'page_size'
     max_page_size = 100
 
 
-# 项目视图集
-class ProjectViewSet(ModelViewSet):
+# 项目增删改查视图集
+class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    pagination_class = CustomPagination
-    # permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [filters.OrderingFilter]
-    search_fields = ['project_name', 'project_description']
-    ordering = ['-id']
 
-    # 重写list方法，返回项目列表
+    def get_permissions(self):
+        """
+        重写get_permissions，实例化并返回此视图需要的权限列表。
+        @return: 返回相应的权限列表
+        """
+        if self.action == 'create' or self.action == 'partial_update':  # 创建项目或修改项目
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        else:  # 其他操作
+            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
+        return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.ProjectListSerializer
+        if self.action == 'create':
+            return serializers.ProjectCreateSerializer
+        if self.action == 'partial_update':
+            return serializers.ProjectUpdateSerializer
+        if self.action == 'retrieve':
+            return serializers.ProjectDetailSerializer
+        else:
+            return serializers.ProjectSerializer
+
     def list(self, request, *args, **kwargs):
-        try:
-            response = super().list(request, *args, **kwargs)
-            response_data = {
-                'message': '获取项目列表成功！',
-                'data': response.data
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        except Exception as e:
-            response_data = {
-                'message': '获取项目列表失败！！！',
-                'data': str(e)
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        self.custom_message = "获取项目列表成功！"
+        return super().list(request, *args, **kwargs)
 
-    # 重写create方法，创建项目
-    def create(self, request, *args, **kwargs):
-        try:
-            # 设置项目创建者ID为当前登录用户的ID
-            request.data['project_creator'] = request.user.id
-            print(request.user.id)
-            print(request.data)
-            # __import__('pdb').set_trace()
-            response = super().create(request, *args, **kwargs)
-            response_data = {
-                'message': '创建项目成功！',
-                'data': response.data
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            response_data = {
-                'message': '创建项目失败！！！',
-                'data': str(e)
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # 重写retrieve方法，获取项目详细信息
     def retrieve(self, request, *args, **kwargs):
-        try:
-            response = super().retrieve(request, *args, **kwargs)
-            response_data = {
-                'message': '获取项目详细信息成功！',
-                'data': response.data
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        except Exception as e:
-            response_data = {
-                'message': '获取项目详细信息失败！！！',
-                'data': str(e)
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        self.custom_message = "获取项目详细信息成功！"
+        return super().retrieve(request, *args, **kwargs)
 
-    # 重写partial_update方法，更新项目信息
-    def partial_update(self, request, *args, **kwargs):
-        try:
-            response = super().partial_update(request, *args, **kwargs)
-            response_data = {
-                'message': '更新项目信息成功！',
-                'data': response.data
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        except Exception as e:
-            response_data = {
-                'message': '更新项目信息失败！！！',
-                'data': str(e)
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        request.data['project_creator'] = request.user.id
+        self.custom_message = "创建项目成功！"
+        return super().create(request, *args, **kwargs)
 
-    # 重写destroy方法，删除项目
-    def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.delete()
-            response_data = {
-                'message': '删除项目成功！',
-                'data': None
-            }
-            return Response(response_data, status=status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            response_data = {
-                'message': '删除项目失败！！！',
-                'data': str(e)
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    # def update(self, request, *args, **kwargs):
+    #     if str(request.method).lower() == "patch":
+    #         self.custom_message = "用户密码修改成功"
+    #     else:
+    #         self.custom_message = "用户信息修改成功"
+    #     return super().update(request, *args, **kwargs)
 
-    # 获取项目成员列表
-    @action(detail=True, methods=['get'])
-    def members(self, request, pk=None):
-        try:
-            project = self.get_object()
-            members = Member.objects.filter(team__project_id=project.id, member_status='正常')
-            serializer = ProjectMembersSerializer(members, many=True)
-            response_data = {
-                'message': '获取项目成员列表成功！',
-                'data': serializer.data
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        except Exception as e:
-            response_data = {
-                'message': '获取项目成员列表失败！！！',
-                'data': str(e)
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    @transaction.atomic
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
 
-# 按关键词搜索项目
-class ProjectSearchView(APIView):
-    def get(self, request, *args, **kwargs):
-        try:
-            keyword = self.request.GET.get('keyword')
-            if keyword:
-                queryset = Project.objects.filter(project_name__icontains=keyword) | \
-                           Project.objects.filter(project_description__icontains=keyword)
-                queryset = queryset.order_by('-id')
-                serializer = ProjectSerializer(queryset, many=True)
-                # 检查序列化的数据是否为空
-                if serializer.data:
-                    response_data = {
-                        'message': '已成功检索到项目！',
-                        'data': serializer.data
-                    }
-                else:
-                    response_data = {
-                        'message': '未检索到任何符合的项目！',
-                        'data': serializer.data
-                    }
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                response_data = {
-                    'message': '未提供搜索关键词！！！',
-                    'data': []
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            response_data = {
-                'message': str(e),
-                'data': []
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# 按参数过滤项目
-class ProjectFilterView(APIView):
-    def get(self, request, *args, **kwargs):
-        try:
-            industry = self.request.GET.get('industry')
-            ai_tag = self.request.GET.get('ai_tag')
-            project_type = self.request.GET.get('project_type')
-            project_status = self.request.GET.get('project_status')
-            model_name = self.request.GET.get('model_name')
-
-            filter_conditions = Q()
-
-            if project_status:
-                filter_conditions &= Q(project_status__icontains=project_status)
-            if project_type:
-                filter_conditions &= Q(project_type__icontains=project_type)
-            if model_name:
-                filter_conditions &= Q(model__model_name__icontains=model_name)
-            if industry:
-                filter_conditions &= Q(industry__industry__icontains=industry)
-            if ai_tag:
-                filter_conditions &= Q(ai_tag__ai_tag__icontains=ai_tag)
-
-            queryset = Project.objects.filter(filter_conditions).order_by('-id')
-            serializer = ProjectSerializer(queryset, many=True)
-
-            if serializer.data:
-                response_data = {
-                    'message': '已成功检索到项目！',
-                    'data': serializer.data
-                }
-            else:
-                response_data = {
-                    'message': '未检索到任何符合的项目！',
-                    'data': serializer.data
-                }
-
-            return Response(response_data, status=status.HTTP_200_OK)
-        except Exception as e:
-            response_data = {
-                'message': str(e),
-                'data': []
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# 过滤和搜索项目
+# 项目的过滤和搜索视图
 class ProjectFilterAndSearchView(APIView):
     # 在搜索时使用已过滤的结果集进行搜索操作
     def get(self, request, *args, **kwargs):
@@ -251,7 +116,8 @@ class ProjectFilterAndSearchView(APIView):
                 )
 
             queryset = queryset.order_by('-id')
-            serializer = ProjectSerializer(queryset, many=True)
+            # serializer = serializers.ProjectSerializer(queryset, many=True)
+            serializer = serializers.ProjectDetailSerializer(queryset, many=True)
 
             if serializer.data:
                 response_data = {
@@ -278,7 +144,7 @@ class ProjectMembersView(APIView):
     def get(self, request, project_id):
         try:
             members = Member.objects.filter(team__project_id=project_id, member_status='正常')  # 包含队长
-            serializer = ProjectMembersSerializer(members, many=True)
+            serializer = serializers.ProjectMembersSerializer(members, many=True)
             response_data = {
                 "message": "成功获取项目成员列表！",
                 "data": serializer.data

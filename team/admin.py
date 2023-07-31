@@ -3,7 +3,7 @@ from .models import Team, Application, Member
 
 
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('id', 'project', 'team_leader', 'created_at')
+    list_display = ('id', 'project', 'team_name', 'team_leader', 'recruitment_requirements', 'created_at')
     search_fields = ('team_leader',)
     list_per_page = 20
 

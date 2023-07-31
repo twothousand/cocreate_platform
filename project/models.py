@@ -2,22 +2,24 @@
 项目表
 project 项目信息表
 """
+import uuid
+
 from django.db import models
 
+from common.mixins.base_model import BaseModel
+from common.mixins.common_fields import UUIDField
 from dim.models import Model, Industry, AITag
 from user.models import User
 from .conf import PROJECT_TYPE_CHOICES, PROJECT_STATUS_CHOICES
-from common.mixins.common_fields import UUIDField
-from common.mixins.base_model import BaseModel
-import uuid
+
 
 # 项目信息表
 class Project(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='项目ID')
     project_creator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="项目创建者")
-    model = models.ForeignKey(Model, on_delete=models.CASCADE, verbose_name="模型")
-    industry = models.ForeignKey(Industry, on_delete=models.CASCADE, verbose_name="行业")
-    ai_tag = models.ForeignKey(AITag, on_delete=models.CASCADE, verbose_name="AI标签")
+    model = models.ManyToManyField(Model, verbose_name="模型")
+    industry = models.ManyToManyField(Industry, verbose_name="行业")
+    ai_tag = models.ManyToManyField(AITag, verbose_name="AI标签")
     project_name = models.CharField(max_length=100, verbose_name='项目名称')
     project_description = models.TextField(verbose_name='项目描述')
     project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, verbose_name='项目类型')

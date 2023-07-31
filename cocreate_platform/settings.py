@@ -46,15 +46,16 @@ INSTALLED_APPS = [
     'project',  # 项目模块
     'team',  # 组队模块
     'product',  # 产品模块
-    'feedback',  # 反馈模块
     'dim',  # 维度模块
+    'feedback',  # 反馈模块
+    'function',  # 功能模块
 ]
 
 # rest_framework 配置
 REST_FRAMEWORK = {
     # 分页设置
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 12,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 12,
 
     # 配置登录鉴权设置
     "DEFAULT_AUTHENTICATION_CLASSES": [

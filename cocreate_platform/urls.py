@@ -28,7 +28,6 @@ schema_view = get_schema_view(
         default_version='v1',
     ),
     public=True,
-    # permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
@@ -47,10 +46,13 @@ urlpatterns = [
     # http://127.0.0.1:8000/api/teams/xxx
     path('api/teams/', include('team.urls'), name='team'),
 
+    # http://127.0.0.1:8000/api/dim/xxx
+    path('api/dim/', include('dim.urls'), name='dim'),
+
     # http://127.0.0.1:8000/api/feedback/xxx
     path('api/feedback/', include('feedback.urls'), name='feedback'),
 
-    # http://127.0.0.1:8000/api/feedback/xxx
+    # http://127.0.0.1:8000/api/function/xxx
     path('api/function/', include('function.urls'), name='function'),
 
     # http://127.0.0.1:8000/swagger/   swagger API 文档

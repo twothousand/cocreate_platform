@@ -8,6 +8,7 @@ import time
 import uuid
 import json
 
+
 def generate_unique_filename():
     # 获取当前时间戳（精确到毫秒）
     timestamp = int(time.time() * 1000)
@@ -25,6 +26,7 @@ class ImageViewSet(ModelViewSet):
     parser_classes = [MultiPartParser, JSONParser, FormParser]
     ALLOWED_CATEGORIES = ['avatar', 'product', 'project']
     ALLOWED_IMAGE_FORMATS = ['jpg', 'jpeg', 'png']
+
     @action(methods=['POST'], detail=False)
     def upload_image(self, request, *args, **kwargs):
         try:
