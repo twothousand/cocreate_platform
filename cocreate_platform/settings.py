@@ -316,80 +316,6 @@ LOGGING = {
     },
 }
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,  # False if DEBUG else True,  # 是否禁用已经存在的日志器
-#     'formatters': {  # 日志信息显示的格式
-#         # 显示格式1
-#         'main_formatter': {
-#             # 输出格式
-#             'format': '[%(levelname)s] [%(asctime)s] %(module)s::%(funcName)s , %(message)s '
-#                       '(%(filename)s:%(lineno)d)',  # INFO 2022-04-07 18:06:10 views::index , test!!! (views.py:32)   [%(correlation_id)s]
-#             'datefmt': "%Y-%m-%d %H:%M:%S",
-#             # "class": "pythonjsonlogger.jsonlogger.JsonFormatter"
-#         },  # 日志记录级别+时间日期+模块名称+函数名称+行号+记录消息
-#
-#         # 显示格式2
-#         # 'verbose': {
-#         #     # INFO 2022-04-07 16:54:14,796 ItemPlayerData 14 输出内容
-#         #     'format': '%(levelname)s %(asctime)s %(module)s %(lineno)s %(message)s',
-#         #     'datefmt': "%Y-%m-%d %H:%M:%S",
-#         #     # "class": "pythonjsonlogger.jsonlogger.JsonFormatter"
-#         # },
-#     },
-#     'filters': {  # 对日志进行过滤
-#         # 'correlation_id': {
-#         #     '()': 'django_guid.log_filters.CorrelationId'
-#         # },
-#         'require_debug_true': {  # django在debug模式下才输出日志
-#             '()': 'django.utils.log.RequireDebugTrue',
-#         },
-#     },
-#     'handlers': {  # 日志处理方法
-#         # 1. 向终端中输出日志
-#         'console': {
-#             'level': 'DEBUG' if DEBUG else 'INFO',
-#             'filters': ['require_debug_true'],  # debug为true才会输出
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'main_formatter'  # 指定输出格式
-#         },
-#         # 2. 向文件中输出日志
-#         'info': {
-#             'level': 'INFO',
-#             'class': 'logging.handlers.RotatingFileHandler',
-#             # 'filename': os.path.join(BASE_DIR,'logs', "info.log"),  # 日志文件的位置
-#             'filename': Logger_Dir + '/' + 'info_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log',  # 日志文件的位置
-#             'maxBytes': 5 * 1024 * 1024 * 1024,  # 5G大小
-#             'backupCount': 10,
-#             'formatter': 'main_formatter',
-#             'encoding': 'utf-8'
-#         },
-#         # 'demo': {   # 专门定义一个收集特定信息的日志
-#         #     'level': 'INFO',
-#         #     'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
-#         #     'filename': os.path.join(BASE_DIR,'/logs/', "demo.log"),
-#         #     'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
-#         #     'backupCount': 5,
-#         #     'formatter': 'verbose',
-#         #     'encoding': "utf-8"
-#         # },
-#
-#     },
-#     'loggers': {  # 日志器
-#         "django": {  # 默认的logger应用以下配置
-#             "handlers": ["info", "console"],
-#             "propagate": True,
-#             "level": "INFO"
-#         },
-#         # 'demo_log': {      # 名为 'demo'的logger还单独处理
-#         #     'handlers': ['demo'],
-#         #     "propagate": True,
-#         #     'level': 'INFO',
-#         # },
-#
-#     }
-# }
-
 
 # ----- SIMPLEUI -----
 # 离线模式
@@ -398,6 +324,8 @@ SIMPLEUI_STATIC_OFFLINE = True
 SIMPLEUI_HOME_INFO = False
 
 # ----- STATIC -----
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 STATIC_URL = '/static/'
 # 静态文件的存储目录
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
