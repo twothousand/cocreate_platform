@@ -3,6 +3,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from user.permissions import IsOwnerOrReadOnly
 from team.models import Team, Member
 from user.models import User
 from project.models import Project
@@ -15,8 +17,16 @@ from datetime import date
 
 # 组队招募
 class TeamRecruitmentView(APIView):
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        else:  # 对于其他请求方法，比如GET、PATCH等
+            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
+        return [permission() for permission in permission_classes]
+
     # 获得组队招募信息
     def get(self, request):
+        permission_classes = [AllowAny]
         try:
             project_id = request.data.get('project')
             team_recruitment = Team.objects.get(project=project_id)
@@ -36,7 +46,10 @@ class TeamRecruitmentView(APIView):
 
     # 创建组队招募信息
     def post(self, request):
+        permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+        request.data['team_leader'] = request.user.id
         serializer = TeamRecruitmentSerializer(data=request.data)
+
         if serializer.is_valid():
             # 根据当前用户创建组队招募数据
             user = request.user
@@ -57,6 +70,8 @@ class TeamRecruitmentView(APIView):
 
     # 更新组队招募
     def put(self, request):
+        permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+        request.data['team_leader'] = request.user.id
         try:
             project_id = request.data.get('project')
 
@@ -106,24 +121,25 @@ class TeamRecruitmentView(APIView):
 class TeamApplicationView(ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = TeamApplicationSerializer
-    # lookup_field = 'id'
+
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        else:  # 对于其他请求方法，比如GET、PATCH等
+            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
+        return [permission() for permission in permission_classes]
 
     @action(methods=['POST'], detail=True)
     def create_application(self, request, *args, **kwargs):
         try:
-            # serializer = self.get_serializer(data=request.data)
-            # serializer.is_valid(raise_exception=True)
-            # user_id = serializer.validated_data['user_id']
-            # project_id = serializer.validated_data['project_id']
-            # team_id = serializer.validated_data['team_id']
-            user_id = request.data.get('user_id')
+            user_id = request.user.id
             project_id = request.data.get('project_id')
             team_id = request.data.get('team_id')
             application_msg = request.data.get('application_msg')
 
             if not user_id or not team_id:
                 response_data = {
-                    'message': '请提供用户ID(user_id), 队伍ID(team_id), application_msg, 申请消息(application_msg)',
+                    'message': '请提供用户ID(token), 队伍ID(team_id), application_msg, 申请消息(application_msg)',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -152,7 +168,7 @@ class TeamApplicationView(ModelViewSet):
                 Q(team=team_id)
             ).first()
 
-            if existing_application and existing_application.application_msg=='待审核':
+            if existing_application and existing_application.status=='待审核':
                 # # 如果申请已经存在，更新其内容 先注释掉这个逻辑
                 # existing_application.application_msg = application_msg
                 # existing_application.status = '待审核'
@@ -164,7 +180,7 @@ class TeamApplicationView(ModelViewSet):
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-            elif existing_application and existing_application.application_msg != '待审核':
+            elif existing_application and existing_application.status != '待审核':
                 # 如果申请已经存在，更新其内容
                 existing_application.application_msg = application_msg
                 existing_application.status = '待审核'
@@ -202,12 +218,12 @@ class TeamApplicationView(ModelViewSet):
     @action(methods=['PUT'], detail=True)
     def application_update(self, request, *args, **kwargs):
         try:
-            user_id = request.data.get('user_id')
+            user_id = request.user.id
             application_id = request.data.get('application_id')
             application_status = request.data.get('decision')
             if not application_id or not application_status or not user_id:
                 response_data = {
-                    'message': '请提供当前处理用户ID(user_id), 申请ID(application_id), 处理意见(decision)[同意加入、拒绝]',
+                    'message': '请提供当前处理用户ID(token), 申请ID(application_id), 处理意见(decision)[同意加入、拒绝]',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -308,14 +324,15 @@ class TeamApplicationView(ModelViewSet):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'])
-    def get_pending_applications(self, request):
+    def get_pending_applications(self, request, *args, **kwargs):
+        permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         try:
-            user_id = request.data.get('user_id', None)
+            user_id = request.user.id
             team_id = request.data.get('team_id', None)
 
             if not user_id or not team_id:
                 response_data = {
-                    'message': '请提供用户ID(user_id)和队伍ID(team_id)。',
+                    'message': '请提供用户ID(token)和队伍ID(team_id)。',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -378,16 +395,33 @@ class TeamApplicationView(ModelViewSet):
 class TeamMemberViewSet(ModelViewSet):
     serializer_class = MemberSerializer
 
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        else:  # 对于其他请求方法，比如GET、PATCH等
+            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
+        return [permission() for permission in permission_classes]
+
+    def determine_action(self, request):
+        if request.method == 'GET':
+            self.action = 'retrieve'
+        elif request.method == 'POST':
+            self.action = 'create'
+        elif request.method == 'PUT':
+            self.action = 'partial_update'
+        else:
+            self.action = None
+
     # 接口1：转让队长（PUT）
     @action(methods=['PUT'], detail=True)
     def transfer_leadership(self, request, *args, **kwargs):
         try:
             team_id = request.data.get('team_id')
             new_leader_id = request.data.get('new_leader_id')
-            user_id = request.data.get('user_id')  # 当前用户的ID
+            user_id = request.user.id
             if not team_id or not new_leader_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(user_id),队伍ID(team_id),新队长用户ID(new_leader_id）',
+                    'message': '请提供操作用户ID(token),队伍ID(team_id),新队长用户ID(new_leader_id）',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -447,10 +481,10 @@ class TeamMemberViewSet(ModelViewSet):
         try:
             team_id = request.data.get('team_id')
             member_id = request.data.get('member_id')
-            user_id = request.data.get('user_id')  # 当前用户的ID
+            user_id = request.user.id  # 当前用户的ID
             if not team_id or not member_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(user_id),队伍ID(team_id),队员用户ID(member_id）',
+                    'message': '请提供操作用户ID(token),队伍ID(team_id),队员用户ID(member_id）',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -506,7 +540,7 @@ class TeamMemberViewSet(ModelViewSet):
     def auto_exit(self, request, *args, **kwargs):
         try:
             team_id = request.data.get('team_id')
-            user_id = request.data.get('user_id')
+            user_id = request.user.id
 
             if not team_id or not user_id:
                 response_data = {
@@ -565,11 +599,11 @@ class TeamMemberViewSet(ModelViewSet):
     def add_member(self, request, *args, **kwargs):
         try:
             team_id = request.data.get('team_id')
-            user_id = request.data.get('user_id')
+            user_id = request.user.id
             member_id = request.data.get('member_id')
             if not team_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(user_id),队伍ID(team_id),成员用户ID(member_id)',
+                    'message': '请提供操作用户ID(token),队伍ID(team_id),成员用户ID(member_id)',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

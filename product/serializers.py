@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Product, Version
-from dim.models import Industry, Model, AITag
+from dim.models import Industry, Model, AITag, Image
 
 
 class IndustrySerializer(serializers.ModelSerializer):
@@ -20,12 +20,17 @@ class AITagSerializer(serializers.ModelSerializer):
         model = AITag
         fields = '__all__'
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = '__all__'
 
 # 构建产品序列化器
 class ProductSerializer(serializers.ModelSerializer):
     industry = IndustrySerializer(many=True)
     model = ModelSerializer(many=True)
     ai_tag = AITagSerializer(many=True)
+    promotional_image = ImageSerializer(many=True)
 
     class Meta:
         model = Product
@@ -42,7 +47,3 @@ class VersionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
         fields = "__all__"
-
-
-class ImageUploadSerializer(serializers.Serializer):
-    file = serializers.ImageField()

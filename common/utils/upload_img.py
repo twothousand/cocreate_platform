@@ -2,6 +2,7 @@ from io import BytesIO
 from PIL import Image
 import oss2
 from common.config import *
+import re
 
 # 初始化OSS客户端
 auth = oss2.Auth(ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET)

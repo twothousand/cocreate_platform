@@ -3,7 +3,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from user.permissions import IsOwnerOrReadOnly
 from user.models import User
 from .models import Feedback
 from .serializers import FeedbackSerializer
@@ -11,13 +12,20 @@ from .serializers import FeedbackSerializer
 
 class FeedbackViewSet(ModelViewSet):
     serializer_class = FeedbackSerializer
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        else:  # 对于其他请求方法，比如GET、PATCH等
+            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
+        return [permission() for permission in permission_classes]
 
     # 创建产品反馈
     @action(methods=['POST'], detail=True)
     def create_feedback(self, request, *args, **kwargs):
         try:
             feedback_data = request.data
-            current_user_instance = get_object_or_404(User, id=feedback_data['user_id'])
+            user_id = request.user.id
+            current_user_instance = get_object_or_404(User, id=user_id)
 
             feedback_instance = Feedback.objects.create(
                 user=current_user_instance,
