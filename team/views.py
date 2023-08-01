@@ -118,7 +118,7 @@ class TeamRecruitmentView(APIView):
 
 
 # 组队申请：提交组队申请（可多次，覆盖）
-class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
+class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Application.objects.all()
     serializer_class = TeamApplicationSerializer
 
@@ -398,7 +398,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, 
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 # 队伍管理
-class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
+class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     serializer_class = MemberSerializer
 
     def get_permissions(self):

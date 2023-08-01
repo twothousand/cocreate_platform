@@ -10,7 +10,7 @@ from .models import Feedback
 from .serializers import FeedbackSerializer
 from common.mixins import my_mixins
 from django.db import transaction
-class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
+class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     serializer_class = FeedbackSerializer
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
