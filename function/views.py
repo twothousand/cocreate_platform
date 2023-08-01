@@ -13,7 +13,8 @@ from .serializers import ImageSerializer
 import time
 import uuid
 import json
-
+from common.mixins import my_mixins
+from django.db import transaction
 
 def generate_unique_filename():
     # 获取当前时间戳（精确到毫秒）
@@ -28,7 +29,7 @@ def generate_unique_filename():
     return filename
 
 
-class ImageViewSet(ModelViewSet):
+class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     parser_classes = [MultiPartParser, JSONParser, FormParser]
     ALLOWED_CATEGORIES = ['avatar', 'product', 'project']
     ALLOWED_IMAGE_FORMATS = ['jpg', 'jpeg', 'png']
@@ -40,33 +41,14 @@ class ImageViewSet(ModelViewSet):
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         return [permission() for permission in permission_classes]
 
+    @transaction.atomic
     @action(methods=['POST'], detail=False)
     def upload_image(self, request, *args, **kwargs):
         try:
             # Get the JSON data from the request
-            json_data_str = request.data.get('json_data', {})
+            category = request.data.get('category', None)
+            id = request.data.get('id', '')
             user_id = request.user.id
-            try:
-                json_data = json.loads(json_data_str)
-            except json.JSONDecodeError:
-                message = '无效的JSON数据。'
-                response_data = {
-                    'message': message,
-                    'data': None,
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-            # Now you can access the JSON data and its values as needed
-            category = json_data.get('category', None)
-
-            # Check if category is in the allowed list
-            if category not in self.ALLOWED_CATEGORIES:
-                message = 'category必须在这个范围内：' + ', '.join(self.ALLOWED_CATEGORIES)
-                response_data = {
-                    'message': message,
-                    'data': None,
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
             file = request.FILES.get('image')
             if not file:
@@ -88,7 +70,10 @@ class ImageViewSet(ModelViewSet):
 
             image_data = file.read()
 
-            target_folder = category if category else "tmp"  # 上传到OSS的目标文件夹，根据实际情况修改
+            if category == 'avatar':
+                target_folder = category
+            else:
+                target_folder = category+'/'+id
             filename = generate_unique_filename()
 
             image_url = compress_and_upload_image(image_data, target_folder, filename, img_format)
@@ -108,6 +93,8 @@ class ImageViewSet(ModelViewSet):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
+                # 显式地触发回滚操作
+                transaction.set_rollback(True)
                 message = '图片处理和上传失败。'
                 response_data = {
                     'message': message,
@@ -116,6 +103,8 @@ class ImageViewSet(ModelViewSet):
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             message = '图片上传失败。'
             response_data = {
                 'message': message,
@@ -123,6 +112,7 @@ class ImageViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @transaction.atomic
     @action(methods=['DELETE'], detail=False)
     def delete_image(self, request, *args, **kwargs):
         try:
@@ -140,24 +130,26 @@ class ImageViewSet(ModelViewSet):
                 }
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
             image_instance = image.first()
-            print('image_instance.image_url ',image_instance.image_url)
+            # 物理删除图片记录
+            image_instance.delete()
             msg = delete_image_from_oss(image_instance.image_url)
-            print('msg',msg)
             if msg == "图片删除成功":
-                image_instance.is_deleted = 1
-                image_instance.save()
                 response_data = {
                     'message': '图片删除成功。',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
+                # 显式地触发回滚操作
+                transaction.set_rollback(True)
                 response_data = {
                     'message': msg,
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             message = '图片删除失败。'
             response_data = {
                 'message': message,

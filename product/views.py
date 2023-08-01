@@ -10,9 +10,9 @@ from team.models import Team, Member
 from user.models import User
 from .models import Product, Version
 from .serializers import ProductSerializer
-
-
-class ProductViewSet(ModelViewSet):
+from common.mixins import my_mixins
+from django.db import transaction
+class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     def get_permissions(self):
@@ -23,6 +23,7 @@ class ProductViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     # 接口：产品发布（POST）
+    @transaction.atomic
     @action(methods=['POST'], detail=True)
     def create_product_with_version(self, request, *args, **kwargs):
         try:
@@ -101,6 +102,8 @@ class ProductViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_200_OK if created else status.HTTP_201_CREATED)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '创建或更新产品及版本信息失败',
                 'data': {'errors': str(e)}
@@ -110,6 +113,7 @@ class ProductViewSet(ModelViewSet):
 
 
     # 更新产品信息（PUT）
+    @transaction.atomic
     @action(methods=['PUT'], detail=True)
     def update_product_with_version(self, request, *args, **kwargs):
         try:
@@ -181,6 +185,8 @@ class ProductViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '更新产品及版本信息失败',
                 'data': {'errors': str(e)}

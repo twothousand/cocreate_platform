@@ -8,9 +8,9 @@ from user.permissions import IsOwnerOrReadOnly
 from user.models import User
 from .models import Feedback
 from .serializers import FeedbackSerializer
-
-
-class FeedbackViewSet(ModelViewSet):
+from common.mixins import my_mixins
+from django.db import transaction
+class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     serializer_class = FeedbackSerializer
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
@@ -20,6 +20,7 @@ class FeedbackViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     # 创建产品反馈
+    @transaction.atomic
     @action(methods=['POST'], detail=True)
     def create_feedback(self, request, *args, **kwargs):
         try:
@@ -42,6 +43,8 @@ class FeedbackViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '创建产品反馈失败',
                 'data': {'errors': str(e)}

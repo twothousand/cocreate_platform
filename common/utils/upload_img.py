@@ -44,8 +44,8 @@ def compress_and_upload_image(image_data, target_folder, filename, img_format, t
         bucket.put_object(oss_path, compressed_image_data)
 
         # 获取图片持久化的链接
-        image_url = ALIBABA_OSS_ENDPOINT.rstrip('/') + '/' + oss_path
-        image_url = f"https://{ALIBABA_OSS_BUCKET_NAME}.{ALIBABA_OSS_ENDPOINT.lstrip('https://')}/{oss_path}"
+        # image_url = f"https://{ALIBABA_OSS_BUCKET_NAME}.{ALIBABA_OSS_ENDPOINT.lstrip('https://')}/{oss_path}" #原始
+        image_url = f"https://{IMG_DOMAIN}/{oss_path}"
 
         return image_url
     except Exception as e:
