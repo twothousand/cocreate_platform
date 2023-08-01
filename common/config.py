@@ -7,6 +7,7 @@ Description: 常量配置
 
 # 阿里云服务配置
 # TODO: 换成自己的
+IMG_DOMAIN = "img.1aigc.cn"
 ALIBABA_CLOUD_ACCESS_KEY_ID = ""
 ALIBABA_CLOUD_ACCESS_KEY_SECRET = ""
 ALIBABA_OSS_BUCKET_NAME = ""
