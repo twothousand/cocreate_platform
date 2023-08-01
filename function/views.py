@@ -13,8 +13,8 @@ from .serializers import ImageSerializer
 import time
 import uuid
 import json
-
-
+from common.mixins import my_mixins
+from django.db import transaction
 def generate_unique_filename():
     # 获取当前时间戳（精确到毫秒）
     timestamp = int(time.time() * 1000)
@@ -28,7 +28,7 @@ def generate_unique_filename():
     return filename
 
 
-class ImageViewSet(ModelViewSet):
+class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     parser_classes = [MultiPartParser, JSONParser, FormParser]
     ALLOWED_CATEGORIES = ['avatar', 'product', 'project']
     ALLOWED_IMAGE_FORMATS = ['jpg', 'jpeg', 'png']
@@ -40,6 +40,7 @@ class ImageViewSet(ModelViewSet):
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         return [permission() for permission in permission_classes]
 
+    @transaction.atomic
     @action(methods=['POST'], detail=False)
     def upload_image(self, request, *args, **kwargs):
         try:
@@ -108,6 +109,8 @@ class ImageViewSet(ModelViewSet):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
+                # 显式地触发回滚操作
+                transaction.set_rollback(True)
                 message = '图片处理和上传失败。'
                 response_data = {
                     'message': message,
@@ -116,6 +119,8 @@ class ImageViewSet(ModelViewSet):
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             message = '图片上传失败。'
             response_data = {
                 'message': message,
@@ -123,6 +128,7 @@ class ImageViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @transaction.atomic
     @action(methods=['DELETE'], detail=False)
     def delete_image(self, request, *args, **kwargs):
         try:
@@ -140,9 +146,7 @@ class ImageViewSet(ModelViewSet):
                 }
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
             image_instance = image.first()
-            print('image_instance.image_url ',image_instance.image_url)
             msg = delete_image_from_oss(image_instance.image_url)
-            print('msg',msg)
             if msg == "图片删除成功":
                 image_instance.is_deleted = 1
                 image_instance.save()
@@ -152,12 +156,16 @@ class ImageViewSet(ModelViewSet):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
+                # 显式地触发回滚操作
+                transaction.set_rollback(True)
                 response_data = {
                     'message': msg,
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             message = '图片删除失败。'
             response_data = {
                 'message': message,

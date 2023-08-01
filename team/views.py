@@ -12,8 +12,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from team.serializers import *
 from datetime import date
-
-
+from common.mixins import my_mixins
+from django.db import transaction
 
 # 组队招募
 class TeamRecruitmentView(APIView):
@@ -64,7 +64,7 @@ class TeamRecruitmentView(APIView):
         else:
             response_data = {
                 'message': '组队招募数据创建失败',
-                'data': serializer.errors,  # 包含序列化器错误信息
+                'data': serializer.error,  # 包含序列化器错误信息
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -118,7 +118,7 @@ class TeamRecruitmentView(APIView):
 
 
 # 组队申请：提交组队申请（可多次，覆盖）
-class TeamApplicationView(ModelViewSet):
+class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Application.objects.all()
     serializer_class = TeamApplicationSerializer
 
@@ -129,6 +129,7 @@ class TeamApplicationView(ModelViewSet):
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         return [permission() for permission in permission_classes]
 
+    @transaction.atomic
     @action(methods=['POST'], detail=True)
     def create_application(self, request, *args, **kwargs):
         try:
@@ -207,6 +208,8 @@ class TeamApplicationView(ModelViewSet):
                 return Response(response_data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '队伍申请提交失败',
                 'data': {'errors': str(e)}
@@ -215,6 +218,7 @@ class TeamApplicationView(ModelViewSet):
 
 
     # 接口：处理组队申请（PUT）
+    @transaction.atomic
     @action(methods=['PUT'], detail=True)
     def application_update(self, request, *args, **kwargs):
         try:
@@ -317,6 +321,8 @@ class TeamApplicationView(ModelViewSet):
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '处理队伍申请失败',
                 'data': {'errors': str(e)}
@@ -392,7 +398,7 @@ class TeamApplicationView(ModelViewSet):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 # 队伍管理
-class TeamMemberViewSet(ModelViewSet):
+class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     serializer_class = MemberSerializer
 
     def get_permissions(self):
@@ -413,6 +419,7 @@ class TeamMemberViewSet(ModelViewSet):
             self.action = None
 
     # 接口1：转让队长（PUT）
+    @transaction.atomic
     @action(methods=['PUT'], detail=True)
     def transfer_leadership(self, request, *args, **kwargs):
         try:
@@ -469,6 +476,8 @@ class TeamMemberViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '队长转让失败',
                 'data': {'errors': str(e)}
@@ -476,6 +485,7 @@ class TeamMemberViewSet(ModelViewSet):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # 接口2：移除队员（PUT）
+    @transaction.atomic
     @action(methods=['PUT'], detail=True)
     def remove_member(self, request, *args, **kwargs):
         try:
@@ -529,6 +539,8 @@ class TeamMemberViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '队员移除失败',
                 'data': {'errors': str(e)}
@@ -536,6 +548,7 @@ class TeamMemberViewSet(ModelViewSet):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # 接口3：自动退出（PUT）
+    @transaction.atomic
     @action(methods=['PUT'], detail=True)
     def auto_exit(self, request, *args, **kwargs):
         try:
@@ -588,6 +601,8 @@ class TeamMemberViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '退出队伍失败',
                 'data': {'errors': str(e)}
@@ -595,6 +610,7 @@ class TeamMemberViewSet(ModelViewSet):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # 接口4：添加队员（POST）
+    @transaction.atomic
     @action(methods=['POST'], detail=True)
     def add_member(self, request, *args, **kwargs):
         try:
@@ -668,6 +684,8 @@ class TeamMemberViewSet(ModelViewSet):
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as e:
+            # 显式地触发回滚操作
+            transaction.set_rollback(True)
             response_data = {
                 'message': '添加用户失败',
                 'data': {'errors': str(e)}
