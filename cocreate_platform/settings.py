@@ -241,12 +241,12 @@ LOGGING = {
         # 详细的日志格式
         'standard': {
             # 'format': '[%(levelname)s] [%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s] (%(filename)s:%(lineno)d), %(module)s::%(funcName)s [%(message)s]'
-            'format': '[%(levelname)s] [%(asctime)s][%(thread)d][%(name)s] (%(filename)s:%(lineno)d) %(funcName)s: %(message)s'
+            'format': '[%(levelname)s] [%(asctime)s][%(thread)d][%(name)s] %(funcName)s: %(message)s'
 
         },
         # 简单的日志格式
         'simple': {
-            'format': '[%(levelname)s] [%(asctime)s][%(filename)s:%(lineno)d] %(message)s'
+            'format': '[%(levelname)s] [%(asctime)s] %(message)s'
         },
         # 定义一个特殊的日志格式
         'collect': {

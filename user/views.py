@@ -38,14 +38,12 @@ User = get_user_model()
 
 
 # 登录
-class LoginView(my_mixins.CustomResponseMixin, TokenObtainPairView):
+class LoginView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, TokenObtainPairView):
     serializer_class = serializers.UserLoginSerializer
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        # 处理敏感数据
-        request_data = tools.sanitize_data(request.data.copy())
-        logger.info("LoginView::post , request.data = %s " % (request_data))
+        self.log_request(self, logger, request)
 
         # 自定义响应message
         self.custom_message = "登录成功！"
@@ -53,6 +51,7 @@ class LoginView(my_mixins.CustomResponseMixin, TokenObtainPairView):
         # 执行父类方法
         response = super().post(request, *args, **kwargs)
 
+        self.log_response(self, logger, request, response)
         return response
 
 
@@ -115,9 +114,9 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
 
     # @disallow_methods(['DELETE'])
     # @disallow_actions(['list'])
-    @transaction.atomic
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+    # @transaction.atomic
+    # def dispatch(self, request, *args, **kwargs):
+    #     return super().dispatch(request, *args, **kwargs)
 
     # def perform_destroy(self, instance):
     #     """

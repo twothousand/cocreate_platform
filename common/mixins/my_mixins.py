@@ -4,6 +4,8 @@
 Description: 一些抽象类以及自定义rest_framework配置（在settings.py中）
 @Time : 2023/7/20 21:34
 """
+# 系统模块
+import inspect
 # rest_framework
 from rest_framework import status, mixins, serializers
 from rest_framework.response import Response
@@ -12,6 +14,7 @@ from rest_framework.views import exception_handler
 from rest_framework.exceptions import APIException
 # django
 from django.utils import timezone
+from django.db import transaction
 from rest_framework.viewsets import GenericViewSet
 # common
 from common.utils import tools
@@ -35,11 +38,18 @@ from common.utils import tools
 
 
 # ========================== ModelViewSet抽象类 ==========================
+class BaseModelViewSet:
+    @transaction.atomic
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+
 class ListCreatRetrieveUpdateModelViewSet(mixins.ListModelMixin,
                                           mixins.CreateModelMixin,
                                           mixins.RetrieveModelMixin,
                                           mixins.UpdateModelMixin,
-                                          GenericViewSet):
+                                          GenericViewSet,
+                                          BaseModelViewSet):
     """
     list(), create(), update(), partial_update()
     """
@@ -49,7 +59,8 @@ class ListCreatRetrieveUpdateModelViewSet(mixins.ListModelMixin,
 class CreatRetrieveUpdateModelViewSet(mixins.CreateModelMixin,
                                       mixins.RetrieveModelMixin,
                                       mixins.UpdateModelMixin,
-                                      GenericViewSet):
+                                      GenericViewSet,
+                                      BaseModelViewSet):
     """
     create(), update(), partial_update()
     """
@@ -57,7 +68,8 @@ class CreatRetrieveUpdateModelViewSet(mixins.CreateModelMixin,
 
 
 class CreatModelViewSet(mixins.CreateModelMixin,
-                        GenericViewSet):
+                        GenericViewSet,
+                        BaseModelViewSet):
     """
     create()
     """
@@ -106,6 +118,48 @@ class CustomResponseMixin:
                 "message": getattr(self, 'custom_message', '请求成功')  # 获取自定义的 message
             }
         return super().finalize_response(request, response, *args, **kwargs)
+
+
+class LoggerMixin:
+    def get_request_logger_message(self, request, request_data):
+        """
+        获得request日志输出（如果有特别的日志输出可以重写方法）
+        @param request:
+        @param request_data:
+        @return:
+        """
+        class_name = self.__class__.__name__
+        method_name = inspect.stack()[1][3]  # 获取调用函数的名称
+        return "%s::%s , user_id=[%s], request.data = %s " % (class_name, method_name, request.user.id, request_data)
+
+    def get_response_logger_message(self, request, response_data):
+        """
+        获得response日志输出（如果有特别的日志输出可以重写方法）
+        @param request:
+        @param response_data:
+        @return:
+        """
+        class_name = self.__class__.__name__
+        method_name = inspect.stack()[1][3]  # 获取调用函数的名称
+        return "%s::%s , user_id=[%s], response.data = %s " % (class_name, method_name, request.user.id, response_data)
+
+    def log_request(self, view_instance, logger, request, get_request_logger_message=None):
+        # 处理敏感数据
+        request_data = tools.sanitize_data(request.data.copy())
+        # 使用提供的函数或者默认的函数来生成日志信息
+        if get_request_logger_message is None:
+            get_request_logger_message = self.get_request_logger_message
+        logger_message = get_request_logger_message(request, request_data)
+        logger.info(logger_message)
+
+    def log_response(self, view_instance, logger, request, response, get_response_logger_message=None):
+        # 处理敏感数据
+        response_data = tools.sanitize_data(response.data.copy())
+        if get_response_logger_message is None:
+            get_response_logger_message = self.get_response_logger_message
+        logger_message = get_response_logger_message(request, response_data)
+        print(logger_message)
+        logger.info(logger_message)
 
 
 # ========================== 序列化抽象类 ==========================
