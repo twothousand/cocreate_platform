@@ -4,6 +4,7 @@
 Description: 时间工具类
 @Time : 2023/7/11 16:29
 """
+# 系统模块
 import datetime
 # django
 from django.utils import timezone
@@ -29,3 +30,19 @@ def get_current_time():
     @return:
     """
     return timezone.now()
+
+
+def get_current_long_timestamp():
+    """
+    获得当前时间戳，13位毫秒
+    @return:
+    """
+    return int(get_current_time().timestamp() * 1000)
+
+
+def get_current_timestamp():
+    """
+    获得当前时间戳，10位秒
+    @return:
+    """
+    return int(get_current_time().timestamp())

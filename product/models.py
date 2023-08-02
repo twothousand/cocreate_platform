@@ -10,7 +10,8 @@ product_collect	产品收藏表
 # 系统模块
 import uuid
 from django.db import models
-from dim.models import Model, Industry, AITag, Image
+from dim.models import Model, Industry, AITag
+from function.models import Image
 from project.models import Project
 from user.models import User
 from common.mixins.common_fields import UUIDField

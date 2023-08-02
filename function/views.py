@@ -1,24 +1,31 @@
+# 系统模块
+import time
+import uuid
+import json
+# rest_framework
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from user.permissions import IsOwnerOrReadOnly
-from common.utils.upload_img import compress_and_upload_image, delete_image_from_oss
+from rest_framework.throttling import AnonRateThrottle
+# django
 from django.shortcuts import get_object_or_404
-from dim.models import Image
-from user.models import User
-from .serializers import ImageSerializer
-import time
-import uuid
-import json
-from common.mixins import my_mixins
 from django.db import transaction
+# app
+from user.permissions import IsOwnerOrReadOnly
+from user.models import User
+from function.models import Image, VerifCode
+from function import serializers
+# common
+from common.mixins import my_mixins
+from common.utils import time_utils, upload_img
+
 
 def generate_unique_filename():
     # 获取当前时间戳（精确到毫秒）
-    timestamp = int(time.time() * 1000)
+    timestamp = time_utils.get_current_long_timestamp()
 
     # 生成一个随机数（使用UUID的随机数生成方法）
     random_string = str(uuid.uuid4().hex)[:6]  # 取UUID的前6位作为随机数
@@ -76,7 +83,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                 target_folder = category+'/'+id
             filename = generate_unique_filename()
 
-            image_url = compress_and_upload_image(image_data, target_folder, filename, img_format)
+            image_url = upload_img.compress_and_upload_image(image_data, target_folder, filename, img_format)
 
             if image_url:
                 current_user_instance = get_object_or_404(User, id=user_id)
@@ -86,7 +93,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                     image_path=target_folder+'/'+filename,
                     category=target_folder
                 )
-                image_serializer = ImageSerializer(image_instance)
+                image_serializer = serializers.ImageSerializer(image_instance)
                 response_data = {
                     'message': '图片上传成功。',
                     'data': image_serializer.data,
@@ -132,7 +139,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
             image_instance = image.first()
             # 物理删除图片记录
             image_instance.delete()
-            msg = delete_image_from_oss(image_instance.image_url)
+            msg = upload_img.delete_image_from_oss(image_instance.image_url)
             if msg == "图片删除成功":
                 response_data = {
                     'message': '图片删除成功。',
@@ -156,3 +163,20 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                 'data': {'errors': str(e)},
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VerifCodeViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatModelViewSet):
+    serializer_class = serializers.VerifCodeSerializer
+    throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
+    permission_classes = [AllowAny, ]
+    custom_message = "验证码发送成功！"
+
+    def send_sms_test(self, request, *args, **kwargs):
+        mobile_phone = request.data.get("mobile_phone")
+        verification_code = "123456"  # request.data.get("verification_code")
+        verif_code = VerifCode.create(mobile_phone=mobile_phone, verification_code=verification_code)
+        result = {
+            "id": verif_code.id,
+            "mobile_phone": verif_code.mobile_phone
+        }
+        return Response(result, status=status.HTTP_200_OK)

@@ -11,7 +11,6 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -22,7 +21,6 @@ from project.models import Project
 from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer
 from team.models import Member
 from user import serializers
-from user.models import VerifCode
 from user.permissions import IsOwnerOrReadOnly
 
 # common
@@ -53,23 +51,6 @@ class LoginView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, TokenObtai
 
         self.log_response(self, logger, request, response)
         return response
-
-
-class VerifCodeViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatModelViewSet):
-    serializer_class = serializers.VerifCodeSerializer
-    throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
-    permission_classes = [AllowAny, ]
-    custom_message = "验证码发送成功！"
-
-    def send_sms_test(self, request, *args, **kwargs):
-        mobile_phone = request.data.get("mobile_phone")
-        verification_code = "123456"  # request.data.get("verification_code")
-        verif_code = VerifCode.create(mobile_phone=mobile_phone, verification_code=verification_code)
-        result = {
-            "id": verif_code.id,
-            "mobile_phone": verif_code.mobile_phone
-        }
-        return Response(result, status=status.HTTP_200_OK)
 
 
 # 用于列出或检索用户的视图集

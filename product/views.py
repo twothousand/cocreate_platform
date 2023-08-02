@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from user.permissions import IsOwnerOrReadOnly
-from dim.models import Model, Industry, AITag, Image
+from dim.models import Model, Industry, AITag
+from function.models import Image
 from team.models import Team, Member
 from user.models import User
 from .models import Product, Version

@@ -27,9 +27,6 @@ urlpatterns = [
     path('refresh_token/', TokenRefreshView.as_view()),  # 刷新Token
     # http://127.0.0.1:8000/api/users/verify_token/
     path('verify_token/', TokenVerifyView.as_view()),  # 校验Token
-    # http://127.0.0.1:8000/api/users/sendsms/  # 发送短信验证码
-    path('send_sms/', views.VerifCodeViewSet.as_view({'post': 'create'})),
-    path('send_sms_test/', views.VerifCodeViewSet.as_view({'post': 'send_sms_test'})),
 
     # http://127.0.0.1:8000/api/users/1/managed_projects/
     path('<str:user_id>/managed_projects/', views.UserManagedProjectsView.as_view()),  # 管理的项目

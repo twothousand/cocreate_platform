@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Product, Version
-from dim.models import Industry, Model, AITag, Image
+from dim.models import Industry, Model, AITag
+from function.models import Image
 
 
 class IndustrySerializer(serializers.ModelSerializer):

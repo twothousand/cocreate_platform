@@ -26,7 +26,7 @@ from common.mixins import my_mixins
 # functions
 
 # app
-from user.models import VerifCode
+
 
 User = get_user_model()
 
@@ -179,51 +179,3 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
             },
         }
 
-
-class VerifCodeSerializer(serializers.ModelSerializer):
-    code_id = serializers.SerializerMethodField()
-
-    def validate_mobile_phone(self, value):
-        """
-        校验手机号码是否有效
-        @param value:
-        @return:
-        """
-        res = re_utils.validate_phone(phone=value)
-        if not res:
-            return serializers.ValidationError("无效的手机号码")
-        return value
-
-    def create(self, validated_data):
-        # 随机生成六位数验证码
-        code = VerifCodeSerializer.get_random_code()
-        validated_data["verification_code"] = code
-        # 发送短信验证码
-        aliyun_sms = AliyunSMS()
-        res = aliyun_sms.send_msg(**validated_data)
-        if res["status"] == "success":
-            verif_code = super(VerifCodeSerializer, self).create(validated_data=validated_data)
-            return verif_code
-        else:
-            return serializers.ValidationError(res)
-
-    @staticmethod
-    def get_random_code():
-        """
-        随机生成六位数验证码
-        @return:
-        """
-        code = "".join([str(random.choice(range(10))) for _ in range(6)])
-        return code
-
-    def get_code_id(self, obj):
-        """
-        将id映射为code_id输出给前端
-        @param obj:
-        @return:
-        """
-        return int(obj.id)
-
-    class Meta:
-        model = VerifCode
-        fields = ['code_id', 'mobile_phone']
