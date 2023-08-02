@@ -78,10 +78,11 @@ class AliyunModeration:
     def image_moderation(self, service, imageUrl, dataId="") -> dict:
         """
         图片内容审核
-        @param service: 可选参数：baselineCheck
+        @param service: 可选参数：baselineCheck,profilePhotoCheck
         @param imageUrl: 图片url
         @param dataId: 图片id，默认为""
         @return:
+        参考：https://yundun.console.aliyun.com/?spm=5176.8466032.top-nav.4.4e00145000QBvZ&p=cts#/pictureReview/ruleConfig/cn-shanghai
         """
         client = self.create_client()
         service_parameters = json.dumps({"imageUrl": imageUrl, "dataId": dataId})

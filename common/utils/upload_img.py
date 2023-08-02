@@ -13,38 +13,43 @@ auth = oss2.Auth(ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET)
 bucket = oss2.Bucket(auth, ALIBABA_OSS_ENDPOINT, ALIBABA_OSS_BUCKET_NAME)
 
 
-def compress_and_upload_image(image_data, target_folder, filename, img_format, target_max_size=2 * 1024 * 1024):
+def compress_and_upload_image(image_data, target_folder, filename, img_format, target_max_size=2 * 1024 * 1024, compress_step=0.9):
     try:
-        # 打开图片
+        # Open the image
         image = Image.open(BytesIO(image_data))
 
-        # 获取图片的原始大小
+        # Get the original image size
         image_size = len(image_data)
 
-        # 检查图片是否需要压缩
+        # Check if the image needs compression
         if image_size > target_max_size:
-            # 计算压缩比例
-            compress_ratio = (target_max_size / image_size) ** 0.5
+            # Perform compression in a loop until the target size is achieved or exceeded
+            while image_size > target_max_size:
+                # Calculate compression ratio
+                compress_ratio = compress_step
 
-            # 根据压缩比例进行图片压缩
-            width, height = image.size
-            new_width = int(width * compress_ratio)
-            new_height = int(height * compress_ratio)
-            image = image.resize((new_width, new_height), Image.ANTIALIAS)
+                # Resize the image based on the compression ratio
+                image = image.resize((int(image.width * compress_ratio), int(image.height * compress_ratio)),
+                                     Image.ANTIALIAS)
 
-        # 将图片保存到内存中
-        compressed_image_data = BytesIO()
-        image.save(compressed_image_data, format=img_format)
-        compressed_image_data.seek(0)
+                # Save the compressed image to memory
+                compressed_image_data = BytesIO()
+                image.save(compressed_image_data, format=img_format)
+                compressed_image_data.seek(0)
 
-        # 生成上传到OSS的路径和文件名（可自行设定）
-        oss_path = f'{target_folder}/' + f'{filename}.' + img_format
+                # Get the size of the compressed image
+                image_size = len(compressed_image_data.getvalue())
+        else:
+            # If the image is already smaller than the target size, use the original image data
+            compressed_image_data = BytesIO(image_data)
 
-        # 上传到OSS
+        # Generate the OSS path and filename (can be customized)
+        oss_path = f'{target_folder}/{filename}.{img_format}'
+
+        # Upload to OSS
         bucket.put_object(oss_path, compressed_image_data)
 
-        # 获取图片持久化的链接
-        # image_url = f"https://{ALIBABA_OSS_BUCKET_NAME}.{ALIBABA_OSS_ENDPOINT.lstrip('https://')}/{oss_path}" #原始
+        # Get the URL of the persisted image
         image_url = f"https://{IMG_DOMAIN}/{oss_path}"
 
         return image_url
