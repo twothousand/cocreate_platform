@@ -38,9 +38,11 @@ class Product(BaseModel):
     ai_tag = models.ManyToManyField(AITag, blank=True, verbose_name='AI标签')
     model = models.ManyToManyField(Model, blank=True, verbose_name='使用模型')
     product_display_link = models.URLField(blank=True, null=True, verbose_name='产品展示链接')
-    product_display_qr_code = models.URLField(blank=True, null=True, verbose_name='产品展示二维码')
-    test_group_qr_code = models.URLField(blank=True, null=True, verbose_name='用户内测二维码')
-
+    product_display_qr_code = models.ForeignKey(Image, null=True, on_delete=models.CASCADE,
+                                                related_name='display_qr_code', verbose_name='产品展示二维码')
+    test_group_qr_code = models.ForeignKey(Image, null=True, on_delete=models.CASCADE,
+                                           related_name='test_group_qr_code', verbose_name='用户内测二维码')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     def __str__(self):
         return f"产品名称: {self.name}"
 
@@ -63,9 +65,21 @@ class Version(BaseModel):
     industry = models.ManyToManyField(Industry,verbose_name="行业", default="")
     ai_tag = models.ManyToManyField(AITag,verbose_name="AI标签", default="")
     product_display_link = models.URLField(blank=True, null=True, verbose_name='产品展示链接')
-    product_display_qr_code = models.URLField(blank=True, null=True, verbose_name='产品展示二维码')
-    test_group_qr_code = models.URLField(blank=True, null=True, verbose_name='用户内测二维码')
+    product_display_qr_code = models.ForeignKey(
+        Image,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='version_display_qr',  # 修改为 'version_display_qr'
+        verbose_name='产品展示二维码'
+    )
 
+    test_group_qr_code = models.ForeignKey(
+        Image,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='version_test_group_qr',  # 修改为 'version_test_group_qr'
+        verbose_name='用户内测二维码'
+    )
     def __str__(self):
         return f"版本ID: {self.id}"
 

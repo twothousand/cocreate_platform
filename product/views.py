@@ -9,10 +9,14 @@ from dim.models import Model, Industry, AITag
 from function.models import Image
 from team.models import Team, Member
 from user.models import User
+from project.models import Project
 from .models import Product, Version
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, ProductDetailSerializer
 from common.mixins import my_mixins
 from django.db import transaction
+from rest_framework.views import APIView
+from django.db.models import Q
+
 class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -32,19 +36,31 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
             version_data = request.data
             # Check if the user is leader
             user_id = request.user.id
-            team_instance = get_object_or_404(Team, project_id=version_data['project_id'])
             current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
-
-            # 检查当前用户是否是队长
-            is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
-            if not is_leader:
-                response_data = {
-                    'message': '只有队长才有权限发布产品',
-                    'data': None,
-                }
-                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-            # Check if a product with the given project_id already exists
             project_id = version_data['project_id']
+            try:
+                team_instance = Team.objects.get(project_id=project_id)
+                # 检查当前用户是否是队长
+                is_leader = Member.objects.filter(team=team_instance, user=current_user_instance,
+                                                  is_leader=True).exists()
+                if not is_leader:
+                    response_data = {
+                        'message': '只有队长才有权限发布产品',
+                        'data': None,
+                    }
+                    return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            except Team.DoesNotExist:
+                # 未进行过组队招募
+                project_instance = Project.objects.get(id=project_id)
+                # 检查当前用户是否是队长
+                if project_instance.project_creator_id!=user_id:
+                    response_data = {
+                        'message': '用户权限不足',
+                        'data': None,
+                    }
+                    return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+            # Check if a product with the given project_id already exists
             product_instance, created = Product.objects.get_or_create(project_id=project_id)
             # 如果产品存在，返回
             product_serializer = ProductSerializer(product_instance)
@@ -56,30 +72,30 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
             #         },
             #     }
             #     return Response(response_data, status=status.HTTP_200_OK)
+            product_display_qr_code_instance = get_object_or_404(Image, id=version_data['product_display_qr_code']) if version_data['product_display_qr_code'] != '' else None
+            test_group_qr_code_instance = get_object_or_404(Image, id=version_data['test_group_qr_code']) if version_data['test_group_qr_code'] != '' else None
             # 更新或创建产品信息
             product_instance.name = version_data['name']
             product_instance.product_source = version_data['product_source']
-            # product_instance.promotional_image = version_data['promotional_image']
             product_instance.description = version_data['description']
             product_instance.type = version_data['type']
             product_instance.product_display_link = version_data['product_display_link']
-            product_instance.product_display_qr_code = version_data['product_display_qr_code']
-            product_instance.test_group_qr_code = version_data['test_group_qr_code']
+            product_instance.product_display_qr_code = product_display_qr_code_instance
+            product_instance.test_group_qr_code = test_group_qr_code_instance
             product_instance.save()
 
             image_instances = Image.objects.filter(id__in=version_data['promotional_image'])
-            model_instances = AITag.objects.filter(id__in=version_data['model'])
+            model_instances = Model.objects.filter(id__in=version_data['model'])
             industry_instances = Industry.objects.filter(id__in=version_data['industry'])
             aitag_instances = AITag.objects.filter(id__in=version_data['ai_tag'])
             version_instance = Version.objects.create(product=product_instance,
                                                       version_number=version_data['version_number'],
                                                       name=version_data['name'],
-                                                      # promotional_image=version_data['promotional_image'],
                                                       description=version_data['description'],
                                                       type=version_data['type'],
                                                       product_display_link=version_data["product_display_link"],
-                                                      product_display_qr_code=version_data["product_display_qr_code"],
-                                                      test_group_qr_code=version_data["test_group_qr_code"]
+                                                      product_display_qr_code=product_display_qr_code_instance,
+                                                      test_group_qr_code=test_group_qr_code_instance
                                                       )
             #更新版本与标签关系
             version_instance.promotional_image.set(image_instances)
@@ -122,31 +138,44 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
             version_data = request.data
             # Check if the user is leader
             user_id = request.user.id
+            current_user_instance = get_object_or_404(User, id=user_id)  # 获取当前用户
             product_instance = get_object_or_404(Product, id=version_data['product_id'])
-            team_instance = get_object_or_404(Team, project_id=product_instance.project_id)
-            current_user_instance = get_object_or_404(User, id=user_id )  # 获取当前用户
+            try:
+                print('product_instance.project_id',product_instance.project_id)
+                team_instance = Team.objects.get(project_id=product_instance.project_id)
+                # 检查当前用户是否是队长
+                is_leader = Member.objects.filter(team=team_instance, user=current_user_instance,
+                                                  is_leader=True).exists()
+                if not is_leader:
+                    response_data = {
+                        'message': '只有队长才有权限发布产品',
+                        'data': None,
+                    }
+                    return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            except Team.DoesNotExist:
+                # 未进行过组队招募
+                project_instance = Project.objects.get(id=product_instance.project_id)
+                # 检查当前用户是否是队长
+                if project_instance.project_creator_id != user_id:
+                    response_data = {
+                        'message': '用户权限不足',
+                        'data': None,
+                    }
+                    return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-            # 检查当前用户是否是队长
-            is_leader = Member.objects.filter(team=team_instance, user=current_user_instance, is_leader=True).exists()
-            if not is_leader:
-                response_data = {
-                    'message': '只有队长才有权限更新产品',
-                    'data': None,
-                }
-                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-            # Check if a product with the given project_id already exists
-            project_id = product_instance.project_id
-            product_instance = get_object_or_404(Product, project_id=project_id)
+            product_display_qr_code_instance = get_object_or_404(Image, id=version_data['product_display_qr_code']) if \
+            version_data['product_display_qr_code'] != '' else None
+            test_group_qr_code_instance = get_object_or_404(Image, id=version_data['test_group_qr_code']) if \
+            version_data['test_group_qr_code'] != '' else None
 
             # 更新产品信息
             product_instance.name = version_data['name']
             product_instance.product_source = version_data['product_source']
-            # product_instance.promotional_image = version_data['promotional_image']
             product_instance.description = version_data['description']
             product_instance.type = version_data['type']
             product_instance.product_display_link = version_data['product_display_link']
-            product_instance.product_display_qr_code = version_data['product_display_qr_code']
-            product_instance.test_group_qr_code = version_data['test_group_qr_code']
+            product_instance.product_display_qr_code = product_display_qr_code_instance
+            product_instance.test_group_qr_code = test_group_qr_code_instance
             product_instance.save()
 
             image_instances = Image.objects.filter(id__in=version_data['promotional_image'])
@@ -156,12 +185,11 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
             version_instance = Version.objects.create(product=product_instance,
                                                       version_number=version_data['version_number'],
                                                       name=version_data['name'],
-                                                      # promotional_image=version_data['promotional_image'],
                                                       description=version_data['description'],
                                                       type=version_data['type'],
                                                       product_display_link=version_data["product_display_link"],
-                                                      product_display_qr_code=version_data["product_display_qr_code"],
-                                                      test_group_qr_code=version_data["test_group_qr_code"]
+                                                      product_display_qr_code=product_display_qr_code_instance,
+                                                      test_group_qr_code=test_group_qr_code_instance
                                                       )
             # 更新版本与标签关系
             version_instance.model.set(model_instances)
@@ -229,5 +257,58 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
             response_data = {
                 'message': '查询产品信息失败',
                 'data': {'errors': str(e)},
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# 产品的过滤和搜索视图
+class ProductFilterAndSearchView(APIView):
+    # 在搜索时使用已过滤的结果集进行搜索操作
+    def get(self, request, *args, **kwargs):
+        try:
+            keyword = self.request.GET.get('keyword')
+            industry = self.request.GET.get('industry')
+            ai_tag = self.request.GET.get('ai_tag')
+            product_type = self.request.GET.get('product_type')
+            model_name = self.request.GET.get('model_name')
+
+            queryset = Product.objects.all()
+
+            # 应用过滤条件
+            if product_type:
+                queryset = queryset.filter(type__icontains=product_type)
+            if model_name:
+                queryset = queryset.filter(model__model_name__icontains=model_name)
+            if industry:
+                queryset = queryset.filter(industry__industry__icontains=industry)
+            if ai_tag:
+                queryset = queryset.filter(ai_tag__ai_tag__icontains=ai_tag)
+
+            # 应用搜索条件
+            if keyword:
+                queryset = queryset.filter(
+                    Q(name__icontains=keyword) |
+                    Q(description__icontains=keyword)
+                )
+
+            queryset = queryset.order_by('-id')
+            serializer = ProductDetailSerializer(queryset, many=True)
+
+            if serializer.data:
+                response_data = {
+                    'message': '已成功检索到产品！',
+                    'data': serializer.data
+                }
+            else:
+                response_data = {
+                    'message': '未检索到任何符合的产品！',
+                    'data': serializer.data
+                }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': str(e),
+                'data': []
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
