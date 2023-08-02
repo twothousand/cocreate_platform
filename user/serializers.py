@@ -23,9 +23,9 @@ from common.utils.aliyun_message import AliyunSMS
 from common.utils import re_utils, time_utils
 from common import constant
 from common.mixins import my_mixins
-# functions
 
 # app
+from function.models import VerifCode
 
 
 User = get_user_model()
