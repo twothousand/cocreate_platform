@@ -20,7 +20,7 @@ from function.models import Image, VerifCode
 from function import serializers
 # common
 from common.mixins import my_mixins
-from common.utils import time_utils, upload_img
+from common.utils import time_utils, upload_img, aliyun_green
 
 
 def generate_unique_filename():
@@ -38,7 +38,7 @@ def generate_unique_filename():
 
 class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     parser_classes = [MultiPartParser, JSONParser, FormParser]
-    ALLOWED_CATEGORIES = ['avatar', 'product', 'project']
+    ALLOWED_CATEGORIES = ['avatar', 'product', 'project', 'system']
     ALLOWED_IMAGE_FORMATS = ['jpg', 'jpeg', 'png']
 
     def get_permissions(self):
@@ -53,8 +53,8 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
     def upload_image(self, request, *args, **kwargs):
         try:
             # Get the JSON data from the request
-            category = request.data.get('category', None)
-            id = request.data.get('id', '')
+            category = request.data.get('category', 'tmp')
+            sub_category = request.data.get('sub_category', '')
             user_id = request.user.id
 
             file = request.FILES.get('image')
@@ -75,22 +75,41 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+            if category not in self.ALLOWED_CATEGORIES:
+                message = "不支持的category。仅支持类型： ['avatar', 'product', 'project']"
+                response_data = {
+                    'message': message,
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             image_data = file.read()
 
-            if category == 'avatar':
+            if sub_category == '':
                 target_folder = category
             else:
-                target_folder = category+'/'+id
+                target_folder = category + '/' + sub_category
             filename = generate_unique_filename()
 
             image_url = upload_img.compress_and_upload_image(image_data, target_folder, filename, img_format)
 
             if image_url:
+                # 图片审核
+                s = aliyun_green.AliyunModeration()
+                if category == 'avatar':
+                    check_res = s.image_moderation("profilePhotoCheck", image_url)
+                else:
+                    check_res = s.image_moderation("baselineCheck", image_url)
+                if check_res['code'] != 1:
+                    response_data = {
+                        'message': check_res['message'],
+                        'data': None,
+                    }
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
                 current_user_instance = get_object_or_404(User, id=user_id)
                 image_instance = Image.objects.create(
                     upload_user=current_user_instance,
                     image_url=image_url,
-                    image_path=target_folder+'/'+filename,
+                    image_path=target_folder + '/' + filename,
                     category=target_folder
                 )
                 image_serializer = serializers.ImageSerializer(image_instance)
