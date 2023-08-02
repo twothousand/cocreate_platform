@@ -48,3 +48,19 @@ class VersionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
         fields = "__all__"
+
+# 产品详情序列化器
+class ProductDetailSerializer(serializers.ModelSerializer):
+    # 格式化时间
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
+    # 支持多对多关系的序列化
+    model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
+    industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
+    ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+
+
+    class Meta:
+        model = Product
+        fields = '__all__'
