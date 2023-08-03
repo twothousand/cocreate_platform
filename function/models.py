@@ -2,14 +2,11 @@
 import uuid
 # django 模块
 from django.db import models
-from django.contrib.auth import get_user_model
 # common
 from common.mixins.common_fields import UUIDField
 from common.mixins.base_model import BaseModel
 # app
 
-
-User = get_user_model()
 
 
 class VerifCode(BaseModel):
@@ -31,7 +28,7 @@ class Image(BaseModel):
     image_url = models.URLField(unique=True, verbose_name='图片链接')
     image_path = models.CharField(max_length=200, verbose_name='图片路径', default='')
     category = models.CharField(max_length=200, verbose_name='图片模块', default='uncategorized')
-    upload_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='上传图片的用户')
+    upload_user = models.CharField(max_length=36, verbose_name='上传图片的用户Id')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     def __str__(self):

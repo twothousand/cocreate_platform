@@ -81,7 +81,6 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         self.custom_message = "用户信息获取成功"
         return super().retrieve(request, *args, **kwargs)
 
-    # @transaction.atomic
     def create(self, request, *args, **kwargs):
         self.custom_message = "用户注册成功"
         return super().create(request, *args, **kwargs)

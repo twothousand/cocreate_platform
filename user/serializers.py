@@ -33,6 +33,7 @@ User = get_user_model()
 
 # =============================================== 公共校验函数 ===============================================
 
+
 def check_verif_code(mobile_phone: str, code_id: int, verification_code: str) -> (bool, dict):
     """
     校验验证码
@@ -68,6 +69,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         data["user_id"] = self.user.id
         data["username"] = self.user.username
         data["nickname"] = self.user.nickname
+        data["profile_image"] = self.user.profile_image
 
         return data
 
@@ -82,12 +84,28 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         model = User
         fields = ["id", "username"]
 
+    class Meta:
+        model = User
+        fields = ["id", "username"]
+
 
 # 构建项目序列化器
 class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+
+    def validate_username(self, value):
+        """
+        验证是否修改了手机号
+        @param value:
+        @return:
+        """
+        request = self.context.get("request", None)
+        if request and value != request.user.username:
+            raise serializers.ValidationError("请通过更换手机绑定的方式修改手机号码！")
+        return value
+
     class Meta:
         model = User  # 具体对哪个表进行序列化
-        fields = ["id", "username", "email", "profile_image", "location", "biography", "nickname"]
+        fields = ["id", "username", "email", "profile_image", "location", "biography", "nickname", "professional_career", "wechat_id"]
         # fields = ('id', )       # 临时添加字段也需要写在这里
         # exclude = ['id']  # 排除 id 字段
         # read_only_fields = ('id', "username")  # 指定字段为 read_only,
@@ -106,14 +124,14 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
     verification_code = serializers.CharField(max_length=6, write_only=True)  # write_only=True表示不会序列化输出给前端
     code_id = serializers.IntegerField(write_only=True)
 
-    # def validate_username(self, value):
-    #     """
-    #     校验手机号码是否有效
-    #     """
-    #     res = re_utils.validate_phone(phone=value)
-    #     if not res:
-    #         raise serializers.ValidationError("无效的手机号码")
-    #     return value
+    def validate_username(self, value):
+        """
+        校验手机号码是否有效
+        """
+        res = re_utils.validate_phone(phone=value)
+        if not res:
+            raise serializers.ValidationError("无效的手机号码")
+        return value
 
     def validate(self, data):
         """

@@ -1,21 +1,28 @@
+# django
 from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.db.models import Q
+from django.contrib.auth import get_user_model
+# rest_framework
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.views import APIView
+# common
+from common.mixins import my_mixins
+# app
 from user.permissions import IsOwnerOrReadOnly
 from dim.models import Model, Industry, AITag
 from function.models import Image
 from team.models import Team, Member
-from user.models import User
 from project.models import Project
-from .models import Product, Version
-from .serializers import ProductSerializer, ProductDetailSerializer
-from common.mixins import my_mixins
-from django.db import transaction
-from rest_framework.views import APIView
-from django.db.models import Q
+from product.models import Product, Version
+from product.serializers import ProductSerializer, ProductDetailSerializer
+
+User = get_user_model()
+
 
 class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Product.objects.all()

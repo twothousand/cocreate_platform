@@ -10,6 +10,8 @@ from django.contrib.auth.models import AbstractUser
 # common
 from common.mixins.common_fields import UUIDField
 from common.mixins.base_model import BaseModel
+# app
+from function.models import Image
 
 
 # 用户表
@@ -24,12 +26,13 @@ class User(AbstractUser, BaseModel):
     email = models.EmailField(max_length=50, verbose_name='邮箱', blank=True, null=True)
     name = models.CharField(max_length=50, verbose_name='真实姓名', blank=True, null=True)
     nickname = models.CharField(max_length=50, verbose_name='账户名', blank=True, null=True)
-    wechat_id = models.CharField(max_length=50, verbose_name='微信id', blank=True, null=True)
+    wechat_id = models.CharField(max_length=50, verbose_name='微信号', blank=True, null=True)
+    wechat_uuid = models.CharField(max_length=50, verbose_name='微信uuid', blank=True, null=True)
     # phone_number = models.CharField(max_length=50, unique=True, verbose_name='手机号码', blank=True, null=True)
     biography = models.TextField(max_length=300, verbose_name='个人简介', blank=True, null=True)
     professional_career = models.TextField(max_length=50, verbose_name='专业职业', blank=True, null=True)
     location = models.CharField(max_length=50, verbose_name='所在地', blank=True, null=True)
-    profile_image = models.ImageField(upload_to='profile_images/', verbose_name='头像', blank=True, null=True)
+    profile_image = models.ForeignKey(Image, verbose_name='头像', on_delete=models.SET_NULL, null=True)
     last_login = models.DateTimeField(verbose_name='最后登录时间', blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 

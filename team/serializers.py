@@ -1,6 +1,12 @@
+# django库
+from django.contrib.auth import get_user_model
+# rest_framework
 from rest_framework import serializers
+# app
 from team.models import Team, Member, Application
-from user.models import User
+
+User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
