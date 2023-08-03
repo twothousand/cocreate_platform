@@ -41,6 +41,7 @@ def generate_unique_filename():
 class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     parser_classes = [MultiPartParser, JSONParser, FormParser]
     ALLOWED_CATEGORIES = ['avatar', 'product', 'project', 'system']
+    ALLOWED_SUBCATEGORIES = ['cover', 'show_qrcode', 'group_qrcode']
     ALLOWED_IMAGE_FORMATS = ['jpg', 'jpeg', 'png']
 
     def get_permissions(self):
@@ -67,7 +68,15 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+            # 检查图片大小
+            max_image_size = 20 * 1024 * 1024  # 20MB in bytes
+            if file.size > max_image_size:
+                message = '图片超过允许大小（20MB）。'
+                response_data = {
+                    'message': message,
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             img_format = file.name.split('.')[-1].lower()
             if img_format not in self.ALLOWED_IMAGE_FORMATS:
                 message = '不支持的图片格式。仅支持 jpg、jpeg、png 格式。'
@@ -78,7 +87,14 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
             if category not in self.ALLOWED_CATEGORIES:
-                message = "不支持的category。仅支持类型： ['avatar', 'product', 'project']"
+                message = "不支持的category"
+                response_data = {
+                    'message': message,
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            if sub_category !='' and sub_category not in self.ALLOWED_SUBCATEGORIES:
+                message = "不支持的sub_category"
                 response_data = {
                     'message': message,
                     'data': None,
@@ -107,11 +123,11 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                         'data': None,
                     }
                     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-                current_user_instance = get_object_or_404(User, id=user_id)
+                # current_user_instance = get_object_or_404(User, id=user_id)
                 image_instance = Image.objects.create(
                     upload_user=user_id,
                     image_url=image_url,
-                    image_path=target_folder + '/' + filename,
+                    image_path=f'{target_folder}/{filename}.{img_format}',
                     category=target_folder
                 )
                 image_serializer = serializers.ImageSerializer(image_instance)
@@ -147,7 +163,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
             # Get the JSON data from the request
             image_id = request.data.get('image_id', None)
             user_id = request.user.id
-            current_user_instance = get_object_or_404(User, id=user_id)
+            # current_user_instance = get_object_or_404(User, id=user_id)
             # 检查当前用户是否是上传图片的人，只有上传图片的人才能删除
             image = Image.objects.filter(upload_user=user_id, id=image_id)
             is_uploader = image.exists()
