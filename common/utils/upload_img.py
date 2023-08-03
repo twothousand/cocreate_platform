@@ -15,6 +15,7 @@ bucket = oss2.Bucket(auth, ALIBABA_OSS_ENDPOINT, ALIBABA_OSS_BUCKET_NAME)
 
 def compress_and_upload_image(image_data, target_folder, filename, img_format, target_max_size=2 * 1024 * 1024, compress_step=0.9):
     try:
+        img_format = "jpeg" if img_format == "jpg" else img_format
         # Open the image
         image = Image.open(BytesIO(image_data))
 
@@ -56,6 +57,7 @@ def compress_and_upload_image(image_data, target_folder, filename, img_format, t
     except Exception as e:
         print("图片处理和上传到OSS失败：", e)
         return None
+
 
 def delete_image_from_oss(image_url):
     try:
