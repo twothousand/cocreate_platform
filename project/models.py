@@ -2,19 +2,15 @@
 项目表
 project 项目信息表
 """
-# 系统模块
 import uuid
-# django
+
 from django.db import models
-from django.contrib.auth import get_user_model
-# common
+
 from common.mixins.base_model import BaseModel
 from common.mixins.common_fields import UUIDField
-# app
 from dim.models import Model, Industry, AITag
-from project.conf import PROJECT_TYPE_CHOICES, PROJECT_STATUS_CHOICES
-
-User = get_user_model()
+from user.models import User
+from .conf import PROJECT_TYPE_CHOICES, PROJECT_STATUS_CHOICES
 
 
 # 项目信息表

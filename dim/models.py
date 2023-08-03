@@ -6,6 +6,7 @@ dim_ai_tags AI标签维度表
 """
 from django.db import models
 from common.mixins.base_model import BaseModel
+from user.models import User
 
 
 # 模型维度表

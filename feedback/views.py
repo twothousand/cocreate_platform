@@ -1,25 +1,15 @@
-# 系统模块
-
-# django
 from django.shortcuts import get_object_or_404
-from django.db import transaction
-from django.contrib.auth import get_user_model
-# rest_framework
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-# common
-from common.mixins import my_mixins
-# app
 from user.permissions import IsOwnerOrReadOnly
-from feedback.models import Feedback
-from feedback.serializers import FeedbackSerializer
-
-User = get_user_model()
-
-
+from user.models import User
+from .models import Feedback
+from .serializers import FeedbackSerializer
+from common.mixins import my_mixins
+from django.db import transaction
 class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     serializer_class = FeedbackSerializer
     def get_permissions(self):

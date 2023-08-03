@@ -8,16 +8,11 @@ team_members 队伍成员表
 import uuid
 # django 模块
 from django.db import models
-from django.contrib.auth import get_user_model
+from project.models import Project
+from user.models import User
 # common
 from common.mixins.common_fields import UUIDField
 from common.mixins.base_model import BaseModel
-# app
-from project.models import Project
-
-User = get_user_model()
-
-
 # 队伍信息表
 class Team(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name="队伍ID")

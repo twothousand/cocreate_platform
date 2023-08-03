@@ -44,32 +44,32 @@ class BaseModelViewSet:
         return super().dispatch(request, *args, **kwargs)
 
 
-class ListCreatRetrieveUpdateModelViewSet(BaseModelViewSet,
-                                          mixins.ListModelMixin,
+class ListCreatRetrieveUpdateModelViewSet(mixins.ListModelMixin,
                                           mixins.CreateModelMixin,
                                           mixins.RetrieveModelMixin,
                                           mixins.UpdateModelMixin,
-                                          GenericViewSet):
+                                          GenericViewSet,
+                                          BaseModelViewSet):
     """
     list(), create(), update(), partial_update()
     """
     pass
 
 
-class CreatRetrieveUpdateModelViewSet(BaseModelViewSet,
-                                      mixins.CreateModelMixin,
+class CreatRetrieveUpdateModelViewSet(mixins.CreateModelMixin,
                                       mixins.RetrieveModelMixin,
                                       mixins.UpdateModelMixin,
-                                      GenericViewSet):
+                                      GenericViewSet,
+                                      BaseModelViewSet):
     """
     create(), update(), partial_update()
     """
     pass
 
 
-class CreatModelViewSet(BaseModelViewSet,
-                        mixins.CreateModelMixin,
-                        GenericViewSet):
+class CreatModelViewSet(mixins.CreateModelMixin,
+                        GenericViewSet,
+                        BaseModelViewSet):
     """
     create()
     """

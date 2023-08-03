@@ -1,8 +1,7 @@
 # django库
 from django.contrib import admin
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+# app
+from .models import User
 
 admin.site.site_header = "AIGC共创平台 后台管理界面"
 admin.site.site_title = "后台管理界面"

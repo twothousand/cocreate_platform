@@ -1,27 +1,19 @@
-# 系统模块
-from datetime import date
-# django
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from django.db import transaction
-from django.contrib.auth import get_user_model
-# rest_framework
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
-# common
-from common.mixins import my_mixins
-# app
-from team import serializers as team_serializers
-from team.models import Team, Member, Application
 from user.permissions import IsOwnerOrReadOnly
+from team.models import Team, Member
+from user.models import User
 from project.models import Project
-
-User = get_user_model()
-
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from team.serializers import *
+from datetime import date
+from common.mixins import my_mixins
+from django.db import transaction
 
 # 组队招募
 class TeamRecruitmentView(APIView):
@@ -45,7 +37,7 @@ class TeamRecruitmentView(APIView):
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = team_serializers.TeamRecruitmentSerializer(team_recruitment)
+        serializer = TeamRecruitmentSerializer(team_recruitment)
         response_data = {
             'message': '组队招募数据获取成功',
             'data': serializer.data,
@@ -56,7 +48,7 @@ class TeamRecruitmentView(APIView):
     def post(self, request):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
-        serializer = team_serializers.TeamRecruitmentSerializer(data=request.data)
+        serializer = TeamRecruitmentSerializer(data=request.data)
 
         if serializer.is_valid():
             # 根据当前用户创建组队招募数据
@@ -109,7 +101,7 @@ class TeamRecruitmentView(APIView):
                 'data': None,
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-        serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
+        serializer = TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             response_data = {
@@ -128,7 +120,7 @@ class TeamRecruitmentView(APIView):
 # 组队申请：提交组队申请（可多次，覆盖）
 class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Application.objects.all()
-    serializer_class = team_serializers.TeamApplicationSerializer
+    serializer_class = TeamApplicationSerializer
 
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
@@ -377,7 +369,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                     status='待审核'
                 )
 
-                serializer = team_serializers.TeamApplicationSerializer(pending_applications, many=True)
+                serializer = TeamApplicationSerializer(pending_applications, many=True)
 
                 response_data = {
                     'message': '查询成功',
@@ -407,7 +399,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
 
 # 队伍管理
 class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
-    serializer_class = team_serializers.MemberSerializer
+    serializer_class = MemberSerializer
 
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求

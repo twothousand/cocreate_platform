@@ -9,19 +9,13 @@ product_collect	产品收藏表
 """
 # 系统模块
 import uuid
-# django
 from django.db import models
-from django.contrib.auth import get_user_model
-# common
-from common.mixins.common_fields import UUIDField
-from common.mixins.base_model import BaseModel
-# app
 from dim.models import Model, Industry, AITag
 from function.models import Image
 from project.models import Project
-
-User = get_user_model()
-
+from user.models import User
+from common.mixins.common_fields import UUIDField
+from common.mixins.base_model import BaseModel
 
 # 产品表
 class Product(BaseModel):
