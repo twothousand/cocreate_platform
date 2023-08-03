@@ -13,14 +13,16 @@ from rest_framework.throttling import AnonRateThrottle
 # django
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.contrib.auth import get_user_model
 # app
 from user.permissions import IsOwnerOrReadOnly
-from user.models import User
 from function.models import Image, VerifCode
 from function import serializers
 # common
 from common.mixins import my_mixins
 from common.utils import time_utils, upload_img, aliyun_green
+
+User = get_user_model()
 
 
 def generate_unique_filename():
@@ -107,7 +109,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
                 current_user_instance = get_object_or_404(User, id=user_id)
                 image_instance = Image.objects.create(
-                    upload_user=current_user_instance,
+                    upload_user=user_id,
                     image_url=image_url,
                     image_path=target_folder + '/' + filename,
                     category=target_folder
@@ -147,7 +149,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
             user_id = request.user.id
             current_user_instance = get_object_or_404(User, id=user_id)
             # 检查当前用户是否是上传图片的人，只有上传图片的人才能删除
-            image = Image.objects.filter(upload_user=current_user_instance, id=image_id)
+            image = Image.objects.filter(upload_user=user_id, id=image_id)
             is_uploader = image.exists()
             if not is_uploader:
                 response_data = {

@@ -4,10 +4,14 @@ feedback 反馈表
 """
 # 系统模块
 import uuid
+# django库
 from django.db import models
-from user.models import User
+from django.contrib.auth import get_user_model
+# common
 from common.mixins.common_fields import UUIDField
 from common.mixins.base_model import BaseModel
+
+User = get_user_model()
 
 
 # 反馈表
