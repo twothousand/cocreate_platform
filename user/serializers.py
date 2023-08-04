@@ -84,10 +84,6 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         model = User
         fields = ["id", "username"]
 
-    class Meta:
-        model = User
-        fields = ["id", "username"]
-
 
 # 构建项目序列化器
 class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
