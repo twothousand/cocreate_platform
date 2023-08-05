@@ -273,23 +273,23 @@ LOGGING = {
         # 默认的
         'default': {
             'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'class': 'logging.handlers.TimedRotatingFileHandler',  # 保存到文件，自动切
             'filename': os.path.join(BASE_LOG_DIR, 'info_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log'),
-            # 日志文件
-            'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
-            'when': 'MIDNIGHT',
-            'backupCount': 30,
+            # # 日志文件
+            # 'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
+            'when': 'D',
+            'backupCount': 30,  # 最多备份几个
             'formatter': 'standard',
             'encoding': 'utf-8',
         },
         # 专门用来记错误日志
         'error': {
             'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'class': 'logging.handlers.TimedRotatingFileHandler',  # 保存到文件，自动切
             'filename': os.path.join(BASE_LOG_DIR, 'error_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log'),
-            # 日志文件
-            'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
-            'when': 'MIDNIGHT',
+            # # 日志文件
+            # 'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
+            'when': 'D',
             'backupCount': 30,
             'formatter': 'standard',
             'encoding': 'utf-8',
@@ -297,11 +297,11 @@ LOGGING = {
         # 专门定义一个收集特定信息的日志
         'collect': {
             'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'class': 'logging.handlers.TimedRotatingFileHandler',  # 保存到文件，自动切
             'filename': os.path.join(BASE_LOG_DIR, 'collect_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log'),
-            'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
-            'when': 'MIDNIGHT',
-            'backupCount': 30,
+            # 'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
+            'when': 'D',
+            'backupCount': 30,  # 最多备份几个
             'formatter': 'collect',
             'encoding': "utf-8"
         }
