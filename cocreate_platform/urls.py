@@ -20,6 +20,8 @@ from django.urls import path, include
 # drf_yasg库
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+# app库
+from product.views import ProductFilterAndSearchView
 
 # 配置Swagger文档视图
 schema_view = get_schema_view(
@@ -32,7 +34,9 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', include('user.urls')),
+
+    # http://127.0.0.1:8000
+    path('', ProductFilterAndSearchView.as_view(), name='product-filter-and-search'),
 
     # http://127.0.0.1:8000/api/products/
     path('api/products/', include('product.urls'), name='product'),

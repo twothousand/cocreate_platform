@@ -13,6 +13,7 @@ from common.mixins.common_fields import UUIDField
 # app
 from dim.models import Model, Industry, AITag
 from project.conf import PROJECT_TYPE_CHOICES, PROJECT_STATUS_CHOICES
+from function.models import Image
 
 User = get_user_model()
 
@@ -33,7 +34,9 @@ class Project(BaseModel):
     project_display_link = models.URLField(verbose_name='项目展示链接', blank=True, null=True)
     project_views = models.IntegerField(default=0, verbose_name='项目浏览数量')
     project_other_info = models.TextField(verbose_name='其它补充信息', blank=True, null=True)
-    project_images = models.ImageField(upload_to='project_images/', verbose_name='项目展示图片', blank=True, null=True)
+    project_images = models.ManyToManyField(Image, blank=True, verbose_name='项目展示图片')
+    project_display_qr_code = models.ForeignKey(Image, null=True, on_delete=models.CASCADE,
+                                                related_name='project_display_qr_code', verbose_name='项目展示二维码')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 

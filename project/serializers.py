@@ -1,9 +1,13 @@
+# django
+from django.shortcuts import get_object_or_404
+# rest_framework
 from rest_framework import serializers
 from rest_framework.settings import api_settings
-
+# app
 from .models import Project
 from team.models import Member, Team
 from dim.models import Model, Industry, AITag
+from function.models import Image
 
 
 # 项目序列化器
@@ -53,6 +57,12 @@ class AITagSerializer(serializers.ModelSerializer):
     class Meta:
         model = AITag
         fields = ['id', 'ai_tag_name']
+
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = '__all__'
 
 
 # 项目列表序列化器
@@ -162,6 +172,21 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         project.industry.add(*industries)
         ai_tags = AITag.objects.filter(ai_tag__in=ai_tags_data)
         project.ai_tag.add(*ai_tags)
+
+        # 上传图片（project_images项目展示图片（多对多）、project_display_qr_code项目展示二维码（一对多））TODO: 未实现
+        # 获取前端传入的图片数据
+        images_data = self.context.get('request').data.getlist('project_images')
+        qr_code_data = self.context.get('request').data.get('project_display_qr_code')
+
+        # 上传项目展示图片并添加到多对多关系字段
+        for image_data in images_data:
+            image = Image.objects.create(image=image_data)
+            project.project_images.add(image)
+
+        # 上传项目展示二维码并关联到外键字段
+        if qr_code_data:
+            qr_code = Image.objects.create(image=qr_code_data)
+            project.project_display_qr_code = qr_code
 
         # 如果同时开启组队招募
         if validated_data.get('is_recruitment_open', False):
