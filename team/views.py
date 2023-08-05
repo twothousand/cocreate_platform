@@ -19,7 +19,7 @@ from team import serializers as team_serializers
 from team.models import Team, Member, Application
 from user.permissions import IsOwnerOrReadOnly
 from project.models import Project
-from datetime import date
+from datetime import date, datetime
 
 User = get_user_model()
 
@@ -57,6 +57,10 @@ class TeamRecruitmentView(APIView):
     def post(self, request):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
+        try:
+            request.data['recruitment_end_date'] = datetime.strptime(request.data['recruitment_end_date'] , "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
+        except:
+            pass
         serializer = team_serializers.TeamRecruitmentSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -82,7 +86,7 @@ class TeamRecruitmentView(APIView):
         else:
             response_data = {
                 'message': '组队招募数据创建失败',
-                'data': serializer.error,  # 包含序列化器错误信息
+                'data': serializer.errors,  # 包含序列化器错误信息
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
