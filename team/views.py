@@ -19,6 +19,7 @@ from team import serializers as team_serializers
 from team.models import Team, Member, Application
 from user.permissions import IsOwnerOrReadOnly
 from project.models import Project
+from datetime import date
 
 User = get_user_model()
 
@@ -61,6 +62,15 @@ class TeamRecruitmentView(APIView):
         if serializer.is_valid():
             # 根据当前用户创建组队招募数据
             user = request.user
+            # 校验招募截止日期是否小于今天
+            recruitment_end_date = serializer.validated_data['recruitment_end_date']
+            if recruitment_end_date < date.today():
+                response_data = {
+                    'message': '招募截止日期不能早于今天',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
             team_recruitment = serializer.save(created_by=user)
 
             # 执行其他逻辑或返回响应
@@ -111,6 +121,14 @@ class TeamRecruitmentView(APIView):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
+            # 校验招募截止日期是否小于今天
+            recruitment_end_date = serializer.validated_data['recruitment_end_date']
+            if recruitment_end_date < date.today():
+                response_data = {
+                    'message': '招募截止日期不能早于今天',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             response_data = {
                 'message': '组队招募数据更新成功',

@@ -18,6 +18,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     model = serializers.PrimaryKeyRelatedField(queryset=Model.objects.all(), many=True)
     industry = serializers.PrimaryKeyRelatedField(queryset=Industry.objects.all(), many=True)
     ai_tag = serializers.PrimaryKeyRelatedField(queryset=AITag.objects.all(), many=True)
+    project_images = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all(), many=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
@@ -60,9 +61,10 @@ class AITagSerializer(serializers.ModelSerializer):
 
 
 class ImageSerializer(serializers.ModelSerializer):
+    image_url_name = serializers.CharField(source='image_url')
     class Meta:
         model = Image
-        fields = '__all__'
+        fields = ['id', 'image_url']
 
 
 # 项目列表序列化器
@@ -71,6 +73,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
 
     # 招募信息
     recruitment_slots = serializers.SerializerMethodField()
@@ -125,6 +128,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
 
     # 招募信息
     recruitment_slots = serializers.SerializerMethodField()
@@ -161,6 +165,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         models_data = validated_data.pop('model', [])
         industries_data = validated_data.pop('industry', [])
         ai_tags_data = validated_data.pop('ai_tag', [])
+        project_images_data = validated_data.pop('project_images', [])
 
         # 创建项目并保存其他字段
         project = Project.objects.create(**validated_data)
@@ -173,24 +178,9 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         ai_tags = AITag.objects.filter(ai_tag__in=ai_tags_data)
         project.ai_tag.add(*ai_tags)
 
-        # 上传图片（project_images项目展示图片（多对多）、project_display_qr_code项目展示二维码（一对多））TODO: 未实现
         # 获取前端传入的图片数据
-        images_data = self.context.get('request').data.getlist('project_images')
-        qr_code_data = self.context.get('request').data.get('project_display_qr_code')
-
-        # 上传项目展示图片并添加到多对多关系字段
-        for image_data in images_data:
-            image = Image.objects.create(image=image_data)
-            project.project_images.add(image)
-
-        # 上传项目展示二维码并关联到外键字段
-        if qr_code_data:
-            qr_code = Image.objects.create(image=qr_code_data)
-            project.project_display_qr_code = qr_code
-
-        # 如果同时开启组队招募
-        if validated_data.get('is_recruitment_open', False):
-            pass  # TODO: 创建队伍，调用队伍创建接口
+        project_images = Image.objects.filter(image_url__in=project_images_data)
+        project.project_images.add(*project_images)
 
         return project
 
@@ -206,6 +196,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         models_data = validated_data.pop('model', [])
         industries_data = validated_data.pop('industry', [])
         ai_tags_data = validated_data.pop('ai_tag', [])
+        project_images_data = validated_data.pop('project_images', [])
 
         # 更新项目并保存其他字段
         instance = super().update(instance, validated_data)
@@ -214,6 +205,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         instance.model.clear()
         instance.industry.clear()
         instance.ai_tag.clear()
+        instance.project_images.clear()
 
         # 添加模型到多对多关系字段
         models = Model.objects.filter(model_name__in=models_data)
@@ -222,6 +214,9 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         instance.industry.add(*industries)
         ai_tags = AITag.objects.filter(ai_tag__in=ai_tags_data)
         instance.ai_tag.add(*ai_tags)
+        # 获取前端传入的图片数据
+        project_images = Image.objects.filter(image_url__in=project_images_data)
+        instance.project_images.add(*project_images)
 
         return instance
 
@@ -241,6 +236,7 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
     model = serializers.StringRelatedField()
     industry = serializers.StringRelatedField()
     ai_tag = serializers.StringRelatedField()
+    project_images = serializers.StringRelatedField()
     project_creator = serializers.StringRelatedField()
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
