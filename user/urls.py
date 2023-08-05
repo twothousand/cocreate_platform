@@ -29,16 +29,16 @@ urlpatterns = [
     path('verify_token/', TokenVerifyView.as_view()),  # 校验Token
 
     # http://127.0.0.1:8000/api/users/1/managed_projects/
-    path('<str:user_id>/managed_projects/', views.UserManagedProjectsView.as_view()),  # 管理的项目
+    path('managed_projects/', views.UserManagedProjectsView.as_view()),  # 管理的项目
     # http://127.0.0.1:8000/api/users/2/managed_projects/1  # 获取特定用户管理的特定项目的详细信息
-    path('<str:user_id>/managed_projects/<int:project_id>', views.UserManagedProjectDetailView.as_view()),
+    path('managed_projects/<str:project_id>', views.UserManagedProjectDetailView.as_view()),
     # http://127.0.0.1:8000/api/users/2/published_product/1
-    path('<str:user_id>/published_product/<int:project_id>', views.UserPublishedProductDetailView.as_view()),
+    path('published_product/<str:project_id>', views.UserPublishedProductDetailView.as_view()),
 
     # http://127.0.0.1:8000/api/users/1/joined_projects/
-    path('<str:user_id>/joined_projects/', views.UserJoinedProjectsView.as_view()),  # 参与的项目
+    path('joined_projects/', views.UserJoinedProjectsView.as_view()),  # 参与的项目
     # http://127.0.0.1:8000/api/users/2/joined_projects/1  # 获取特定用户参与的特定项目的详细信息
-    path('<str:user_id>/joined_projects/<int:project_id>', views.UserJoinedProjectDetailView.as_view()),
+    path('joined_projects/<str:project_id>', views.UserJoinedProjectDetailView.as_view()),
 
 
 ]

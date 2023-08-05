@@ -233,19 +233,41 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
         “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
     """
 
-    model = serializers.StringRelatedField()
-    industry = serializers.StringRelatedField()
-    ai_tag = serializers.StringRelatedField()
-    project_images = serializers.StringRelatedField()
-    project_creator = serializers.StringRelatedField()
+    # 支持多对多关系的序列化
+    # model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
+    # industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
+    # ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+    project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
-    project_views = serializers.ReadOnlyField()
+    # project_views = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Project
+        fields = ['id', 'project_images', 'project_creator_name', 'is_deleted', 'project_name', 'project_description', 'created_at', 'updated_at']
+
+# 获取特定用户管理的具体项目序列化器
+class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
+    """
+        项目封面(考虑流量，暂不获取)、项目名称、项目简介、成员数(从队伍成员表取，暂不获取)
+        以及一个”管理项目“的按钮（直接通过项目名称点进去即可） 和一个“删除项目“的按钮
+        “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
+    """
+
+    # 支持多对多关系的序列化
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+    project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
+    model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
+    industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
+    ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    # project_views = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
         fields = '__all__'
-
 
 # 获取特定用户加入的所有项目序列化器
 class UserJoinedProjectsSerializer(serializers.ModelSerializer):
@@ -256,6 +278,18 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
         fields = ("id", "project_creator_name", "project_description", "project_name", "project_type", "project_status",
                   "project_cycles")
 
+class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
+    model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
+    industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
+    ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+    project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
+    class Meta:
+        model = Project
+        fields = '__all__'
 
 # 获取项目成员列表序列化器
 class ProjectMembersSerializer(serializers.ModelSerializer):
