@@ -18,7 +18,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from product.models import Product
 from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
-from project.serializers import UserManagedProjectsSerializer, UserJoinedProjectsSerializer
+from project.serializers import UserManagedProjectsSerializer, UserManagedProjectDetailSerializer, UserJoinedProjectsSerializer, UserJoinedProjectDetailSerializer
 from team.models import Member
 from user import serializers
 from user.permissions import IsOwnerOrReadOnly
@@ -112,8 +112,11 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
 # ------------------------我管理的项目-------------------------
 # 获取特定用户管理的所有项目
 class UserManagedProjectsView(APIView):
-    def get(self, request, user_id):
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+
+    def get(self, request):
         try:
+            user_id = request.user.id
             managed_projects = Project.objects.filter(project_creator_id=user_id)
             serializer = UserManagedProjectsSerializer(managed_projects, many=True)
             response_data = {
@@ -131,6 +134,8 @@ class UserManagedProjectsView(APIView):
 
 # 特定用户管理的特定项目的详细信息（获取、更新、删除）
 class UserManagedProjectDetailView(APIView):
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+
     @staticmethod
     def get_managed_project(user_id, project_id):
         project = Project.objects.filter(id=project_id, project_creator_id=user_id).first()
@@ -138,10 +143,12 @@ class UserManagedProjectDetailView(APIView):
             raise NotFound("项目未发现或不是项目管理者！")
         return project
 
-    def get(self, request, user_id, project_id):
+    def get(self, request, project_id):
         try:
+            print('request', request)
+            user_id = request.user.id
             project = self.get_managed_project(user_id, project_id)
-            serializer = UserManagedProjectsSerializer(project)
+            serializer = UserManagedProjectDetailSerializer(project)
             response_data = {
                 "message": "获取项目信息成功！",
                 "data": serializer.data
@@ -154,8 +161,9 @@ class UserManagedProjectDetailView(APIView):
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    def patch(self, request, user_id, project_id):
+    def patch(self, request, project_id):
         try:
+            user_id = request.user.id
             project = self.get_managed_project(user_id, project_id)
             serializer = UserManagedProjectsSerializer(project, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -178,8 +186,9 @@ class UserManagedProjectDetailView(APIView):
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def delete(self, request, user_id, project_id):
+    def delete(self, request, project_id):
         try:
+            user_id = request.user.id
             project = self.get_managed_project(user_id, project_id)
             project.delete()
             response_data = {
@@ -211,30 +220,55 @@ class UserPublishedProductDetailView(APIView):
             raise NotFound("项目未发现或不是项目管理者！")
         return project
 
-    def get(self, request, user_id, project_id):
-        product = Product.objects.get(project_id=project_id)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
+    def get(self, request, project_id):
+        try:
+            user_id = request.user.id
+            product = Product.objects.get(project_id=project_id)
+            serializer = ProductSerializer(product)
+            return Response(serializer.data)
+        except Exception as e:
+            response_data = {
+                'message': str(e),
+                'data': None
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def post(self, request, user_id, project_id):
-        serializer = VersionSerializer(data=request.data)
-        if serializer.is_valid():
+    def post(self, request, project_id):
+        try:
+            user_id = request.user.id
+            serializer = VersionSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            response_data = {
+                'message': str(e),
+                'data': None
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, project_id):
+        try:
+            user_id = request.user.id
+            serializer = VersionDetailSerializer(data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, user_id, project_id):
-        serializer = VersionDetailSerializer(data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+            return Response(serializer.data)
+        except Exception as e:
+            response_data = {
+                'message': str(e),
+                'data': None
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ------------------------我加入的项目-------------------------
 # 获取特定用户加入的所有项目
 class UserJoinedProjectsView(APIView):
-    def get(self, request, user_id):
+    def get(self, request):
         try:
+            user_id = request.user.id
             # 获取符合条件的队伍ID列表
             team_ids = Member.objects.filter(
                 user_id=user_id,
@@ -279,10 +313,11 @@ class UserJoinedProjectDetailView(APIView):
         except (Project.DoesNotExist, Member.DoesNotExist):
             raise NotFound("你还未加入该项目！！！")
 
-    def get(self, request, user_id, project_id):
+    def get(self, request,  project_id):
         try:
+            user_id = request.user.id
             project = self.get_project(user_id, project_id)
-            serializer = UserJoinedProjectsSerializer(project)
+            serializer = UserJoinedProjectDetailSerializer(project)
             response_data = {
                 "message": "获取加入的具体项目成功！",
                 "data": serializer.data
@@ -295,8 +330,9 @@ class UserJoinedProjectDetailView(APIView):
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def delete(self, request, user_id, project_id):
+    def delete(self, request, project_id):
         try:
+            user_id = request.user.id
             project = self.get_project(user_id, project_id)
 
             # 判断用户是否为项目负责人
