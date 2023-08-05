@@ -30,7 +30,7 @@ from common.utils import tools
 from common.utils.decorators import disallow_methods, disallow_actions
 
 # 获得一个logger实体对象
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -41,7 +41,7 @@ class LoginView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, TokenObtai
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        self.log_request(self, logger, request)
+        # self.log_request(self, logger, request)
 
         # 自定义响应message
         self.custom_message = "登录成功！"
@@ -49,7 +49,7 @@ class LoginView(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, TokenObtai
         # 执行父类方法
         response = super().post(request, *args, **kwargs)
 
-        self.log_response(self, logger, request, response)
+        # self.log_response(self, logger, request, response)
         return response
 
 

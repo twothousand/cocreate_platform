@@ -13,15 +13,38 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
+# 系统模块
+import os
+from datetime import datetime
+import logging
 # django库
 from django.contrib import admin
 from django.urls import path, include
 # drf_yasg库
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+# drf_api_logger
+from drf_api_logger import API_LOGGER_SIGNAL
 # app库
 from product.views import ProductFilterAndSearchView
+# settings
+from cocreate_platform.settings import BASE_LOG_DIR
+
+logger = logging.getLogger('drf_api_logger')
+
+
+def api_log_listener(**kwargs):
+    logger.info(str(kwargs))
+
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    log_filename = f'api_info_{current_date}.log'
+
+    with open(os.path.join(BASE_LOG_DIR, log_filename), 'a') as log_file:
+        log_file.write(str(kwargs) + '\n')
+
+
+# 全局订阅信号
+API_LOGGER_SIGNAL.listen += api_log_listener
 
 # 配置Swagger文档视图
 schema_view = get_schema_view(

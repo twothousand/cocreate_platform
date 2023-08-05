@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',  # 前后端分离
     'rest_framework_simplejwt',  # 用户鉴权
     'drf_yasg',  # Swagger
+    'drf_api_logger',
     'user',  # 用户模块
     'project',  # 项目模块
     'team',  # 组队模块
@@ -78,10 +79,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # 解决跨域问题
+    'django.middleware.csrf.CsrfViewMiddleware',  # 解决跨域问题
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'cocreate_platform.urls'
@@ -275,7 +277,8 @@ LOGGING = {
             'filename': os.path.join(BASE_LOG_DIR, 'info_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log'),
             # 日志文件
             'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
-            'backupCount': 10,  # 最多备份几个
+            'when': 'MIDNIGHT',
+            'backupCount': 30,
             'formatter': 'standard',
             'encoding': 'utf-8',
         },
@@ -286,7 +289,8 @@ LOGGING = {
             'filename': os.path.join(BASE_LOG_DIR, 'error_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log'),
             # 日志文件
             'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
-            'backupCount': 10,
+            'when': 'MIDNIGHT',
+            'backupCount': 30,
             'formatter': 'standard',
             'encoding': 'utf-8',
         },
@@ -296,7 +300,8 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
             'filename': os.path.join(BASE_LOG_DIR, 'collect_' + time.strftime("%Y-%m-%d", time.localtime()) + '.log'),
             'maxBytes': 1024 * 1024 * 50 * 1024,  # 5G大小
-            'backupCount': 10,
+            'when': 'MIDNIGHT',
+            'backupCount': 30,
             'formatter': 'collect',
             'encoding': "utf-8"
         }
@@ -309,13 +314,23 @@ LOGGING = {
             'propagate': True,  # 向不向更高级别的logger传递
         },
         # 名为 'collect'的logger还单独处理
-        'collect': {
-            'handlers': ['console', 'collect'],
-            'level': 'INFO',
+        'drf_api_logger': {
+            'handlers': ['default', 'console', 'error'],
+            'level': 'DEBUG',
         }
     },
 }
 
+# DRF_API_LOGGER_DATABASE = True  # 存储到数据库
+DRF_API_LOGGER_SIGNAL = True  # Listen to the signal as soon as any API is called. So you can log the API data into a file or for different use-cases.
+DRF_LOGGER_QUEUE_MAX_SIZE = 50  # 多少条日志写入 Default to 50 if not specified.
+DRF_LOGGER_INTERVAL = 10  # 间隔多久写入 In Seconds, Default to 10 seconds if not specified.
+DRF_API_LOGGER_SKIP_NAMESPACE = []  # 指定app不写入
+DRF_API_LOGGER_SKIP_URL_NAME = []  # 指定url不写入
+DRF_API_LOGGER_DEFAULT_DATABASE = 'default'  # 指定数据库 如果未指定，默认为“default”确保迁移 DRF_API_LOGGER_DEFAULT_DATABASE 中指定的数据库。
+DRF_API_LOGGER_PATH_TYPE = 'ABSOLUTE'  # 完整路径
+DRF_API_LOGGER_SLOW_API_ABOVE = 200  # 额外标识超过200ms的请求 默认为无
+DRF_API_LOGGER_EXCLUDE_KEYS = []  # 敏感数据将被替换为“***FILTERED***”。
 
 # ----- SIMPLEUI -----
 # 离线模式
