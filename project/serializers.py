@@ -186,7 +186,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__'
+        fields = ['id', 'project_creator']
 
 
 # 项目更新序列化器
@@ -222,7 +222,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__'
+        fields = ['id', 'project_creator']
 
 
 # 获取特定用户管理的所有项目序列化器
