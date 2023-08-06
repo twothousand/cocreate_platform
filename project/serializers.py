@@ -186,7 +186,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'project_creator']
+        fields = '__all__' #['id', 'project_creator']
 
 
 # 项目更新序列化器
@@ -222,7 +222,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'project_creator']
+        fields = '__all__' #['id', 'project_creator']
 
 
 # 获取特定用户管理的所有项目序列化器
@@ -294,14 +294,20 @@ class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
 # 获取项目成员列表序列化器
 class ProjectMembersSerializer(serializers.ModelSerializer):
     team_name = serializers.ReadOnlyField(source='team.team_name')
-    username = serializers.ReadOnlyField(source='user.username')
-    name = serializers.ReadOnlyField(source='user.name')
+    # username = serializers.ReadOnlyField(source='user.username')
+    nickname = serializers.ReadOnlyField(source='user.nickname')
     user_id = serializers.ReadOnlyField(source='user.id')
     professional_career = serializers.ReadOnlyField(source='user.professional_career')
     location = serializers.ReadOnlyField(source='user.location')
     email = serializers.ReadOnlyField(source='user.email')
+    profile_image = serializers.SerializerMethodField()
+    # profile_image = serializers.SlugRelatedField(source='user.profile_image_id', many=True, read_only=True, slug_field='image_url')
+
+    def get_profile_image(self, instance):
+        # Replace 'image_url' with the actual field name representing the image URL in the Image model.
+        return instance.user.profile_image.image_url if instance.user.profile_image else None
 
     class Meta:
         model = Member
-        fields = ['team_name', 'is_leader', 'member_status', 'user_id', 'username', 'name', 'professional_career',
-                  'location', 'email']
+        fields = ['team_name', 'is_leader', 'member_status', 'user_id', 'nickname', 'professional_career',
+                  'location', 'email', 'profile_image']
