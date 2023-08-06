@@ -18,13 +18,11 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
-
 # common
 from common.utils.aliyun_message import AliyunSMS
 from common.utils import re_utils, time_utils
 from common import constant
 from common.mixins import my_mixins
-
 # app
 from function.models import VerifCode
 
@@ -73,7 +71,8 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         data["user_id"] = self.user.id
         data["username"] = self.user.username
         data["nickname"] = self.user.nickname
-        data["profile_image"] = self.user.profile_image
+        profile_image = self.user.profile_image
+        data["profile_image"] = profile_image.image_url if profile_image else profile_image
 
         return data
 
@@ -91,6 +90,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
 
 # 构建项目序列化器
 class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
 
     def validate_username(self, value):
         """
@@ -102,6 +102,9 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
         if request and value != request.user.username:
             raise serializers.ValidationError("请通过更换手机绑定的方式修改手机号码！")
         return value
+
+    # def get_profile_image(self, obj):
+    #     return obj.profile_image.image_url
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
