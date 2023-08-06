@@ -69,7 +69,7 @@ class TeamRecruitmentView(APIView):
             user = request.user
             # 校验招募截止日期是否小于今天
             recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            if recruitment_end_date < date.today():
+            if recruitment_end_date <= date.today():
                 response_data = {
                     'message': '招募截止日期不能早于今天',
                     'data': None,
@@ -138,7 +138,7 @@ class TeamRecruitmentView(APIView):
         if serializer.is_valid():
             # 校验招募截止日期是否小于今天
             recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            if recruitment_end_date < date.today():
+            if recruitment_end_date <= date.today():
                 response_data = {
                     'message': '招募截止日期不能早于今天',
                     'data': None,
