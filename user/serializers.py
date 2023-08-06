@@ -104,7 +104,8 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
         return value
 
     def get_profile_image(self, obj):
-        return obj.profile_image.image_url
+        profile_image = obj.profile_image
+        return profile_image.image_url if profile_image else profile_image
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
