@@ -11,6 +11,7 @@
 """
 # 系统模块
 import random
+from datetime import timedelta
 # rest_framework库
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -34,17 +35,20 @@ User = get_user_model()
 # =============================================== 公共校验函数 ===============================================
 
 
-def check_verif_code(mobile_phone: str, code_id: int, verification_code: str) -> (bool, dict):
+def check_verif_code(mobile_phone: str, verification_code: str) -> (bool, dict):
     """
     校验验证码
     @param mobile_phone: 手机号码
-    @param code_id: 验证码id
     @param verification_code: 验证码
     @return: 如果验证码有效，返回True，否则返回False
     """
     result = {}
-    if VerifCode.filter(id=code_id, verification_code=verification_code, mobile_phone=mobile_phone).exists():  # 验证码存在
-        obj = VerifCode.get(id=code_id)
+    res = VerifCode.filter(
+            verification_code=verification_code,
+            mobile_phone=mobile_phone
+    ).order_by('-created_at')
+    if res.exists():  # 验证码存在
+        obj = res[0]
         if obj.is_deleted:
             result["error"] = "验证码已被使用，请重新获取验证码"
             return False, result
@@ -118,7 +122,6 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
     用户注册和修改密码Serializer
     """
     verification_code = serializers.CharField(max_length=6, write_only=True)  # write_only=True表示不会序列化输出给前端
-    code_id = serializers.IntegerField(write_only=True)
 
     def validate_username(self, value):
         """
@@ -127,6 +130,10 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
         res = re_utils.validate_phone(phone=value)
         if not res:
             raise serializers.ValidationError("无效的手机号码")
+
+        request = self.context.get("request", None)
+        if request.method.lower() == "patch" and value != request.user.username:
+            raise serializers.ValidationError("请使用账号绑定的手机号码进行验证")
         return value
 
     def validate(self, data):
@@ -138,14 +145,12 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
             raise serializers.ValidationError({"password": "密码长度需要在6到18位之间"})
 
         # 校验验证码
-        res, result = check_verif_code(mobile_phone=data.get('username'), code_id=data.get('code_id'),
-                                       verification_code=data.get('verification_code'))
+        res, result = check_verif_code(mobile_phone=data.get('username'), verification_code=data.get('verification_code'))
         if not res:
             raise serializers.ValidationError({"verification_code": result["error"]})
 
         # 弹出无用字段
         data.pop('verification_code')
-        data.pop('code_id')
 
         return data
 
@@ -177,7 +182,7 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'nickname', 'password', 'verification_code', 'code_id']
+        fields = ['id', 'username', 'nickname', 'password', 'verification_code']
 
         extra_kwargs = {
             'username': {
