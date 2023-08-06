@@ -12,6 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # common
 from common.mixins import my_mixins
+from common.utils import aliyun_green
 # app
 from user.permissions import IsOwnerOrReadOnly
 from feedback.models import Feedback
@@ -37,6 +38,16 @@ class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelV
             feedback_data = request.data
             user_id = request.user.id
             current_user_instance = get_object_or_404(User, id=user_id)
+            # 校验反馈信息是否内容合规
+            s = aliyun_green.AliyunModeration()
+            check_res = s.text_moderation("chat_detection",
+                                          feedback_data['feedback_content'])
+            if check_res['code'] != 1:
+                response_data = {
+                    'message': '文本检测违规:' + check_res['message'],
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
             feedback_instance = Feedback.objects.create(
                 user=current_user_instance,

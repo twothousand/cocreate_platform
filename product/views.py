@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 # common
 from common.mixins import my_mixins
+from common.utils import aliyun_green
 # app
 from user.permissions import IsOwnerOrReadOnly
 from dim.models import Model, Industry, AITag
@@ -67,6 +68,16 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
                     }
                     return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
+            # 校验产品内容信息是否内容合规
+            s = aliyun_green.AliyunModeration()
+            check_res = s.text_moderation("chat_detection",
+                                          version_data['name']+"。"+version_data['description'])
+            if check_res['code'] != 1:
+                response_data = {
+                    'message': '文本检测违规:' + check_res['message'],
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             # Check if a product with the given project_id already exists
             product_instance, created = Product.objects.get_or_create(project_id=project_id)
             # 如果产品存在，返回
@@ -169,7 +180,16 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
                         'data': None,
                     }
                     return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
+            # 校验产品内容信息是否内容合规
+            s = aliyun_green.AliyunModeration()
+            check_res = s.text_moderation("chat_detection",
+                                          version_data['name'] + "。" + version_data['description'])
+            if check_res['code'] != 1:
+                response_data = {
+                    'message': '文本检测违规:' + check_res['message'],
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             product_display_qr_code_instance = get_object_or_404(Image, id=version_data['product_display_qr_code']) if \
             version_data['product_display_qr_code'] != '' else None
             test_group_qr_code_instance = get_object_or_404(Image, id=version_data['test_group_qr_code']) if \

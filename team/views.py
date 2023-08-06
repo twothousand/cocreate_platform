@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # common
 from common.mixins import my_mixins
+from common.utils import aliyun_green
 # app
 from team import serializers as team_serializers
 from team.models import Team, Member, Application
@@ -71,6 +72,16 @@ class TeamRecruitmentView(APIView):
             if recruitment_end_date < date.today():
                 response_data = {
                     'message': '招募截止日期不能早于今天',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            # 校验组队招募信息是否内容合规
+            s = aliyun_green.AliyunModeration()
+            check_res = s.text_moderation("ad_compliance_detection", serializer.validated_data['recruitment_requirements'])
+            if check_res['code'] != 1:
+                response_data = {
+                    'message': '文本检测违规:'+check_res['message'],
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -133,6 +144,16 @@ class TeamRecruitmentView(APIView):
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            # 校验组队招募信息是否内容合规
+            s = aliyun_green.AliyunModeration()
+            check_res = s.text_moderation("ad_compliance_detection",
+                                          serializer.validated_data['recruitment_requirements'])
+            if check_res['code'] != 1:
+                response_data = {
+                    'message': '文本检测违规:'+check_res['message'],
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             response_data = {
                 'message': '组队招募数据更新成功',
@@ -170,7 +191,17 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
 
             if not user_id or not team_id:
                 response_data = {
-                    'message': '请提供用户ID(token), 队伍ID(team_id), application_msg, 申请消息(application_msg)',
+                    'message': '参数不全', #请提供用户ID(token), 队伍ID(team_id), 申请消息(application_msg)
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            # 校验申请信息是否内容合规
+            s = aliyun_green.AliyunModeration()
+            check_res = s.text_moderation("chat_detection",
+                                          application_msg)
+            if check_res['code'] != 1:
+                response_data = {
+                    'message': '文本检测违规:' + check_res['message'],
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
