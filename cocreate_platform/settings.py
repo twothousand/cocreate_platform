@@ -313,11 +313,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,  # 向不向更高级别的logger传递
         },
-        # 名为 'collect'的logger还单独处理
-        'drf_api_logger': {
-            'handlers': ['default', 'console', 'error'],
-            'level': 'DEBUG',
-        }
+        # # 名为 'collect'的logger还单独处理
+        # 'drf_api_logger': {
+        #     'handlers': ['default', 'error'],
+        #     'level': 'DEBUG',
+        # }
     },
 }
 
