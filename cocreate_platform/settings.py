@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'dim',  # 维度模块
     'feedback',  # 反馈模块
     'function',  # 功能模块
+    'notification',  # 通知模块
 ]
 
 # rest_framework 配置
