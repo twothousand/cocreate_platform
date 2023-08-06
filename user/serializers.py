@@ -103,8 +103,8 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
             raise serializers.ValidationError("请通过更换手机绑定的方式修改手机号码！")
         return value
 
-    # def get_profile_image(self, obj):
-    #     return obj.profile_image.image_url
+    def get_profile_image(self, obj):
+        return obj.profile_image.image_url
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
