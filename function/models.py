@@ -12,7 +12,7 @@ from common.mixins.base_model import BaseModel
 class VerifCode(BaseModel):
     """验证码模型"""
     id = models.AutoField(primary_key=True, verbose_name='验证码ID')
-    mobile_phone = models.CharField(verbose_name="手机号码", max_length=11)
+    mobile_phone = models.CharField(verbose_name="手机号码", max_length=11, null=False)
     verification_code = models.CharField(verbose_name="验证码", max_length=6)
 
     class Meta:
