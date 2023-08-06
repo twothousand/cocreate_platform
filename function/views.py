@@ -119,7 +119,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
                     check_res = s.image_moderation("baselineCheck", image_url)
                 if check_res['code'] != 1:
                     response_data = {
-                        'message': check_res['message'],
+                        'message': '图片检测违规:'+check_res['message'],
                         'data': None,
                     }
                     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
