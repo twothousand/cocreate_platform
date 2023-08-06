@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TeamRecruitmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['id','project','team_leader','is_recruitment_open','recruitment_requirements', 'recruitment_end_date']
+        fields = ['id','project','team_leader','is_recruitment_open','recruitment_requirements', 'recruitment_end_date', 'recruitment_slots']
         read_only_fields = ['created_at', 'updated_at']
 
     def create(self, validated_data):
@@ -30,6 +30,7 @@ class TeamRecruitmentSerializer(serializers.ModelSerializer):
             is_recruitment_open=validated_data['is_recruitment_open'],
             recruitment_requirements=validated_data['recruitment_requirements'],
             recruitment_end_date=validated_data['recruitment_end_date'],
+            recruitment_slots=validated_data['recruitment_slots'],
         )
 
         # 创建组队招募后，将当前用户添加为成员并设置为队长
