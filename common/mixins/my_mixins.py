@@ -15,7 +15,7 @@ from rest_framework.exceptions import APIException
 # django
 from django.utils import timezone
 from django.db import transaction
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 # common
 from common.utils import tools
 
@@ -73,6 +73,12 @@ class CreatModelViewSet(BaseModelViewSet,
     """
     create()
     """
+    pass
+
+
+class RetrieveUpdateListModelViewSet(BaseModelViewSet,
+                                     mixins.UpdateModelMixin,
+                                     ReadOnlyModelViewSet):
     pass
 
 
