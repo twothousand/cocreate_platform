@@ -69,7 +69,9 @@ class TeamRecruitmentView(APIView):
             user = request.user
             # 校验招募截止日期是否小于今天
             recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            if recruitment_end_date <= date.today():
+            print('recruitment_end_date',recruitment_end_date)
+            print('date.today()',date.today())
+            if recruitment_end_date < date.today():
                 response_data = {
                     'message': '招募截止日期不能早于今天',
                     'data': None,
@@ -78,7 +80,7 @@ class TeamRecruitmentView(APIView):
 
             # 校验组队招募信息是否内容合规
             s = aliyun_green.AliyunModeration()
-            check_res = s.text_moderation("ad_compliance_detection", serializer.validated_data['recruitment_requirements'])
+            check_res = s.text_moderation("pgc_detection", serializer.validated_data['recruitment_requirements'])
             if check_res['code'] != 1:
                 response_data = {
                     'message': '文本检测违规:'+check_res['message'],
@@ -138,7 +140,7 @@ class TeamRecruitmentView(APIView):
         if serializer.is_valid():
             # 校验招募截止日期是否小于今天
             recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            if recruitment_end_date <= date.today():
+            if recruitment_end_date < date.today():
                 response_data = {
                     'message': '招募截止日期不能早于今天',
                     'data': None,
@@ -146,7 +148,7 @@ class TeamRecruitmentView(APIView):
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             # 校验组队招募信息是否内容合规
             s = aliyun_green.AliyunModeration()
-            check_res = s.text_moderation("ad_compliance_detection",
+            check_res = s.text_moderation("pgc_detection",
                                           serializer.validated_data['recruitment_requirements'])
             if check_res['code'] != 1:
                 response_data = {

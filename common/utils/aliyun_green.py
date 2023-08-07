@@ -56,7 +56,8 @@ class AliyunModeration:
                 if body["Data"]["labels"] == "":
                     return {"status": body["Code"], "code": 1, "message": "文本审核通过"}
                 else:
-                    return {"status": body["Code"], "code": -1, "message": "文本含有违规内容"}
+                    reason = '\n违规说明：' + body["Data"]['reason'] if 'reason' in body["Data"] else ''
+                    return {"status": body["Code"], "code": -1, "message": "文本含有违规内容"+reason}
             else:
                 return {"status": body["Code"], "code": -2, "message": "参数填写错误"}
         except Exception as error:
@@ -105,5 +106,5 @@ class AliyunModeration:
 
 if __name__ == '__main__':
     s = AliyunModeration()
-    print(s.text_moderation("nickname_detection", "fuck"))
-    print(s.image_moderation("baselineCheck", ""))
+    print(s.text_moderation("ad_compliance_detection", "fuck",))
+    # print(s.image_moderation("baselineCheck", ""))
