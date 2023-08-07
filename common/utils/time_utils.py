@@ -6,6 +6,7 @@ Description: 时间工具类
 """
 # 系统模块
 import datetime
+import pytz
 # django
 from django.utils import timezone
 
@@ -46,3 +47,15 @@ def get_current_timestamp():
     @return:
     """
     return int(get_current_time().timestamp())
+
+
+def iso_to_beijing(iso_time):
+    # 将ISO时间转换为Python的datetime对象
+    dt = datetime.datetime.fromisoformat(iso_time.replace('Z', '+00:00'))
+
+    # 获取北京时区对象
+    beijing_tz = pytz.timezone('Asia/Shanghai')
+
+    # 将datetime对象转换为北京时间
+    beijing_time = dt.astimezone(beijing_tz).date()
+    return beijing_time
