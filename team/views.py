@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # common
 from common.mixins import my_mixins
-from common.utils import aliyun_green
+from common.utils import aliyun_green, time_utils
 # app
 from team import serializers as team_serializers
 from team.models import Team, Member, Application
@@ -59,7 +59,7 @@ class TeamRecruitmentView(APIView):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
         try:
-            request.data['recruitment_end_date'] = datetime.strptime(request.data['recruitment_end_date'] , "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
+            request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
         except:
             pass
         serializer = team_serializers.TeamRecruitmentSerializer(data=request.data)
@@ -69,8 +69,6 @@ class TeamRecruitmentView(APIView):
             user = request.user
             # 校验招募截止日期是否小于今天
             recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            print('recruitment_end_date',recruitment_end_date)
-            print('date.today()',date.today())
             if recruitment_end_date < date.today():
                 response_data = {
                     'message': '招募截止日期不能早于今天',
@@ -136,6 +134,10 @@ class TeamRecruitmentView(APIView):
                 'data': None,
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        try:
+            request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
+        except:
+            pass
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
             # 校验招募截止日期是否小于今天
