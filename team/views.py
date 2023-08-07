@@ -58,10 +58,10 @@ class TeamRecruitmentView(APIView):
     def post(self, request):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
-        try:
-            request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
-        except:
-            pass
+        # try:
+        #     request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
+        # except:
+        #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -134,10 +134,10 @@ class TeamRecruitmentView(APIView):
                 'data': None,
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-        try:
-            request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
-        except:
-            pass
+        # try:
+        #     request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
+        # except:
+        #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
             # 校验招募截止日期是否小于今天
