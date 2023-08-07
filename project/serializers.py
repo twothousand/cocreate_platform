@@ -62,6 +62,7 @@ class AITagSerializer(serializers.ModelSerializer):
 
 class ImageSerializer(serializers.ModelSerializer):
     image_url_name = serializers.CharField(source='image_url')
+
     class Meta:
         model = Image
         fields = ['id', 'image_url']
@@ -186,11 +187,28 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__' #['id', 'project_creator']
+        fields = '__all__'  # ['id', 'project_creator']
 
 
-# 项目更新序列化器
+# 项目更新序列化器 TODO
 class ProjectUpdateSerializer(serializers.ModelSerializer):
+    # 更新之前先获取原有的数据
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # 获取多对多关系字段
+        model = instance.model.all()
+        industry = instance.industry.all()
+        ai_tag = instance.ai_tag.all()
+        project_images = instance.project_images.all()
+
+        # 将多对多关系字段添加到representation中
+        representation['model'] = ModelSerializer(model, many=True).data
+        representation['industry'] = IndustrySerializer(industry, many=True).data
+        representation['ai_tag'] = AITagSerializer(ai_tag, many=True).data
+        representation['project_images'] = ImageSerializer(project_images, many=True).data
+
+        return representation
+
     def update(self, instance, validated_data):
         # 从验证数据中取出模型、行业、AI标签数据
         models_data = validated_data.pop('model', [])
@@ -222,7 +240,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__' #['id', 'project_creator']
+        fields = '__all__'  # ['id', 'project_creator']
 
 
 # 获取特定用户管理的所有项目序列化器
@@ -241,11 +259,14 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
     # project_views = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
-        fields = ['id', 'project_images', 'project_creator_name', 'is_deleted', 'project_name', 'project_description', 'created_at', 'updated_at']
+        fields = ['id', 'project_images', 'project_creator_name', 'is_deleted', 'project_name', 'project_description',
+                  'created_at', 'updated_at']
+
 
 # 获取特定用户管理的具体项目序列化器
 class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
@@ -263,11 +284,13 @@ class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
     # project_views = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
         fields = '__all__'
+
 
 # 获取特定用户加入的所有项目序列化器
 class UserJoinedProjectsSerializer(serializers.ModelSerializer):
@@ -278,6 +301,8 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
         fields = ("id", "project_creator_name", "project_description", "project_name", "project_type", "project_status",
                   "project_cycles")
 
+
+# 获取特定用户加入的具体项目序列化器
 class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
     model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
@@ -291,16 +316,18 @@ class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = '__all__'
 
+
 # 获取项目成员列表序列化器
 class ProjectMembersSerializer(serializers.ModelSerializer):
     team_name = serializers.ReadOnlyField(source='team.team_name')
-    # username = serializers.ReadOnlyField(source='user.username')
+    username = serializers.ReadOnlyField(source='user.username')
     nickname = serializers.ReadOnlyField(source='user.nickname')
     user_id = serializers.ReadOnlyField(source='user.id')
     professional_career = serializers.ReadOnlyField(source='user.professional_career')
     location = serializers.ReadOnlyField(source='user.location')
     email = serializers.ReadOnlyField(source='user.email')
     profile_image = serializers.SerializerMethodField()
+
     # profile_image = serializers.SlugRelatedField(source='user.profile_image_id', many=True, read_only=True, slug_field='image_url')
 
     def get_profile_image(self, instance):
@@ -309,5 +336,5 @@ class ProjectMembersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Member
-        fields = ['team_name', 'is_leader', 'member_status', 'user_id', 'nickname', 'professional_career',
+        fields = ['team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'professional_career',
                   'location', 'email', 'profile_image']

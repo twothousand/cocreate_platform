@@ -70,12 +70,10 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
         self.custom_message = "创建项目成功！"
         return super().create(request, *args, **kwargs)
 
-    # def update(self, request, *args, **kwargs):
-    #     if str(request.method).lower() == "patch":
-    #         self.custom_message = "用户密码修改成功"
-    #     else:
-    #         self.custom_message = "用户信息修改成功"
-    #     return super().update(request, *args, **kwargs)
+    def partial_update(self, request, *args, **kwargs):
+        self.custom_message = "修改项目信息成功！"
+        return super().partial_update(request, *args, **kwargs)
+
 
     @transaction.atomic
     def dispatch(self, request, *args, **kwargs):
