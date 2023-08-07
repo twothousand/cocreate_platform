@@ -51,7 +51,8 @@ def compress_and_upload_image(image_data, target_folder, filename, img_format, t
         bucket.put_object(oss_path, compressed_image_data)
 
         # Get the URL of the persisted image
-        image_url = f"https://{IMG_DOMAIN}/{oss_path}"
+        # image_url = f"https://{IMG_DOMAIN}/{oss_path}" # 使用域名
+        image_url = f"https://{ALIBABA_OSS_BUCKET_NAME}.{ALIBABA_OSS_ENDPOINT.lstrip('https://')}/{oss_path}" #使用oss
 
         return image_url
     except Exception as e:
