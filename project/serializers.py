@@ -187,60 +187,14 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__'  # ['id', 'project_creator']
+        fields = '__all__'
 
 
 # 项目更新序列化器 TODO
 class ProjectUpdateSerializer(serializers.ModelSerializer):
-    # 更新之前先获取原有的数据
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        # 获取多对多关系字段
-        model = instance.model.all()
-        industry = instance.industry.all()
-        ai_tag = instance.ai_tag.all()
-        project_images = instance.project_images.all()
-
-        # 将多对多关系字段添加到representation中
-        representation['model'] = ModelSerializer(model, many=True).data
-        representation['industry'] = IndustrySerializer(industry, many=True).data
-        representation['ai_tag'] = AITagSerializer(ai_tag, many=True).data
-        representation['project_images'] = ImageSerializer(project_images, many=True).data
-
-        return representation
-
-    def update(self, instance, validated_data):
-        # 从验证数据中取出模型、行业、AI标签数据
-        models_data = validated_data.pop('model', [])
-        industries_data = validated_data.pop('industry', [])
-        ai_tags_data = validated_data.pop('ai_tag', [])
-        project_images_data = validated_data.pop('project_images', [])
-
-        # 更新项目并保存其他字段
-        instance = super().update(instance, validated_data)
-
-        # 清空多对多关系字段
-        instance.model.clear()
-        instance.industry.clear()
-        instance.ai_tag.clear()
-        instance.project_images.clear()
-
-        # 添加模型到多对多关系字段
-        models = Model.objects.filter(model_name__in=models_data)
-        instance.model.add(*models)
-        industries = Industry.objects.filter(industry__in=industries_data)
-        instance.industry.add(*industries)
-        ai_tags = AITag.objects.filter(ai_tag__in=ai_tags_data)
-        instance.ai_tag.add(*ai_tags)
-        # 获取前端传入的图片数据
-        project_images = Image.objects.filter(image_url__in=project_images_data)
-        instance.project_images.add(*project_images)
-
-        return instance
-
     class Meta:
         model = Project
-        fields = '__all__'  # ['id', 'project_creator']
+        fields = '__all__'
 
 
 # 获取特定用户管理的所有项目序列化器

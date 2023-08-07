@@ -39,7 +39,8 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
         重写get_permissions，实例化并返回此视图需要的权限列表。
         @return: 返回相应的权限列表
         """
-        if self.action == 'create' or self.action == 'partial_update':  # 创建项目或修改项目
+        # print("*" * 50, self.action)
+        if self.action == 'create' or self.action == 'patch':  # 创建项目或修改项目
             permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
         else:  # 其他操作
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
@@ -50,7 +51,7 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
             return serializers.ProjectListSerializer
         if self.action == 'create':
             return serializers.ProjectCreateSerializer
-        if self.action == 'partial_update':
+        if self.action == 'patch':  # partial_update
             return serializers.ProjectUpdateSerializer
         if self.action == 'retrieve':
             return serializers.ProjectDetailSerializer
@@ -73,7 +74,6 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
     def partial_update(self, request, *args, **kwargs):
         self.custom_message = "修改项目信息成功！"
         return super().partial_update(request, *args, **kwargs)
-
 
     @transaction.atomic
     def dispatch(self, request, *args, **kwargs):
