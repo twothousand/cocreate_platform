@@ -24,8 +24,7 @@ from common.utils import re_utils, time_utils
 from common import constant
 from common.mixins import my_mixins
 # app
-from function.models import VerifCode
-
+from function.models import VerifCode, Image
 
 User = get_user_model()
 
@@ -90,7 +89,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
 
 # 构建项目序列化器
 class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
-    profile_image = serializers.SerializerMethodField()
+    profile_image = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all())
 
     def validate_username(self, value):
         """
@@ -106,6 +105,11 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     def get_profile_image(self, obj):
         profile_image = obj.profile_image
         return profile_image.image_url if profile_image else profile_image
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['profile_image'] = self.get_profile_image(instance)
+        return response
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
