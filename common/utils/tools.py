@@ -19,6 +19,18 @@ def sanitize_phone_number(phone):
         return phone
 
 
+def sanitize_name(name):
+    """
+    处理姓名，姓名为中文
+    @param name:
+    @return:
+    """
+    if len(name) == 2:
+        return name[0] + '*'
+    else:
+        return name[0] + '*' * (len(name) - 2) + name[-1]
+
+
 def sanitize_token(token):
     return token[:3] + '*' * 4 + token[-4:]
 

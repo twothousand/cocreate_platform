@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.settings import api_settings
 # app
+from common.mixins import my_mixins
 from .models import Project
 from team.models import Member, Team
 from dim.models import Model, Industry, AITag
@@ -190,8 +191,15 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# 项目更新序列化器 TODO
+# 项目更新序列化器
 class ProjectUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = '__all__'
+
+
+# 项目删除序列化器
+class ProjectDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
@@ -247,7 +255,7 @@ class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
 
 
 # 获取特定用户加入的所有项目序列化器
-class UserJoinedProjectsSerializer(serializers.ModelSerializer):
+class UserJoinedProjectsSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
 
     class Meta:
@@ -257,7 +265,7 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
 
 
 # 获取特定用户加入的具体项目序列化器
-class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
+class UserJoinedProjectDetailSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
@@ -272,23 +280,21 @@ class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
 
 
 # 获取项目成员列表序列化器
-class ProjectMembersSerializer(serializers.ModelSerializer):
+class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     team_name = serializers.ReadOnlyField(source='team.team_name')
     username = serializers.ReadOnlyField(source='user.username')
     nickname = serializers.ReadOnlyField(source='user.nickname')
+    name = serializers.ReadOnlyField(source='user.name')
     user_id = serializers.ReadOnlyField(source='user.id')
     professional_career = serializers.ReadOnlyField(source='user.professional_career')
     location = serializers.ReadOnlyField(source='user.location')
     email = serializers.ReadOnlyField(source='user.email')
     profile_image = serializers.SerializerMethodField()
 
-    # profile_image = serializers.SlugRelatedField(source='user.profile_image_id', many=True, read_only=True, slug_field='image_url')
-
     def get_profile_image(self, instance):
-        # Replace 'image_url' with the actual field name representing the image URL in the Image model.
         return instance.user.profile_image.image_url if instance.user.profile_image else None
 
     class Meta:
         model = Member
-        fields = ['team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'professional_career',
-                  'location', 'email', 'profile_image']
+        fields = ['team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
+                  'professional_career', 'location', 'email', 'profile_image']
