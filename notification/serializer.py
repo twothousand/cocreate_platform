@@ -15,8 +15,17 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = "__all__"
 
+    def validate(self, attrs):
+        request = self.context['request']
+        if request.method.lower() == "patch":
+            if attrs != {}:
+                return serializers.ValidationError({"message": "该请求不需要多余字段参数"})
+
+        return attrs
+
     def update(self, instance, validated_data):
         # 改为已读状态
         instance.is_read = True
         instance.save()
         return instance
+    
