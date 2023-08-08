@@ -28,4 +28,3 @@ class MessageSerializer(serializers.ModelSerializer):
         instance.is_read = True
         instance.save()
         return instance
-    
