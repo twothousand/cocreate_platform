@@ -11,10 +11,14 @@ from notification.serializer import MessageSerializer
 
 
 # Create your views here.
-class MessageViewSet(my_mixins.CustomResponseMixin, my_mixins.RetrieveUpdateListModelViewSet):
+class MessageViewSet(my_mixins.CustomResponseMixin, my_mixins.RetrieveUpdateDestroyListModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
 
     @disallow_methods(['PUT'])
     def dispatch(self, request, *args, **kwargs):

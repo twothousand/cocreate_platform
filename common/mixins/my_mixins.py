@@ -76,9 +76,10 @@ class CreatModelViewSet(BaseModelViewSet,
     pass
 
 
-class RetrieveUpdateListModelViewSet(BaseModelViewSet,
-                                     mixins.UpdateModelMixin,
-                                     ReadOnlyModelViewSet):
+class RetrieveUpdateDestroyListModelViewSet(BaseModelViewSet,
+                                            mixins.UpdateModelMixin,
+                                            mixins.DestroyModelMixin,
+                                            ReadOnlyModelViewSet):
     pass
 
 
