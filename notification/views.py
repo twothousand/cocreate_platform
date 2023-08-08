@@ -1,10 +1,9 @@
 # rest_framework
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 # common
 from common.mixins import my_mixins
+from common.utils.decorators import disallow_methods
 
 # app
 from notification.models import Message
@@ -17,6 +16,6 @@ class MessageViewSet(my_mixins.CustomResponseMixin, my_mixins.RetrieveUpdateList
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
 
-    def put(self, request, *args, **kwargs):
-        return Response({"detail": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
+    @disallow_methods(['PUT'])
+    def dispatch(self, request, *args, **kwargs):
+        return super(MessageViewSet, self).dispatch(request, *args, **kwargs)

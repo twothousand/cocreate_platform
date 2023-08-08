@@ -9,7 +9,7 @@ import inspect
 # rest_framework
 from rest_framework import status, mixins, serializers
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, MethodNotAllowed
 from rest_framework.views import exception_handler
 from rest_framework.exceptions import APIException
 # django
@@ -21,20 +21,20 @@ from common.utils import tools
 
 
 # ========================== 自定义rest_framework配置 ==========================
-# def custom_exception_handler(exc, context):
-#     print("===========================")
-#     # 先使用DRF自带的异常处理
-#     response = exception_handler(exc, context)
-#
-#     # 扩展的自定义异常处理
-#     if isinstance(exc, MethodNotAllowed):
-#         data = {
-#             "message": '找不到该方法',
-#             "data": None
-#         }
-#         response = Response(data, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-#
-#     return response
+def custom_exception_handler(exc, context):
+    print("===========================")
+    # 先使用DRF自带的异常处理
+    # response = exception_handler(exc, context)
+
+    # 扩展的自定义异常处理
+    if isinstance(exc, MethodNotAllowed):
+        data = {
+            "message": '找不到该方法',
+            "data": None
+        }
+        response = Response(data, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    return response
 
 
 # ========================== ModelViewSet抽象类 ==========================
