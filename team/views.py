@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # common
 from common.mixins import my_mixins
-from common.utils import aliyun_green
+from common.utils import aliyun_green, time_utils
 # app
 from team import serializers as team_serializers
 from team.models import Team, Member, Application
@@ -58,10 +58,10 @@ class TeamRecruitmentView(APIView):
     def post(self, request):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
-        try:
-            request.data['recruitment_end_date'] = datetime.strptime(request.data['recruitment_end_date'] , "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
-        except:
-            pass
+        # try:
+        #     request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
+        # except:
+        #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -78,7 +78,7 @@ class TeamRecruitmentView(APIView):
 
             # 校验组队招募信息是否内容合规
             s = aliyun_green.AliyunModeration()
-            check_res = s.text_moderation("ad_compliance_detection", serializer.validated_data['recruitment_requirements'])
+            check_res = s.text_moderation("pgc_detection", serializer.validated_data['recruitment_requirements'])
             if check_res['code'] != 1:
                 response_data = {
                     'message': '文本检测违规:'+check_res['message'],
@@ -134,6 +134,10 @@ class TeamRecruitmentView(APIView):
                 'data': None,
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        # try:
+        #     request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
+        # except:
+        #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
             # 校验招募截止日期是否小于今天
@@ -146,7 +150,7 @@ class TeamRecruitmentView(APIView):
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             # 校验组队招募信息是否内容合规
             s = aliyun_green.AliyunModeration()
-            check_res = s.text_moderation("ad_compliance_detection",
+            check_res = s.text_moderation("pgc_detection",
                                           serializer.validated_data['recruitment_requirements'])
             if check_res['code'] != 1:
                 response_data = {

@@ -49,6 +49,10 @@ class Product(BaseModel):
     test_group_qr_code = models.ForeignKey(Image, null=True, on_delete=models.CASCADE,
                                            related_name='test_group_qr_code', verbose_name='用户内测二维码')
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+
+    def get_product_name(self):
+        return self.name
+
     def __str__(self):
         return f"产品名称: {self.name}"
 

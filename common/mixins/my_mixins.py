@@ -182,6 +182,14 @@ class SanitizeModelSerializer:
         username = data.get('username', None)
         if username:
             data['username'] = tools.sanitize_phone_number(data['username'])
+
+        name = data.get('name', None)
+        if name:
+            data['name'] = tools.sanitize_name(data['name'])
+
+        project_creator_name = data.get('project_creator_name', None)
+        if project_creator_name:
+            data['project_creator_name'] = tools.sanitize_name(data['project_creator_name'])
         return data
 
 

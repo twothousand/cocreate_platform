@@ -15,3 +15,5 @@ alibabacloud_dysmsapi20170525==2.0.23
 alibabacloud_green20220302==1.0.7
 oss2==2.18.1
 drf-api-logger==1.1.14
+APScheduler==3.10.1
+django-apscheduler==0.6.2

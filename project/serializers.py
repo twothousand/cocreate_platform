@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.settings import api_settings
 # app
+from common.mixins import my_mixins
 from .models import Project
 from team.models import Member, Team
 from dim.models import Model, Industry, AITag
@@ -62,6 +63,7 @@ class AITagSerializer(serializers.ModelSerializer):
 
 class ImageSerializer(serializers.ModelSerializer):
     image_url_name = serializers.CharField(source='image_url')
+
     class Meta:
         model = Image
         fields = ['id', 'image_url']
@@ -186,43 +188,21 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__' #['id', 'project_creator']
+        fields = '__all__'
 
 
 # 项目更新序列化器
 class ProjectUpdateSerializer(serializers.ModelSerializer):
-    def update(self, instance, validated_data):
-        # 从验证数据中取出模型、行业、AI标签数据
-        models_data = validated_data.pop('model', [])
-        industries_data = validated_data.pop('industry', [])
-        ai_tags_data = validated_data.pop('ai_tag', [])
-        project_images_data = validated_data.pop('project_images', [])
-
-        # 更新项目并保存其他字段
-        instance = super().update(instance, validated_data)
-
-        # 清空多对多关系字段
-        instance.model.clear()
-        instance.industry.clear()
-        instance.ai_tag.clear()
-        instance.project_images.clear()
-
-        # 添加模型到多对多关系字段
-        models = Model.objects.filter(model_name__in=models_data)
-        instance.model.add(*models)
-        industries = Industry.objects.filter(industry__in=industries_data)
-        instance.industry.add(*industries)
-        ai_tags = AITag.objects.filter(ai_tag__in=ai_tags_data)
-        instance.ai_tag.add(*ai_tags)
-        # 获取前端传入的图片数据
-        project_images = Image.objects.filter(image_url__in=project_images_data)
-        instance.project_images.add(*project_images)
-
-        return instance
-
     class Meta:
         model = Project
-        fields = '__all__' #['id', 'project_creator']
+        fields = '__all__'
+
+
+# 项目删除序列化器
+class ProjectDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = '__all__'
 
 
 # 获取特定用户管理的所有项目序列化器
@@ -241,11 +221,14 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
     # project_views = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
-        fields = ['id', 'project_images', 'project_creator_name', 'is_deleted', 'project_name', 'project_description', 'created_at', 'updated_at']
+        fields = ['id', 'project_images', 'project_creator_name', 'is_deleted', 'project_name', 'project_description',
+                  'created_at', 'updated_at']
+
 
 # 获取特定用户管理的具体项目序列化器
 class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
@@ -263,14 +246,16 @@ class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
     # project_views = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
         fields = '__all__'
 
+
 # 获取特定用户加入的所有项目序列化器
-class UserJoinedProjectsSerializer(serializers.ModelSerializer):
+class UserJoinedProjectsSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
 
     class Meta:
@@ -278,7 +263,9 @@ class UserJoinedProjectsSerializer(serializers.ModelSerializer):
         fields = ("id", "project_creator_name", "project_description", "project_name", "project_type", "project_status",
                   "project_cycles")
 
-class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
+
+# 获取特定用户加入的具体项目序列化器
+class UserJoinedProjectDetailSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
@@ -291,23 +278,23 @@ class UserJoinedProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = '__all__'
 
+
 # 获取项目成员列表序列化器
-class ProjectMembersSerializer(serializers.ModelSerializer):
+class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     team_name = serializers.ReadOnlyField(source='team.team_name')
-    # username = serializers.ReadOnlyField(source='user.username')
+    username = serializers.ReadOnlyField(source='user.username')
     nickname = serializers.ReadOnlyField(source='user.nickname')
+    name = serializers.ReadOnlyField(source='user.name')
     user_id = serializers.ReadOnlyField(source='user.id')
     professional_career = serializers.ReadOnlyField(source='user.professional_career')
     location = serializers.ReadOnlyField(source='user.location')
     email = serializers.ReadOnlyField(source='user.email')
     profile_image = serializers.SerializerMethodField()
-    # profile_image = serializers.SlugRelatedField(source='user.profile_image_id', many=True, read_only=True, slug_field='image_url')
 
     def get_profile_image(self, instance):
-        # Replace 'image_url' with the actual field name representing the image URL in the Image model.
         return instance.user.profile_image.image_url if instance.user.profile_image else None
 
     class Meta:
         model = Member
-        fields = ['team_name', 'is_leader', 'member_status', 'user_id', 'nickname', 'professional_career',
-                  'location', 'email', 'profile_image']
+        fields = ['team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
+                  'professional_career', 'location', 'email', 'profile_image']

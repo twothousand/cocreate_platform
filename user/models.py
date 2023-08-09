@@ -36,6 +36,9 @@ class User(AbstractUser, BaseModel):
     last_login = models.DateTimeField(verbose_name='最后登录时间', blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
+    def get_nickname(self):
+        return self.nickname
+
     def __str__(self):
         return f"用户名: {str(self.username)}"
 

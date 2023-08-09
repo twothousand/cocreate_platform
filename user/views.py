@@ -269,16 +269,17 @@ class UserJoinedProjectsView(APIView):
     def get(self, request):
         try:
             user_id = request.user.id
+
             # 获取符合条件的队伍ID列表
             team_ids = Member.objects.filter(
                 user_id=user_id,
                 is_leader=0,
                 member_status="正常"
             ).values('team_id').distinct()
-            # 用户ID不存在的情况
+            # 如果队伍ID列表为空，则返回错误信息
             if not team_ids.exists():
                 response_data = {
-                    'message': '用户ID不存在！',
+                    'message': '用户未加入任何项目！',
                     'data': None
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

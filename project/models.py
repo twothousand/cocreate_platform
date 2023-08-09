@@ -35,10 +35,11 @@ class Project(BaseModel):
     project_views = models.IntegerField(default=0, verbose_name='项目浏览数量')
     project_other_info = models.TextField(verbose_name='其它补充信息', blank=True, null=True)
     project_images = models.ManyToManyField(Image, blank=True, verbose_name='项目展示图片')
-    # project_display_qr_code = models.ForeignKey(Image, null=True, on_delete=models.CASCADE,
-    #                                             related_name='project_display_qr_code', verbose_name='项目展示二维码')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+
+    def get_project_name(self):
+        return self.project_name
 
     def __str__(self):
         return f"项目名称: {str(self.project_name)}"
