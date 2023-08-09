@@ -13,11 +13,12 @@ from rest_framework.views import APIView
 
 # common
 from common.mixins import my_mixins
-from project import serializers
-from team.models import Member
-from user.permissions import IsOwnerOrReadOnly
+
 # app
 from .models import Project
+from project import serializers
+from team.models import Member
+from user.permissions import IsOwnerOrReadOnly, IsProjectOwnerOrReadOnly
 
 # 获得一个logger实体对象
 logger = logging.getLogger(__name__)
@@ -39,9 +40,12 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
         重写get_permissions，实例化并返回此视图需要的权限列表。
         @return: 返回相应的权限列表
         """
-        # print("*" * 50, self.action)
-        if self.action == 'create' or self.action == 'patch':  # 创建项目或修改项目
-            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+        if self.action == 'create':  # 创建项目
+            permission_classes = [IsAuthenticated]  # 需要用户被认证
+        elif self.action == 'partial_update':  # 修改项目
+            permission_classes = [IsProjectOwnerOrReadOnly, IsAuthenticated]  # 需要项目创建者并且用户被认证
+        elif self.action == 'destroy':  # 删除项目
+            permission_classes = [IsProjectOwnerOrReadOnly, IsAuthenticated]  # 需要项目创建者并且用户被认证
         else:  # 其他操作
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         return [permission() for permission in permission_classes]
@@ -51,10 +55,12 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
             return serializers.ProjectListSerializer
         if self.action == 'create':
             return serializers.ProjectCreateSerializer
-        if self.action == 'patch':  # partial_update
+        if self.action == 'partial_update':
             return serializers.ProjectUpdateSerializer
         if self.action == 'retrieve':
             return serializers.ProjectDetailSerializer
+        if self.action == 'destroy':
+            return serializers.ProjectDeleteSerializer
         else:
             return serializers.ProjectSerializer
 
@@ -74,6 +80,10 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
     def partial_update(self, request, *args, **kwargs):
         self.custom_message = "修改项目信息成功！"
         return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        self.custom_message = "删除项目成功！"
+        return super().destroy(request, *args, **kwargs)
 
     @transaction.atomic
     def dispatch(self, request, *args, **kwargs):
