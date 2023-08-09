@@ -46,6 +46,7 @@ class TeamRecruitmentSerializer(serializers.ModelSerializer):
         instance.is_recruitment_open = validated_data.get('is_recruitment_open', instance.is_recruitment_open)
         instance.recruitment_requirements = validated_data.get('recruitment_requirements',
                                                                instance.recruitment_requirements)
+        instance.recruitment_slots = validated_data.get('recruitment_slots', instance.recruitment_slots)
         instance.recruitment_end_date = validated_data.get('recruitment_end_date', instance.recruitment_end_date)
         instance.save()
         return instance
