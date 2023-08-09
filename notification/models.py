@@ -108,8 +108,8 @@ class Message(BaseModel):
         return cls.objects.filter(receiver=receiver, is_deleted=False).all()
 
     # ========================================== Create(增) ==========================================
-    def create_message(self, format_data):
-        return self.create(**format_data)
+    def create_message(self, data):
+        return self.create(**data)
 
     # ========================================== Delete(删) ==========================================
     def delete(self):
