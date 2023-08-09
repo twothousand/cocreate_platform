@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',  # 用户鉴权
     'drf_yasg',  # Swagger
     'drf_api_logger',
+    'django_apscheduler',  # 定时器
     'user',  # 用户模块
     'project',  # 项目模块
     'team',  # 组队模块
@@ -382,3 +383,6 @@ else:
 # EMAIL_HOST_USER = '2951121599@qq.com'  # 发送邮件的QQ邮箱
 # EMAIL_HOST_PASSWORD = 'zxnulqzuaafddebf'  # 在QQ邮箱->设置->帐户->“POP3/IMAP......服务” 里得到的在第三方登录QQ邮箱授权码
 # EMAIL_USE_TLS = True  # 与SMTP服务器通信时，是否启动TLS链接(安全链接)默认false  加密True
+
+# 配置APScheduler的存储方式，可以使用数据库存储
+SCHEDULER_DB_ALIAS = 'default'
