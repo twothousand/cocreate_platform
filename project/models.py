@@ -38,6 +38,9 @@ class Project(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
+    def get_project_name(self):
+        return self.project_name
+
     def __str__(self):
         return f"项目名称: {str(self.project_name)}"
 

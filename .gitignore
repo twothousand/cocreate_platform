@@ -97,5 +97,6 @@ celerybeat-schedule.*
 venv/
 
 # migrations
-**/migrations/
 !**/migrations/__init__.py
+**/migrations/
+
