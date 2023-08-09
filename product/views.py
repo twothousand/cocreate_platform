@@ -251,10 +251,10 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mi
 
     # 获取产品信息（GET）
     @action(methods=['GET'], detail=False)
-    def get_product_info(self, request, *args, **kwargs):
+    def get_product_info(self, request, product_id, *args, **kwargs):
         try:
             # Extract project_id from the query parameters
-            product_id = request.data.get('product_id', None)
+            # product_id = request.data.get('product_id', None)
             if not product_id:
                 response_data = {
                     'message': '产品ID未提供',
