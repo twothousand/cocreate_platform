@@ -58,6 +58,7 @@ class TeamRecruitmentView(APIView):
     def post(self, request, project_id):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
+        request.data['project'] = project_id
         # try:
         #     request.data['recruitment_end_date'] = time_utils.iso_to_beijing(request.data['recruitment_end_date']) #.strftime("%Y-%m-%d")
         # except:
@@ -106,7 +107,7 @@ class TeamRecruitmentView(APIView):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
         try:
-            project_id = request.data.get('project')
+            # project_id = request.data.get('project')
 
             team_recruitment = Team.objects.get(project=project_id)
         except Team.DoesNotExist:
