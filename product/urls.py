@@ -15,5 +15,5 @@ urlpatterns = [
     # 更新产品信息（PUT），同时更新产品版本信息
     path('update_product_with_version/', ProductViewSet.as_view({'put': 'update_product_with_version'}), name='update_product_with_version'),
     # 获取产品信息（GET）
-    path('get_product_info/', ProductViewSet.as_view({'get': 'get_product_info'}), name='get_product_info'),
+    path('get_product_info/<str:product_id>/', ProductViewSet.as_view({'get': 'get_product_info'}), name='get_product_info'),
 ]

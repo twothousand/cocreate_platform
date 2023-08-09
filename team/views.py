@@ -35,10 +35,10 @@ class TeamRecruitmentView(APIView):
         return [permission() for permission in permission_classes]
 
     # 获得组队招募信息
-    def get(self, request):
+    def get(self, request, project_id):
         permission_classes = [AllowAny]
         try:
-            project_id = request.data.get('project')
+            # project_id = request.data.get('project')
             team_recruitment = Team.objects.get(project=project_id)
         except Team.DoesNotExist:
             response_data = {
@@ -55,7 +55,7 @@ class TeamRecruitmentView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
     # 创建组队招募信息
-    def post(self, request):
+    def post(self, request, project_id):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
         # try:
@@ -102,7 +102,7 @@ class TeamRecruitmentView(APIView):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # 更新组队招募
-    def put(self, request):
+    def put(self, request, project_id):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         request.data['team_leader'] = request.user.id
         try:
@@ -395,11 +395,11 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'])
-    def get_pending_applications(self, request, *args, **kwargs):
+    def get_pending_applications(self, request, team_id, *args, **kwargs):
         permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
         try:
             user_id = request.user.id
-            team_id = request.data.get('team_id', None)
+            # team_id = request.data.get('team_id', None)
 
             if not user_id or not team_id:
                 response_data = {
@@ -758,9 +758,9 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['GET'], detail=True)
-    def get_all_members(self, request, *args, **kwargs):
+    def get_all_members(self, request, team_id, *args, **kwargs):
         try:
-            team_id = request.data.get('team_id')
+            # team_id = request.data.get('team_id')
             if not team_id:
                 response_data = {
                     'message': '请提供队伍ID(team_id)。',
