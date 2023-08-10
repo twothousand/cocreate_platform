@@ -23,6 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)km-62r9w*s#ka(+e6m81nnteakm8l*m80l#i8sxa6ks9nxf2@'
 
+# ================================================== 阿里云服务配置 ==================================================
+# TODO: 换成自己的
+IMG_DOMAIN = ""
+ALIBABA_CLOUD_ACCESS_KEY_ID = ""
+ALIBABA_CLOUD_ACCESS_KEY_SECRET = ""
+ALIBABA_OSS_BUCKET_NAME = ""
+ALIBABA_OSS_ENDPOINT = ""
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -108,7 +117,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cocreate_platform.wsgi.application'
 
-# MySQL数据库配置
+# ================================================== MySQL数据库配置 ==================================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -160,7 +169,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #
 # ]
 
-# JWT配置
+# ================================================== JWT配置 ==================================================
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),  # Access Token的有效期
     'REFRESH_TOKEN_LIFETIME': timedelta(days=12),  # Refresh Token的有效期
@@ -226,11 +235,11 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
+# ================================================== 日志系统配置 ==================================================
 # 日志系统中的 mail_admins
-ADMINS = [
-    ('plutos', 'plutos@aliyun.com'),
-    ('Mary', 'mary@example.com'),
-]
+# ADMINS = [
+#     ('Mary', 'mary@example.com'),
+# ]
 
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(BASE_LOG_DIR):

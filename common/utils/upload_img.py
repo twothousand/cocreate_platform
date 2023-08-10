@@ -5,7 +5,8 @@ from PIL import Image
 # 阿里云oss服务模块
 import oss2
 # common
-from common.config import *
+from cocreate_platform.settings import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET, \
+    ALIBABA_OSS_ENDPOINT, ALIBABA_OSS_BUCKET_NAME, IMG_DOMAIN
 
 
 # 初始化OSS客户端

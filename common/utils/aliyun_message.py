@@ -12,7 +12,7 @@ from alibabacloud_tea_openapi.models import Config
 from alibabacloud_dysmsapi20170525.models import SendSmsRequest
 from alibabacloud_tea_util.models import RuntimeOptions
 # common
-from common.config import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
+from cocreate_platform.settings import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
 
 
 class AliyunSMS:

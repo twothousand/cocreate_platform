@@ -12,7 +12,7 @@ from alibabacloud_tea_openapi.models import Config
 from alibabacloud_green20220302 import models as green_20220302_models
 from alibabacloud_tea_util import models as util_models
 # common
-from common.config import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
+from cocreate_platform.settings import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
 
 
 class AliyunModeration:
