@@ -39,7 +39,7 @@ urlpatterns = [
     path('joined_projects/', views.UserJoinedProjectsView.as_view()),  # 参与的项目
     # http://127.0.0.1:8000/api/users/2/joined_projects/1  # 获取特定用户参与的特定项目的详细信息
     path('joined_projects/<str:project_id>', views.UserJoinedProjectDetailView.as_view()),
-
-
+    # http://127.0.0.1:8000/api/users/2/joined_projects/1  # 获取特定用户参与的特定项目的详细信息
+    path('search', views.UserSearchView.as_view(), name='user-search'),
 ]
 urlpatterns += router.urls

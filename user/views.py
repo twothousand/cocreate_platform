@@ -5,6 +5,7 @@ import logging
 # django模块
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 
 # rest_framework模块
 from rest_framework import viewsets, status
@@ -368,5 +369,43 @@ class UserJoinedProjectDetailView(APIView):
             response_data = {
                 "message": "退出加入的项目失败！",
                 "data": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# 用户搜索
+class UserSearchView(APIView):
+    def get(self, request, *args, **kwargs):
+        permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+        try:
+            keyword = self.request.GET.get('keyword')
+
+            queryset = User.objects.all()
+
+            # 应用搜索条件
+            if keyword:
+                queryset = queryset.filter(
+                    Q(username__icontains=keyword) |
+                    Q(nickname__icontains=keyword)
+                )
+
+            queryset = queryset.order_by('-nickname')
+            serializer = serializers.UserSearchSerializer(queryset, many=True)
+
+            if serializer.data:
+                response_data = {
+                    'message': '已成功检索到用户！',
+                    'data': serializer.data
+                }
+            else:
+                response_data = {
+                    'message': '未检索到任何符合的用户！',
+                    'data': serializer.data
+                }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': str(e),
+                'data': []
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
