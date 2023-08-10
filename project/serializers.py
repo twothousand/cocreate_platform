@@ -78,6 +78,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
 
     # 招募信息
+    team_id = serializers.SerializerMethodField()
     recruitment_slots = serializers.SerializerMethodField()
     recruitment_requirements = serializers.SerializerMethodField()
     recruitment_end_date = serializers.SerializerMethodField()
@@ -86,26 +87,27 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'project_images', 'project_name', 'project_description',  # 项目信息
                   'project_status', 'project_type', 'model', 'industry', 'ai_tag',  # 过滤字段
-                  'recruitment_slots', 'recruitment_requirements', 'recruitment_end_date',  # 招募信息
+                  'team_id', 'recruitment_slots', 'recruitment_requirements', 'recruitment_end_date',  # 招募信息
                   ]
 
+    def get_team_id(self, obj):
+        team = self.get_team(obj)
+        return team.id if team else None
+
     def get_recruitment_slots(self, obj):
-        team = Team.objects.filter(project=obj).first()
-        if team:
-            return team.recruitment_slots
-        return None
+        team = self.get_team(obj)
+        return team.recruitment_slots if team else None
 
     def get_recruitment_requirements(self, obj):
-        team = Team.objects.filter(project=obj).first()
-        if team:
-            return team.recruitment_requirements
-        return None
+        team = self.get_team(obj)
+        return team.recruitment_requirements if team else None
 
     def get_recruitment_end_date(self, obj):
-        team = Team.objects.filter(project=obj).first()
-        if team:
-            return team.recruitment_end_date
-        return None
+        team = self.get_team(obj)
+        return team.recruitment_end_date if team else None
+
+    def get_team(self, obj):
+        return Team.objects.filter(project=obj).first()
 
     # 根据项目状态过滤
     # def to_representation(self, instance):
@@ -133,6 +135,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
 
     # 招募信息
+    team_id = serializers.SerializerMethodField()
     recruitment_slots = serializers.SerializerMethodField()
     recruitment_requirements = serializers.SerializerMethodField()
     recruitment_end_date = serializers.SerializerMethodField()
@@ -141,23 +144,24 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = '__all__'
 
+    def get_team_id(self, obj):
+        team = self.get_team(obj)
+        return team.id if team else None
+
     def get_recruitment_slots(self, obj):
-        team = Team.objects.filter(project=obj).first()
-        if team:
-            return team.recruitment_slots
-        return None
+        team = self.get_team(obj)
+        return team.recruitment_slots if team else None
 
     def get_recruitment_requirements(self, obj):
-        team = Team.objects.filter(project=obj).first()
-        if team:
-            return team.recruitment_requirements
-        return None
+        team = self.get_team(obj)
+        return team.recruitment_requirements if team else None
 
     def get_recruitment_end_date(self, obj):
-        team = Team.objects.filter(project=obj).first()
-        if team:
-            return team.recruitment_end_date
-        return None
+        team = self.get_team(obj)
+        return team.recruitment_end_date if team else None
+
+    def get_team(self, obj):
+        return Team.objects.filter(project=obj).first()
 
 
 # 项目创建序列化器
