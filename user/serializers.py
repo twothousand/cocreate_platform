@@ -208,7 +208,8 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
 
 # 项目详情序列化器
 class UserSearchSerializer(serializers.ModelSerializer):
+    profile_image = serializers.CharField(source='profile_image.image_url', read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'nickname', 'wechat_id', 'biography', 'professional_career', 'location']
+        fields = ['id', 'nickname', 'biography', 'professional_career', 'location', 'profile_image']
