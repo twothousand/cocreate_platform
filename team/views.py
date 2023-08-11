@@ -21,6 +21,7 @@ from team.models import Team, Member, Application
 from user.permissions import IsOwnerOrReadOnly
 from project.models import Project
 from datetime import date, datetime
+from notification.models import Message, MessageTemplate
 
 User = get_user_model()
 
@@ -211,8 +212,18 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             user_instance = get_object_or_404(User, id=user_id)
+            if user_instance.wechat_id is None or user_instance.wechat_id == '':
+                response_data = {
+                    'message': '联系方式缺失',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             team_instance = get_object_or_404(Team, id=team_id)
             project_instance = get_object_or_404(Project, id=project_id)
+            # 获取队长信息
+            member_leader_instance = Member.objects.filter(team=team_instance, is_leader=True).first()
+            # 获取消息模板
+            message_template_instance = MessageTemplate.objects.filter(message_type='team_application').first()
             # 检查用户是否已经在队伍中且状态正常
             existing_user = Member.objects.filter(
                 Q(team=team_id) &
@@ -253,11 +264,17 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                 existing_application.status = '待审核'
                 existing_application.save()
                 serializer = self.get_serializer(existing_application)
+
+                # 创建消息
+                message = Message()
+                mesage_data = {"sender": user_instance, "receiver": member_leader_instance.user, "message_template": message_template_instance, "project": project_instance}
+                message.create_message(mesage_data)
+
                 response_data = {
                     'message': '重新发送申请',
                     'data': serializer.data
                 }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response_data, status=status.HTTP_201_BAD_REQUEST)
             else:
                 # 如果没有申请存在，创建新的申请
                 application = Application.objects.create(
@@ -267,6 +284,13 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                     project=project_instance,
                 )
                 serializer = self.get_serializer(application)
+
+                # 创建消息
+                message = Message()
+                mesage_data = {"sender": user_instance, "receiver": member_leader_instance.user,
+                               "message_template": message_template_instance, "project": project_instance}
+                message.create_message(mesage_data)
+
                 response_data = {
                     'message': '队伍申请提交成功',
                     'data': serializer.data
@@ -293,7 +317,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
             application_status = request.data.get('decision')
             if not application_id or not application_status or not user_id:
                 response_data = {
-                    'message': '请提供当前处理用户ID(token), 申请ID(application_id), 处理意见(decision)[同意加入、拒绝]',
+                    'message': '参数不全', #'请提供当前处理用户ID(token), 申请ID(application_id), 处理意见(decision)[同意加入、拒绝]',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -320,6 +344,11 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             # 获取申请表中的User实例
             application_user_instance = get_object_or_404(User, id=application_instance.user_id)
+            # 项目
+            print('team_instance.project',team_instance.project)
+            project_instance = team_instance.project
+            # 获取消息模板
+            message_template_instance = MessageTemplate.objects.filter(message_type='team_audit_result').first()
             if application_status == '同意加入':
                 # 更改申请状态为同意加入
                 application_instance.status = '同意加入'
@@ -348,6 +377,13 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                 if leave_member:
                     leave_member.member_status = '正常'
                     leave_member.save()
+
+                    # 创建消息
+                    message = Message()
+                    mesage_data = {"sender": user_instance, "receiver": application_user_instance,
+                                   "message_template": message_template_instance, "project": project_instance}
+                    message.create_message(mesage_data)
+
                     response_data = {
                         'message': '已重新添加该用户',
                         'data': None,
@@ -362,6 +398,12 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                     join_date=date.today(),
                     member_status='正常'
                 )
+
+                # 创建消息
+                message = Message()
+                mesage_data = {"sender": user_instance, "receiver": application_user_instance,
+                               "message_template": message_template_instance, "project": project_instance}
+                message.create_message(mesage_data)
 
                 response_data = {
                     'message': '队伍申请已同意',
@@ -404,7 +446,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
 
             if not user_id or not team_id:
                 response_data = {
-                    'message': '请提供用户ID(token)和队伍ID(team_id)。',
+                    'message': '参数不全', #'请提供用户ID(token)和队伍ID(team_id)。',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -494,7 +536,7 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
             user_id = request.user.id
             if not team_id or not new_leader_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(token),队伍ID(team_id),新队长用户ID(new_leader_id）',
+                    'message': '参数不全',#'请提供操作用户ID(token),队伍ID(team_id),新队长用户ID(new_leader_id）',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -526,6 +568,11 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+            # 项目
+            project_instance = team_instance.project
+            # 获取消息模板
+            message_template_instance = MessageTemplate.objects.filter(message_type='team_leader_transfer').first()
+
             # 更新原队长的is_leader字段为False，新队长的is_leader字段为True
             current_user_member = Member.objects.get(team=team_instance, user=current_user_instance)
             current_user_member.is_leader = False
@@ -536,6 +583,13 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
 
             # 序列化并返回数据
             serializer = self.get_serializer(existing_member)
+
+            # 创建消息
+            message = Message()
+            mesage_data = {"sender": current_user_instance, "receiver": new_leader_instance,
+                           "message_template": message_template_instance, "project": project_instance}
+            message.create_message(mesage_data)
+
             response_data = {
                 'message': '队长转让成功',
                 'data': serializer.data,
@@ -560,7 +614,7 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
             user_id = request.user.id  # 当前用户的ID
             if not team_id or not member_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(token),队伍ID(team_id),队员用户ID(member_id）',
+                    'message': '参数不全', #'请提供操作用户ID(token),队伍ID(team_id),队员用户ID(member_id）',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -592,6 +646,11 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+            # 项目
+            project_instance = team_instance.project
+            # 获取消息模板
+            message_template_instance = MessageTemplate.objects.filter(message_type='team_member_removal').first()
+
             # 将队员状态设为'被移除'
             existing_member.member_status = '被移除'
             existing_member.leave_date = date.today()
@@ -599,6 +658,13 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
 
             # 序列化并返回数据
             serializer = self.get_serializer(existing_member)
+
+            # 创建消息
+            message = Message()
+            mesage_data = {"sender": current_user_instance, "receiver": member_instance,
+                           "message_template": message_template_instance, "project": project_instance}
+            message.create_message(mesage_data)
+
             response_data = {
                 'message': '队员移除成功',
                 'data': serializer.data,
@@ -623,7 +689,7 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
 
             if not team_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(user_id),队伍ID(team_id)',
+                    'message': '参数不全', #'请提供操作用户ID(user_id),队伍ID(team_id)',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -685,7 +751,7 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
             member_id = request.data.get('member_id')
             if not team_id or not user_id:
                 response_data = {
-                    'message': '请提供操作用户ID(token),队伍ID(team_id),成员用户ID(member_id)',
+                    'message': '参数不全', #'请提供操作用户ID(token),队伍ID(team_id),成员用户ID(member_id)',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -764,7 +830,7 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
             # team_id = request.data.get('team_id')
             if not team_id:
                 response_data = {
-                    'message': '请提供队伍ID(team_id)。',
+                    'message': '参数不全', #'请提供队伍ID(team_id)。',
                     'data': None,
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
