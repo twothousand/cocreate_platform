@@ -72,6 +72,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         data["nickname"] = self.user.nickname
         profile_image = self.user.profile_image
         data["profile_image"] = profile_image.image_url if profile_image else profile_image
+        data["wechat_id"] = self.user.wechat_id
 
         return data
 
