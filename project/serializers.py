@@ -61,14 +61,6 @@ class AITagSerializer(serializers.ModelSerializer):
         fields = ['id', 'ai_tag_name']
 
 
-class ImageSerializer(serializers.ModelSerializer):
-    image_url_name = serializers.CharField(source='image_url')
-
-    class Meta:
-        model = Image
-        fields = ['id', 'image_url']
-
-
 # 项目列表序列化器
 class ProjectListSerializer(serializers.ModelSerializer):
     # 支持多对多关系的序列化
@@ -139,6 +131,13 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     recruitment_slots = serializers.SerializerMethodField()
     recruitment_requirements = serializers.SerializerMethodField()
     recruitment_end_date = serializers.SerializerMethodField()
+
+    # 返回每个image的id
+    project_images_id = serializers.SerializerMethodField()
+
+    def get_project_images_id(self, obj):
+        images = obj.project_images.all()
+        return [image.id for image in images]
 
     class Meta:
         model = Project
@@ -227,11 +226,17 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
     # project_views = serializers.ReadOnlyField()
+    # 返回每个image的id
+    project_images_id = serializers.SerializerMethodField()
+
+    def get_project_images_id(self, obj):
+        images = obj.project_images.all()
+        return [image.id for image in images]
 
     class Meta:
         model = Project
-        fields = ['id', 'project_images', 'project_creator_name', 'is_deleted', 'project_name', 'project_description',
-                  'created_at', 'updated_at']
+        fields = ['id', 'project_images', 'project_images_id', 'project_creator_name', 'is_deleted', 'project_name',
+                  'project_description', 'created_at', 'updated_at']
 
 
 # 获取特定用户管理的具体项目序列化器
@@ -252,6 +257,12 @@ class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
     # project_views = serializers.ReadOnlyField()
+    # 返回每个image的id
+    project_images_id = serializers.SerializerMethodField()
+
+    def get_project_images_id(self, obj):
+        images = obj.project_images.all()
+        return [image.id for image in images]
 
     class Meta:
         model = Project
@@ -261,11 +272,18 @@ class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
 # 获取特定用户加入的所有项目序列化器
 class UserJoinedProjectsSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+    # 返回每个image的id
+    project_images_id = serializers.SerializerMethodField()
+
+    def get_project_images_id(self, obj):
+        images = obj.project_images.all()
+        return [image.id for image in images]
 
     class Meta:
         model = Project
-        fields = ("id", "project_creator_name", "project_description", "project_name", "project_type", "project_status",
-                  "project_cycles")
+        fields = ["id", "project_creator_name", "project_images", "project_images_id", "project_description",
+                  "project_name", "project_type", "project_status", "project_cycles"]
 
 
 # 获取特定用户加入的具体项目序列化器
@@ -277,6 +295,13 @@ class UserJoinedProjectDetailSerializer(my_mixins.MyModelSerializer, serializers
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
+    # 返回每个image的id
+    project_images_id = serializers.SerializerMethodField()
+
+    def get_project_images_id(self, obj):
+        images = obj.project_images.all()
+        return [image.id for image in images]
 
     class Meta:
         model = Project
