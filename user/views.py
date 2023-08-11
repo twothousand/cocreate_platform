@@ -379,12 +379,19 @@ class UserSearchView(APIView):
         try:
             keyword = self.request.GET.get('keyword')
 
+            if keyword == '' or keyword is None:
+                response_data = {
+                    "message": "无检索关键词",
+                    "data": None
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
             queryset = User.objects.all()
 
             # 应用搜索条件
             if keyword:
                 queryset = queryset.filter(
-                    Q(username__icontains=keyword) |
+                    Q(username=keyword) |
                     Q(nickname__icontains=keyword)
                 )
 
