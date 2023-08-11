@@ -206,9 +206,16 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
             },
         }
 
-# 项目详情序列化器
+# 用户搜索序列化器
 class UserSearchSerializer(serializers.ModelSerializer):
-    profile_image = serializers.CharField(source='profile_image.image_url', read_only=True)
+    # profile_image = serializers.CharField(source='profile_image.image_url', read_only=True)
+    profile_image = serializers.SerializerMethodField()
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.image_url
+        else:
+            return None  # 这里返回整个 profile_image 对象或者你想要的其他默认值
 
     class Meta:
         model = User
