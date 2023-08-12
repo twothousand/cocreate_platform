@@ -32,7 +32,8 @@ class User(AbstractUser, BaseModel):
     biography = models.TextField(max_length=300, verbose_name='个人简介', blank=True, null=True)
     professional_career = models.TextField(max_length=50, verbose_name='专业职业', blank=True, null=True)
     location = models.CharField(max_length=50, verbose_name='所在地', blank=True, null=True)
-    profile_image = models.ForeignKey(Image, verbose_name='头像', on_delete=models.SET_NULL, null=True)
+    profile_image = models.ForeignKey(Image, verbose_name='头像', on_delete=models.CASCADE,
+                                      default="61766174-6172-2d64-6566-61756c74fd67")
     last_login = models.DateTimeField(verbose_name='最后登录时间', blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 

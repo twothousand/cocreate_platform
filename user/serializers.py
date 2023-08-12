@@ -73,7 +73,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         data["username"] = self.user.username
         data["nickname"] = self.user.nickname
         profile_image = self.user.profile_image
-        data["profile_image"] = profile_image.image_url if profile_image else profile_image
+        data["profile_image_url"] = profile_image.image_url if profile_image else profile_image
         data["wechat_id"] = self.user.wechat_id
 
         return data
@@ -92,7 +92,7 @@ class UserLoginSerializer(TokenObtainPairSerializer):
 
 # 构建项目序列化器
 class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
-    profile_image = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all())
+    profile_image_url = serializers.SerializerMethodField(read_only=True)
 
     def validate_username(self, value):
         """
@@ -105,18 +105,13 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
             raise serializers.ValidationError("请通过更换手机绑定的方式修改手机号码！")
         return value
 
-    def get_profile_image(self, obj):
+    def get_profile_image_url(self, obj):
         profile_image = obj.profile_image
         return profile_image.image_url if profile_image else profile_image
 
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        response['profile_image'] = self.get_profile_image(instance)
-        return response
-
     class Meta:
         model = User  # 具体对哪个表进行序列化
-        fields = ["id", "username", "email", "profile_image", "location", "biography", "nickname", "professional_career", "wechat_id"]
+        fields = ["id", "username", "email", "profile_image_url", "profile_image", "location", "biography", "nickname", "professional_career", "wechat_id"]
         # fields = ('id', )       # 临时添加字段也需要写在这里
         # exclude = ['id']  # 排除 id 字段
         # read_only_fields = ('id', "username")  # 指定字段为 read_only,
