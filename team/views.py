@@ -142,14 +142,14 @@ class TeamRecruitmentView(APIView):
         #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
-            # 校验招募截止日期是否小于今天
-            recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            if recruitment_end_date < date.today():
-                response_data = {
-                    'message': '招募截止日期不能早于今天',
-                    'data': None,
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            # # 校验招募截止日期是否小于今天
+            # recruitment_end_date = serializer.validated_data['recruitment_end_date']
+            # if recruitment_end_date < date.today():
+            #     response_data = {
+            #         'message': '招募截止日期不能早于今天',
+            #         'data': None,
+            #     }
+            #     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             # 校验组队招募信息是否内容合规
             s = aliyun_green.AliyunModeration()
             check_res = s.text_moderation("pgc_detection",
