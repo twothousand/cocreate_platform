@@ -6,6 +6,7 @@ Description: 内容审核（文本、图片）
 """
 # 系统模块
 import json
+import logging
 # 阿里云内容检测模块
 from alibabacloud_green20220302.client import Client as Green20220302Client
 from alibabacloud_tea_openapi.models import Config
@@ -13,6 +14,8 @@ from alibabacloud_green20220302 import models as green_20220302_models
 from alibabacloud_tea_util import models as util_models
 # common
 from cocreate_platform.settings import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
+
+logger = logging.getLogger(__name__)
 
 
 class AliyunModeration:
@@ -51,16 +54,18 @@ class AliyunModeration:
         runtime = util_models.RuntimeOptions()
         try:
             resp = client.text_moderation_with_options(text_moderation_request, runtime)
+            logger.info("AliyunModeration::text_moderation, service=%s, service_parameters=%s, response=%s" % (service, service_parameters, resp))
             body = resp.body.to_map()
             if body["Code"] == 200:
                 if body["Data"]["labels"] == "":
                     return {"status": body["Code"], "code": 1, "message": "文本审核通过"}
                 else:
                     reason = '\n违规说明：' + body["Data"]['reason'] if 'reason' in body["Data"] else ''
-                    return {"status": body["Code"], "code": -1, "message": "文本含有违规内容"+reason}
+                    return {"status": body["Code"], "code": -1, "message": "文本含有违规内容"}
             else:
                 return {"status": body["Code"], "code": -2, "message": "参数填写错误"}
         except Exception as error:
+            logger.error("AliyunModeration::text_moderation, error=%s, response=%s" % (error, resp))
             return {"code": -3, "message": "文本审核失败", "error": error}
 
     def check_image_result(self, results: list) -> bool:
@@ -91,6 +96,7 @@ class AliyunModeration:
         runtime = util_models.RuntimeOptions()
         try:
             resp = client.image_moderation_with_options(image_moderation_request, runtime)
+            logger.info("AliyunModeration::image_moderation, service=%s, service_parameters=%s, response=%s" % (service, service_parameters, resp))
             body = resp.body.to_map()
             if body["Code"] == 200:
                 check_res = self.check_image_result(body["Data"]["Result"])
@@ -101,6 +107,7 @@ class AliyunModeration:
             else:
                 return {"status": body["Code"], "code": -2, "message": "参数填写错误"}
         except Exception as error:
+            logger.error("AliyunModeration::image_moderation, error=%s, response=%s" % (error, resp))
             return {"code": -3, "message": "图片审核失败", "error": error}
 
 
