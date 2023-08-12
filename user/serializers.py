@@ -18,10 +18,12 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
+
+
 # common
-from common.utils.aliyun_message import AliyunSMS
 from common.utils import re_utils, time_utils
 from common import constant
+from common.utils.aliyun_green import AliyunModeration
 from common.mixins import my_mixins
 # app
 from function.models import VerifCode, Image
@@ -143,6 +145,18 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
         request = self.context.get("request", None)
         if request.method.lower() == "patch" and value != request.user.username:
             raise serializers.ValidationError("请使用账号绑定的手机号码进行验证")
+        return value
+
+    def validate_nickname(self, value):
+        """
+        校验昵称是否违规
+        @param value:
+        @return:
+        """
+        aly = AliyunModeration()
+        moderation_res = aly.text_moderation("nickname_detection", value)
+        if moderation_res["code"] != 1:
+            raise serializers.ValidationError(moderation_res["message"])
         return value
 
     def validate(self, data):
