@@ -12,6 +12,16 @@ class ProductSerializer(serializers.ModelSerializer):
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
     promotional_image = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
 
+    # 获取外键图片的url
+    product_display_qr_code_url = serializers.SerializerMethodField()
+    test_group_qr_code_url = serializers.SerializerMethodField()
+
+    def get_product_display_qr_code_url(self, instance):
+        return instance.product_display_qr_code.image_url if instance.product_display_qr_code else None
+
+    def get_test_group_qr_code_url(self, instance):
+        return instance.test_group_qr_code.image_url if instance.test_group_qr_code else None
+
     class Meta:
         model = Product
         fields = "__all__"
@@ -39,6 +49,17 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
     ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
+    promotional_image = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+
+    # 获取外键图片的url
+    product_display_qr_code_url = serializers.SerializerMethodField()
+    test_group_qr_code_url = serializers.SerializerMethodField()
+
+    def get_product_display_qr_code_url(self, instance):
+        return instance.product_display_qr_code.image_url if instance.product_display_qr_code else None
+
+    def get_test_group_qr_code_url(self, instance):
+        return instance.test_group_qr_code.image_url if instance.test_group_qr_code else None
 
     class Meta:
         model = Product
