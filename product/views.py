@@ -25,7 +25,7 @@ from product.serializers import ProductSerializer, ProductDetailSerializer
 User = get_user_model()
 
 
-class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
+class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     def get_permissions(self):
