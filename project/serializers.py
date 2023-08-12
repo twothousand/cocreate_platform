@@ -4,11 +4,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.settings import api_settings
 # app
-from common.mixins import my_mixins
 from .models import Project
 from team.models import Member, Team
 from dim.models import Model, Industry, AITag
 from function.models import Image
+from common.mixins import my_mixins
+from common.utils.aliyun_green import AliyunModeration
 
 
 # 项目序列化器
@@ -101,12 +102,15 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def get_team(self, obj):
         return Team.objects.filter(project=obj).first()
 
-    # 根据项目状态过滤
+    # 根据组队状态过滤项目
     # def to_representation(self, instance):
-    #     project_status = instance.project_status
-    #     if project_status not in ["招募中", "开发中"]:
-    #         return {}
-    #     return super().to_representation(instance)
+    #     team = self.get_team(instance)
+    #     is_recruitment_open = team.is_recruitment_open if team else False
+    #     print("*" * 100, is_recruitment_open)
+    #     if not is_recruitment_open:
+    #         pass
+    #     data = super().to_representation(instance)
+    #     return data
 
 
 # 项目详情序列化器
@@ -165,6 +169,24 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 # 项目创建序列化器
 class ProjectCreateSerializer(serializers.ModelSerializer):
+    def validate_project_name(self, value):
+        """
+        校验项目名称是否违规
+        @param value:
+        @return:
+        """
+        AliyunModeration().validate_text_detection("ad_compliance_detection", value)
+        return value
+
+    def validate_project_description(self, value):
+        """
+        校验项目描述是否违规
+        @param value:
+        @return:
+        """
+        AliyunModeration().validate_text_detection("ad_compliance_detection", value)
+        return value
+
     def create(self, validated_data):
         # 从验证数据中取出模型、行业、AI标签数据
         models_data = validated_data.pop('model', [])

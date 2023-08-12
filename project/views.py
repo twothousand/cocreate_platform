@@ -33,7 +33,8 @@ class CustomPagination(PageNumberPagination):
 
 # 项目增删改查视图集
 class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
-    queryset = Project.objects.all()
+    # queryset = Project.objects.all()
+    queryset = Project.objects.filter(team__is_recruitment_open=True)  # 只查询招募状态为True的项目
 
     def get_permissions(self):
         """

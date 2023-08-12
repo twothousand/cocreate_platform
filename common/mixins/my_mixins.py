@@ -103,7 +103,7 @@ class CustomResponseMixin:
             response = super().handle_exception(exc)
             return Response({
                 "message": self.get_first_error_message(response.data),
-                "data": None
+                "data": response.data
             }, status=response.status_code)
 
         # APIException 是 Django REST Framework 中所有异常的基类，这样可以捕获所有从 REST Framework 抛出的异常

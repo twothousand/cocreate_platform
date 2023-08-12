@@ -148,10 +148,7 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
         @param value:
         @return:
         """
-        aly = AliyunModeration()
-        moderation_res = aly.text_moderation("nickname_detection", value)
-        if moderation_res["code"] != 1:
-            raise serializers.ValidationError(moderation_res["message"])
+        AliyunModeration().validate_text_detection("nickname_detection", value)
         return value
 
     def validate(self, data):

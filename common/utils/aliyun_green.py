@@ -13,6 +13,8 @@ from alibabacloud_tea_openapi.models import Config
 from alibabacloud_green20220302 import models as green_20220302_models
 from alibabacloud_tea_util import models as util_models
 # common
+from rest_framework import serializers
+
 from cocreate_platform.settings import ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET
 
 logger = logging.getLogger(__name__)
@@ -54,7 +56,8 @@ class AliyunModeration:
         runtime = util_models.RuntimeOptions()
         try:
             resp = client.text_moderation_with_options(text_moderation_request, runtime)
-            logger.info("AliyunModeration::text_moderation, service=%s, service_parameters=%s, response=%s" % (service, service_parameters, resp))
+            logger.info("AliyunModeration::text_moderation, service=%s, service_parameters=%s, response=%s" % (
+            service, service_parameters, resp))
             body = resp.body.to_map()
             if body["Code"] == 200:
                 if body["Data"]["labels"] == "":
@@ -96,7 +99,8 @@ class AliyunModeration:
         runtime = util_models.RuntimeOptions()
         try:
             resp = client.image_moderation_with_options(image_moderation_request, runtime)
-            logger.info("AliyunModeration::image_moderation, service=%s, service_parameters=%s, response=%s" % (service, service_parameters, resp))
+            logger.info("AliyunModeration::image_moderation, service=%s, service_parameters=%s, response=%s" % (
+            service, service_parameters, resp))
             body = resp.body.to_map()
             if body["Code"] == 200:
                 check_res = self.check_image_result(body["Data"]["Result"])
@@ -110,8 +114,20 @@ class AliyunModeration:
             logger.error("AliyunModeration::image_moderation, error=%s, response=%s" % (error, resp))
             return {"code": -3, "message": "图片审核失败", "error": error}
 
+    def validate_text_detection(self, service, value):
+        """
+        校验文本描述是否违规
+        @param service:
+        @param value:
+        @return:
+        """
+        moderation_res = self.text_moderation(service, value)
+        if moderation_res["code"] != 1:
+            raise serializers.ValidationError(moderation_res["message"])
+        return value
+
 
 if __name__ == '__main__':
-    s = AliyunModeration()
-    print(s.text_moderation("ad_compliance_detection", "fuck",))
+    # s = AliyunModeration()
+    print(AliyunModeration().validate_text_detection("ad_compliance_detection", "fuck"))
     # print(s.image_moderation("baselineCheck", ""))
