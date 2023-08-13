@@ -768,6 +768,18 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
                 }
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+            # 检查被添加用户是否已经在申请列表中，且状态为待审核，如果为待审核，则自动改为同意加入
+            application_instances = Application.objects.filter(team=team_instance, user=member_instance, status="待审核")
+            if application_instances.exists():
+                for application_instance in application_instances:
+                    application_instance.status = '同意加入'
+                    application_instance.save()
+                response_data = {
+                    'message': '成功添加该用户，申请状态已变更。',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
             # 检查被添加用户是否已经是队伍成员且状态正常
             existing_member = Member.objects.filter(
                 team=team_instance,
