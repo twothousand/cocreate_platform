@@ -35,6 +35,7 @@ class CustomPagination(PageNumberPagination):
 class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
     # queryset = Project.objects.all()
     queryset = Project.objects.filter(team__is_recruitment_open=True)  # 只查询招募状态为True的项目
+    pagination_class = CustomPagination  # 自定义分页器
 
     def get_permissions(self):
         """
@@ -93,6 +94,7 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
 
 # 项目的过滤和搜索视图
 class ProjectFilterAndSearchView(APIView):
+    pagination_class = CustomPagination  # 自定义分页器
     # 在搜索时使用已过滤的结果集进行搜索操作
     def get(self, request, *args, **kwargs):
         try:
