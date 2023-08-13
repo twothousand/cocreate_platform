@@ -20,7 +20,7 @@ from product.models import Product
 from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
 from project.serializers import UserManagedProjectsSerializer, UserManagedProjectDetailSerializer, UserJoinedProjectsSerializer, UserJoinedProjectDetailSerializer
-from team.models import Member
+from team.models import Member, Team
 from user import serializers
 from user.permissions import IsOwnerOrReadOnly
 
@@ -118,7 +118,8 @@ class UserManagedProjectsView(APIView):
     def get(self, request):
         try:
             user_id = request.user.id
-            managed_projects = Project.objects.filter(project_creator_id=user_id)
+            # 从Team表里获取用户管理的项目，is_leader=1，再从Project表里获取项目信息
+            managed_projects = Project.objects.filter(Q(team__member__user_id=user_id) & Q(team__member__is_leader=True))
             serializer = UserManagedProjectsSerializer(managed_projects, many=True)
             response_data = {
                 'message': '已成功检索到用户管理的项目！',
