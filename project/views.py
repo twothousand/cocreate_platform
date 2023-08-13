@@ -155,6 +155,8 @@ class ProjectMembersView(APIView):
     def get(self, request, project_id):
         try:
             members = Member.objects.filter(team__project_id=project_id, member_status='正常')  # 包含队长
+            # 队长排在第一位,其他队员按加入时间倒序排列(先加入的排在前面)
+            members = members.order_by('-is_leader', '-join_date')
             serializer = serializers.ProjectMembersSerializer(members, many=True)
             response_data = {
                 "message": "成功获取项目成员列表！",

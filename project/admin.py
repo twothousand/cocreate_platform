@@ -4,7 +4,7 @@ from .models import Project
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = [
-        'project_name', 'project_type', 'project_status', 'project_cycles',
+        'id', 'project_name', 'project_type', 'project_status', 'project_cycles',
         'project_creator', 'created_at', 'updated_at'
     ]
     filter_horizontal = ['model', 'industry', 'ai_tag']

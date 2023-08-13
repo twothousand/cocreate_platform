@@ -16,7 +16,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
 
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ('id', 'team', 'is_leader', 'member_status', 'user_id')
+    list_display = ('id', 'team', 'is_leader', 'member_status', 'user_id', 'join_date')
     list_filter = ('team',)
     search_fields = ('team',)
     list_per_page = 20
