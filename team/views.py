@@ -142,14 +142,14 @@ class TeamRecruitmentView(APIView):
         #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
-            # # 校验招募截止日期是否小于今天
-            # recruitment_end_date = serializer.validated_data['recruitment_end_date']
-            # if recruitment_end_date < date.today():
-            #     response_data = {
-            #         'message': '招募截止日期不能早于今天',
-            #         'data': None,
-            #     }
-            #     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            # 校验招募截止日期是否小于今天
+            recruitment_end_date = serializer.validated_data['recruitment_end_date']
+            if serializer.validated_data['is_recruitment_open'] and recruitment_end_date < date.today():
+                response_data = {
+                    'message': '招募截止日期不能早于今天',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             # 校验组队招募信息是否内容合规
             s = aliyun_green.AliyunModeration()
             check_res = s.text_moderation("pgc_detection",
@@ -257,7 +257,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                     'message': '申请在审核中，无需继续申请。',
                     'data': None,
                 }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response_data, status=status.HTTP_200_OK)
             elif existing_application and existing_application.status != '待审核':
                 # 如果申请已经存在，更新其内容
                 existing_application.application_msg = application_msg
@@ -274,7 +274,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                     'message': '重新发送申请',
                     'data': serializer.data
                 }
-                return Response(response_data, status=status.HTTP_201_BAD_REQUEST)
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 # 如果没有申请存在，创建新的申请
                 application = Application.objects.create(
