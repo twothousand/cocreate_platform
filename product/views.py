@@ -71,7 +71,7 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             # 校验产品内容信息是否内容合规
             s = aliyun_green.AliyunModeration()
             check_res = s.text_moderation("chat_detection",
-                                          version_data['name']+"。"+version_data['description'])
+                                          version_data['product_name']+"。"+version_data['product_description'])
             if check_res['code'] != 1:
                 response_data = {
                     'message': '文本检测违规:' + check_res['message'],
@@ -93,10 +93,10 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             product_display_qr_code_instance = get_object_or_404(Image, id=version_data['product_display_qr_code']) if version_data['product_display_qr_code'] != '' else None
             test_group_qr_code_instance = get_object_or_404(Image, id=version_data['test_group_qr_code']) if version_data['test_group_qr_code'] != '' else None
             # 更新或创建产品信息
-            product_instance.name = version_data['name']
+            product_instance.product_name = version_data['product_name']
             product_instance.product_source = version_data['product_source']
-            product_instance.description = version_data['description']
-            product_instance.type = version_data['type']
+            product_instance.product_description = version_data['product_description']
+            product_instance.product_type = version_data['product_type']
             product_instance.product_display_link = version_data['product_display_link']
             product_instance.product_display_qr_code = product_display_qr_code_instance
             product_instance.test_group_qr_code = test_group_qr_code_instance
@@ -108,9 +108,9 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             aitag_instances = AITag.objects.filter(id__in=version_data['ai_tag'])
             version_instance = Version.objects.create(product=product_instance,
                                                       version_number=version_data['version_number'],
-                                                      name=version_data['name'],
-                                                      description=version_data['description'],
-                                                      type=version_data['type'],
+                                                      product_name=version_data['product_name'],
+                                                      product_description=version_data['product_description'],
+                                                      product_type=version_data['product_ype'],
                                                       product_display_link=version_data["product_display_link"],
                                                       product_display_qr_code=product_display_qr_code_instance,
                                                       test_group_qr_code=test_group_qr_code_instance
@@ -183,7 +183,7 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             # 校验产品内容信息是否内容合规
             s = aliyun_green.AliyunModeration()
             check_res = s.text_moderation("chat_detection",
-                                          version_data['name'] + "。" + version_data['description'])
+                                          version_data['product_name'] + "。" + version_data['product_description'])
             if check_res['code'] != 1:
                 response_data = {
                     'message': '文本检测违规:' + check_res['message'],
@@ -196,10 +196,10 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             version_data['test_group_qr_code'] != '' else None
 
             # 更新产品信息
-            product_instance.name = version_data['name']
+            product_instance.product_name = version_data['product_name']
             product_instance.product_source = version_data['product_source']
-            product_instance.description = version_data['description']
-            product_instance.type = version_data['type']
+            product_instance.product_description = version_data['product_description']
+            product_instance.product_type = version_data['product_type']
             product_instance.product_display_link = version_data['product_display_link']
             product_instance.product_display_qr_code = product_display_qr_code_instance
             product_instance.test_group_qr_code = test_group_qr_code_instance
@@ -211,9 +211,9 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             aitag_instances = AITag.objects.filter(id__in=version_data['ai_tag'])
             version_instance = Version.objects.create(product=product_instance,
                                                       version_number=version_data['version_number'],
-                                                      name=version_data['name'],
-                                                      description=version_data['description'],
-                                                      type=version_data['type'],
+                                                      product_name=version_data['product_name'],
+                                                      product_description=version_data['product_description'],
+                                                      product_type=version_data['product_type'],
                                                       product_display_link=version_data["product_display_link"],
                                                       product_display_qr_code=product_display_qr_code_instance,
                                                       test_group_qr_code=test_group_qr_code_instance
@@ -314,8 +314,8 @@ class ProductFilterAndSearchView(APIView):
             # 应用搜索条件
             if keyword:
                 queryset = queryset.filter(
-                    Q(name__icontains=keyword) |
-                    Q(description__icontains=keyword)
+                    Q(product_name__icontains=keyword) |
+                    Q(product_description__icontains=keyword)
                 )
 
             queryset = queryset.order_by('-id')

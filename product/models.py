@@ -32,14 +32,14 @@ class Product(BaseModel):
         ('后台维护', '后台维护'),
     )
     product_source = models.CharField(max_length=50, choices=SOURCE_CHOICES, verbose_name='产品来源', default="主动创建")
-    name = models.CharField(max_length=50, blank=True, verbose_name='产品名称')
+    product_name = models.CharField(max_length=50, blank=True, verbose_name='产品名称')
     promotional_image = models.ManyToManyField(Image, blank=True, verbose_name='产品宣传图')
-    description = models.TextField(blank=True, verbose_name='产品简介')
+    product_description = models.TextField(blank=True, verbose_name='产品简介')
     TYPE_CHOICES = (
         ('学习型', '学习型'),
         ('应用型', '应用型'),
     )
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, blank=True, verbose_name='产品类型')
+    product_type = models.CharField(max_length=20, choices=TYPE_CHOICES, blank=True, verbose_name='产品类型')
     industry = models.ManyToManyField(Industry, blank=True, verbose_name='行业')
     ai_tag = models.ManyToManyField(AITag, blank=True, verbose_name='AI标签')
     model = models.ManyToManyField(Model, blank=True, verbose_name='使用模型')
@@ -67,10 +67,10 @@ class Version(BaseModel):
     id = models.AutoField(primary_key=True, verbose_name='版本ID')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='产品')
     version_number = models.CharField(max_length=20, verbose_name='版本号', default='1.0.0')
-    name = models.CharField(max_length=255, blank=True, verbose_name='产品名称')
+    product_name = models.CharField(max_length=255, blank=True, verbose_name='产品名称')
     promotional_image = models.ManyToManyField(Image, blank=True, verbose_name='产品宣传图')
-    description = models.CharField(max_length=500, blank=True, verbose_name='产品简介')
-    type = models.CharField(max_length=100, blank=True, verbose_name='产品类型')
+    product_description = models.CharField(max_length=500, blank=True, verbose_name='产品简介')
+    product_type = models.CharField(max_length=100, blank=True, verbose_name='产品类型')
     model = models.ManyToManyField(Model,verbose_name="模型", default="")
     industry = models.ManyToManyField(Industry,verbose_name="行业", default="")
     ai_tag = models.ManyToManyField(AITag,verbose_name="AI标签", default="")
