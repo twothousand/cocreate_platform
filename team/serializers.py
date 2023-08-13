@@ -4,15 +4,28 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 # app
 from team.models import Team, Member, Application
+from function.models import Image
 
 User = get_user_model()
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image  # 假设Image是你的Image模型
+        fields = ['image_url']  # 假设Image模型有一个名为image_url的字段
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_image = ImageSerializer(read_only=True)  # 不需要指定source参数
+
     class Meta:
-        model = User
-        fields = ('id', 'username', 'nickname', 'professional_career', 'biography', 'location', 'profile_image')
-        ref_name = "team_user"
+        model = User  # 假设User是你的User模型
+        fields = ['id', 'username', 'nickname', 'professional_career', 'biography', 'location', 'profile_image']
+
+
+# class UserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ('id', 'username', 'nickname', 'professional_career', 'biography', 'location', 'profile_image')
+#         ref_name = "team_user"
 
 class TeamRecruitmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,6 +66,7 @@ class TeamRecruitmentSerializer(serializers.ModelSerializer):
 
 class TeamApplicationSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+
     class Meta:
         model = Application
         fields = ['id', 'user', 'project', 'team', 'application_msg', 'status', 'created_at']
