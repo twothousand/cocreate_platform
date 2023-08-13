@@ -159,7 +159,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False  # USE_TZ=True本地使用的是'Asia/Shanghai'时间，但是写到数据库中的时间会自动转换为UTC时间，读取的时候也会自动转换为本地时间
+USE_TZ = True  # USE_TZ=True本地使用的是'Asia/Shanghai'时间，但是写到数据库中的时间会自动转换为UTC时间，读取的时候也会自动转换为本地时间
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
