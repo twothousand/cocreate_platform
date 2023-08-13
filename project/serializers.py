@@ -332,6 +332,7 @@ class UserJoinedProjectDetailSerializer(my_mixins.MyModelSerializer, serializers
 
 # 获取项目成员列表序列化器
 class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+    team_id = serializers.ReadOnlyField(source='team.id')
     team_name = serializers.ReadOnlyField(source='team.team_name')
     username = serializers.ReadOnlyField(source='user.username')
     nickname = serializers.ReadOnlyField(source='user.nickname')
@@ -347,5 +348,5 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
 
     class Meta:
         model = Member
-        fields = ['team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
+        fields = ['team_id', 'team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
                   'professional_career', 'location', 'email', 'profile_image']
