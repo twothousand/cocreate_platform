@@ -8,15 +8,17 @@ Description: Description of your file.
 from rest_framework import serializers
 # app
 from notification.models import Message
+from user.serializers import UserHyperlinkSerializer
 
 
 class MessageSerializer(serializers.ModelSerializer):
     message_type = serializers.SerializerMethodField()
     message = serializers.SerializerMethodField()
+    sender = UserHyperlinkSerializer()
 
     class Meta:
         model = Message
-        fields = "__all__"
+        exclude = ['message_template', 'is_deleted', 'is_read']
 
     def validate(self, attrs):
         request = self.context['request']

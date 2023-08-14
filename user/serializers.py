@@ -227,3 +227,11 @@ class UserSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'nickname', 'biography', 'professional_career', 'location', 'profile_image']
+
+
+class UserHyperlinkSerializer(serializers.HyperlinkedModelSerializer):
+    user_detail = serializers.HyperlinkedIdentityField(view_name='user-detail')
+
+    class Meta:
+        model = User
+        fields = ('id', 'nickname', 'user_detail')
