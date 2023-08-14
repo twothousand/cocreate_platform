@@ -16,4 +16,6 @@ urlpatterns = [
     path('update_product_with_version/', ProductViewSet.as_view({'put': 'update_product_with_version'}), name='update_product_with_version'),
     # 获取产品信息（GET）
     path('get_product_info/<str:product_id>/', ProductViewSet.as_view({'get': 'get_product_info'}), name='get_product_info'),
+    # 获取产品ID（GET）
+    path('get_product_id/<str:project_id>/', ProductViewSet.as_view({'get': 'get_product_id'}), name='get_product_id'),
 ]
