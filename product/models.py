@@ -32,7 +32,7 @@ class Product(BaseModel):
         ('后台维护', '后台维护'),
     )
     product_source = models.CharField(max_length=50, choices=SOURCE_CHOICES, verbose_name='产品来源', default="主动创建")
-    product_name = models.CharField(max_length=50, blank=True, verbose_name='产品名称')
+    product_name = models.CharField(max_length=100, blank=True, verbose_name='产品名称')
     promotional_image = models.ManyToManyField(Image, blank=True, verbose_name='产品宣传图')
     product_description = models.TextField(blank=True, verbose_name='产品简介')
     TYPE_CHOICES = (
@@ -51,10 +51,10 @@ class Product(BaseModel):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     def get_product_name(self):
-        return self.name
+        return self.product_name
 
     def __str__(self):
-        return f"产品名称: {self.name}"
+        return f"产品名称: {self.product_name}"
 
     class Meta:
         db_table = 'product'
@@ -67,7 +67,7 @@ class Version(BaseModel):
     id = models.AutoField(primary_key=True, verbose_name='版本ID')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='产品')
     version_number = models.CharField(max_length=20, verbose_name='版本号', default='1.0.0')
-    product_name = models.CharField(max_length=255, blank=True, verbose_name='产品名称')
+    product_name = models.CharField(max_length=100, blank=True, verbose_name='产品名称')
     promotional_image = models.ManyToManyField(Image, blank=True, verbose_name='产品宣传图')
     product_description = models.CharField(max_length=500, blank=True, verbose_name='产品简介')
     product_type = models.CharField(max_length=100, blank=True, verbose_name='产品类型')

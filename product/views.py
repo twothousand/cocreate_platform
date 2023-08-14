@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 # common
@@ -23,6 +23,12 @@ from product.models import Product, Version
 from product.serializers import ProductSerializer, ProductDetailSerializer
 
 User = get_user_model()
+
+# 自定义分页器
+class CustomPagination(PageNumberPagination):
+    page_size = 2
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
@@ -110,7 +116,7 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
                                                       version_number=version_data['version_number'],
                                                       product_name=version_data['product_name'],
                                                       product_description=version_data['product_description'],
-                                                      product_type=version_data['product_ype'],
+                                                      product_type=version_data['product_type'],
                                                       product_display_link=version_data["product_display_link"],
                                                       product_display_qr_code=product_display_qr_code_instance,
                                                       test_group_qr_code=test_group_qr_code_instance
@@ -283,6 +289,51 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
         except Exception as e:
             response_data = {
                 'message': '查询产品信息失败',
+                'data': {'errors': str(e)},
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # 根据项目ID获取产品ID（GET）
+    @action(methods=['GET'], detail=False)
+    def get_product_id(self, request, project_id, *args, **kwargs):
+        try:
+            if not project_id:
+                response_data = {
+                    'message': '项目ID未提供',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                project_instance = Project.objects.get(id=project_id)
+            except Project.DoesNotExist:
+                response_data = {
+                    'message': '未找到符合条件的项目ID',
+                    'data': None,
+                }
+                return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+            try:
+                product_instance = Product.objects.get(project=project_instance)
+                product_serializer = ProductSerializer(product_instance)
+                response_data = {
+                    'message': '产品ID查询成功',
+                    'data': {
+                        'product_id': product_serializer.data['id'],
+                    },
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except Product.DoesNotExist:
+                response_data = {
+                    'message': '未找到符合条件的产品ID',
+                    'data': {
+                        'product_id': None,
+                    },
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': '查询产品ID失败',
                 'data': {'errors': str(e)},
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
