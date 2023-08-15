@@ -59,3 +59,22 @@ def iso_to_beijing(iso_time):
     # 将datetime对象转换为北京时间
     beijing_time = dt.astimezone(beijing_tz).date()
     return beijing_time
+
+
+def iso_before_beijing_today(iso_time):
+    try:
+        # 将ISO时间字符串转换为时间对象
+        iso_datetime = datetime.datetime.fromisoformat(iso_time.replace('Z', '+00:00'))
+
+        # 将ISO时间转换为北京时间
+        beijing_datetime = iso_datetime.astimezone(timezone(timedelta(hours=8)))
+
+        # 获取当前北京时间日期
+        beijing_now = datetime.now(timezone(timedelta(hours=8))).date()
+
+        # 判断ISO时间是否在北京时间之前的同一天
+        return beijing_datetime.date() < beijing_now
+    except Exception as e:
+        print("An error occurred:", e)
+        return None
+
