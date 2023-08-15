@@ -26,7 +26,7 @@ class Team(BaseModel):
     team_name = models.CharField(max_length=100, verbose_name='队伍名称')
     is_recruitment_open = models.BooleanField(verbose_name='是否开启招募', default=True)
     recruitment_requirements = models.TextField(blank=True, verbose_name='招募要求')
-    recruitment_end_date = models.DateField(blank=True, null=True, verbose_name='招募结束日期')
+    recruitment_end_date = models.DateTimeField(blank=True, null=True, verbose_name='招募结束日期')
     recruitment_slots = models.IntegerField(blank=True, null=True, verbose_name='招募人数')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
