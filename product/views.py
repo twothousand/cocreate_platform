@@ -341,6 +341,8 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
 
 # 产品的过滤和搜索视图
 class ProductFilterAndSearchView(APIView):
+    pagination_class = CustomPagination  # 自定义分页器
+
     # 在搜索时使用已过滤的结果集进行搜索操作
     def get(self, request, *args, **kwargs):
         try:
