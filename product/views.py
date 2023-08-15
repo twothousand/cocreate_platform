@@ -76,7 +76,7 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
 
             # 校验产品内容信息是否内容合规
             s = aliyun_green.AliyunModeration()
-            check_res = s.text_moderation("chat_detection",
+            check_res = s.text_moderation("pgc_detection",
                                           version_data['product_name']+"。"+version_data['product_description'])
             if check_res['code'] != 1:
                 response_data = {
@@ -188,7 +188,7 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
                     return Response(response_data, status=status.HTTP_404_NOT_FOUND)
             # 校验产品内容信息是否内容合规
             s = aliyun_green.AliyunModeration()
-            check_res = s.text_moderation("chat_detection",
+            check_res = s.text_moderation("pgc_detection",
                                           version_data['product_name'] + "。" + version_data['product_description'])
             if check_res['code'] != 1:
                 response_data = {
