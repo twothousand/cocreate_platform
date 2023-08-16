@@ -99,25 +99,25 @@ class ProjectFilterAndSearchView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             keyword = self.request.GET.get('keyword')
-            industry = self.request.GET.get('industry')
-            ai_tag = self.request.GET.get('ai_tag')
+            industry = self.request.GET.getlist('industry')
+            ai_tag = self.request.GET.getlist('ai_tag')
             project_type = self.request.GET.get('project_type')
             project_status = self.request.GET.get('project_status')
-            model_name = self.request.GET.get('model_name')
+            model_name = self.request.GET.getlist('model_name')
 
             queryset = Project.objects.all()
 
             # 应用过滤条件
             if project_status:
-                queryset = queryset.filter(project_status__icontains=project_status)
+                queryset = queryset.filter(project_status=project_status)
             if project_type:
-                queryset = queryset.filter(project_type__icontains=project_type)
-            if model_name:
-                queryset = queryset.filter(model__model_name__icontains=model_name)
-            if industry:
-                queryset = queryset.filter(industry__industry__icontains=industry)
-            if ai_tag:
-                queryset = queryset.filter(ai_tag__ai_tag__icontains=ai_tag)
+                queryset = queryset.filter(project_type=project_type)
+            if len(model_name) > 0 and model_name[0] != '':
+                queryset = queryset.filter(model__model_name__in=model_name)
+            if len(industry) > 0 and industry[0] != '':
+                queryset = queryset.filter(industry__industry__in=industry)
+            if len(ai_tag) > 0 and ai_tag[0] != '':
+                queryset = queryset.filter(ai_tag__ai_tag__in=ai_tag)
 
             # 应用搜索条件
             if keyword:
