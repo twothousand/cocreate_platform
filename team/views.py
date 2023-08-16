@@ -66,6 +66,15 @@ class TeamRecruitmentView(APIView):
         if serializer.is_valid():
             # 根据当前用户创建组队招募数据
             user = request.user
+            # 如果招募未开启
+            if serializer.validated_data['is_recruitment_open'] == False:
+                team_recruitment = serializer.save(created_by=user)
+                response_data = {
+                    'message': '组队招募数据创建成功(招募未开启)',
+                    'data': serializer.data,  # 包含创建成功后的数据
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+
             # 校验招募截止日期是否小于今天
             is_expired = time_utils.iso_before_beijing_today(request.data['recruitment_end_date'])
             if is_expired:
@@ -139,9 +148,19 @@ class TeamRecruitmentView(APIView):
         #     pass
         serializer = team_serializers.TeamRecruitmentSerializer(instance=team_recruitment, data=request.data, partial=True)
         if serializer.is_valid():
+            print("serializer.validated_data['is_recruitment_open']",serializer.validated_data['is_recruitment_open'])
+            # 如果招募未开启
+            if serializer.validated_data['is_recruitment_open'] == False:
+                serializer.save()
+                response_data = {
+                    'message': '组队招募数据更新成功(招募未开启)',
+                    'data': serializer.data,  # 包含创建成功后的数据
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+
             # 校验招募截止日期是否小于今天
             is_expired = time_utils.iso_before_beijing_today(request.data['recruitment_end_date'])
-            if serializer.validated_data['is_recruitment_open'] and is_expired:
+            if is_expired:
                 response_data = {
                     'message': '招募截止日期不能早于今天',
                     'data': None,

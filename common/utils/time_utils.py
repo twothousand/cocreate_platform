@@ -67,10 +67,10 @@ def iso_before_beijing_today(iso_time):
         iso_datetime = datetime.datetime.fromisoformat(iso_time.replace('Z', '+00:00'))
 
         # 将ISO时间转换为北京时间
-        beijing_datetime = iso_datetime.astimezone(timezone(timedelta(hours=8)))
+        beijing_datetime = iso_datetime.astimezone(datetime.timezone(datetime.timedelta(hours=8)))
 
         # 获取当前北京时间日期
-        beijing_now = datetime.now(timezone(timedelta(hours=8))).date()
+        beijing_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).date()
 
         # 判断ISO时间是否在北京时间之前的同一天
         return beijing_datetime.date() < beijing_now
