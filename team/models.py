@@ -25,7 +25,7 @@ class Team(BaseModel):
     team_leader = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='队伍负责人')
     team_name = models.CharField(max_length=100, verbose_name='队伍名称')
     is_recruitment_open = models.BooleanField(verbose_name='是否开启招募', default=True)
-    recruitment_requirements = models.TextField(blank=True, verbose_name='招募要求')
+    recruitment_requirements = models.TextField(blank=True, null=True, verbose_name='招募要求')
     recruitment_end_date = models.DateTimeField(blank=True, null=True, verbose_name='招募结束日期')
     recruitment_slots = models.IntegerField(blank=True, null=True, verbose_name='招募人数')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -70,8 +70,8 @@ class Member(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户ID')
     is_leader = models.IntegerField(default=0, verbose_name='是否队长')
-    join_date = models.DateField(blank=True, null=True, verbose_name='加入日期')
-    leave_date = models.DateField(blank=True, null=True, verbose_name='离开日期')
+    join_date = models.DateTimeField(blank=True, null=True, verbose_name='加入日期')
+    leave_date = models.DateTimeField(blank=True, null=True, verbose_name='离开日期')
     MEMBER_STATUS_CHOICES = (
         ('正常', '正常'),
         ('已离开', '已离开'),
