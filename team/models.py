@@ -70,8 +70,8 @@ class Member(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户ID')
     is_leader = models.IntegerField(default=0, verbose_name='是否队长')
-    join_date = models.DateTimeField(blank=True, null=True, verbose_name='加入日期')
-    leave_date = models.DateTimeField(blank=True, null=True, verbose_name='离开日期')
+    join_date = models.DateField(blank=True, null=True, verbose_name='加入日期')
+    leave_date = models.DateField(blank=True, null=True, verbose_name='离开日期')
     MEMBER_STATUS_CHOICES = (
         ('正常', '正常'),
         ('已离开', '已离开'),
