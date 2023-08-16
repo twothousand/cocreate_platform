@@ -270,6 +270,16 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
 
             # Check if a product with the given project_id exists
             product_instance = get_object_or_404(Product, id=product_id)
+            # # Query the ProductVersion table to get the latest version number for the given product_id
+            # latest_version = Version.objects.filter(product_id=product_id).aggregate(Max('created_at'))[
+            #     'created_at__max']
+            # print(' latest_version', latest_version)
+            # latest_version_instance = Version.objects.filter(product_id=product_id, created_at=latest_version).first()
+            #
+            # if latest_version_instance:
+            #     latest_version_number = latest_version_instance.version_number
+            # else:
+            #     latest_version_number = None
 
             # Serialize and return the product data
             product_serializer = ProductSerializer(product_instance)
@@ -300,7 +310,9 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             if not project_id:
                 response_data = {
                     'message': '项目ID未提供',
-                    'data': None,
+                    'data': {
+                        'product_id': None,
+                    },
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -309,7 +321,9 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
             except Project.DoesNotExist:
                 response_data = {
                     'message': '未找到符合条件的项目ID',
-                    'data': None,
+                    'data': {
+                        'product_id': None,
+                    },
                 }
                 return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -334,7 +348,8 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
         except Exception as e:
             response_data = {
                 'message': '查询产品ID失败',
-                'data': {'errors': str(e)},
+                'data': {'product_id': None,
+                         'errors': str(e)},
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -347,22 +362,22 @@ class ProductFilterAndSearchView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             keyword = self.request.GET.get('keyword')
-            industry = self.request.GET.get('industry')
-            ai_tag = self.request.GET.get('ai_tag')
+            industry = self.request.GET.getlist('industry')
+            ai_tag = self.request.GET.getlist('ai_tag')
             product_type = self.request.GET.get('product_type')
-            model_name = self.request.GET.get('model_name')
+            model_name = self.request.GET.getlist('model_name')
 
             queryset = Product.objects.all()
 
             # 应用过滤条件
             if product_type:
-                queryset = queryset.filter(type__icontains=product_type)
-            if model_name:
-                queryset = queryset.filter(model__model_name__icontains=model_name)
-            if industry:
-                queryset = queryset.filter(industry__industry__icontains=industry)
-            if ai_tag:
-                queryset = queryset.filter(ai_tag__ai_tag__icontains=ai_tag)
+                queryset = queryset.filter(type=product_type)
+            if len(model_name) > 0 and model_name[0] != '':
+                queryset = queryset.filter(model__model_name__in=model_name)
+            if len(industry) > 0 and industry[0] != '':
+                queryset = queryset.filter(industry__industry__in=industry)
+            if len(ai_tag) > 0 and ai_tag[0] != '':
+                queryset = queryset.filter(ai_tag__ai_tag__in=ai_tag)
 
             # 应用搜索条件
             if keyword:
