@@ -1,6 +1,5 @@
 # 系统模块
 from datetime import datetime
-import logging
 
 # django模块
 from django.contrib.auth import get_user_model
@@ -8,7 +7,7 @@ from django.db import transaction
 from django.db.models import Q
 
 # rest_framework模块
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -19,19 +18,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from product.models import Product
 from product.serializers import VersionDetailSerializer, ProductSerializer, VersionSerializer
 from project.models import Project
-from project.serializers import UserManagedProjectsSerializer, UserManagedProjectDetailSerializer, UserJoinedProjectsSerializer, UserJoinedProjectDetailSerializer
-from team.models import Member, Team
+from project.serializers import UserManagedProjectsSerializer, UserManagedProjectDetailSerializer, \
+    UserJoinedProjectsSerializer, UserJoinedProjectDetailSerializer
+from team.models import Member
 from user import serializers
 from user.permissions import IsOwnerOrReadOnly
 
 # common
 from common.mixins import my_mixins
-from common.utils import time_utils
-from common.utils import tools
-from common.utils.decorators import disallow_methods, disallow_actions
-
-# 获得一个logger实体对象
-# logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -118,8 +112,9 @@ class UserManagedProjectsView(APIView):
     def get(self, request):
         try:
             user_id = request.user.id
-            # 从Team表里获取用户管理的项目，is_leader=1，再从Project表里获取项目信息
-            managed_projects = Project.objects.filter(Q(team__member__user_id=user_id) & Q(team__member__is_leader=True))
+            # 从Member表里获取用户管理的项目，再从Project表里获取项目信息(项目创建者不变，转移队长后，更新在Member表里的is_leader字段)
+            managed_projects = Project.objects.filter(  # filter方法可以返回多个对象
+                Q(team__member__user_id=user_id) & Q(team__member__is_leader=True))
             serializer = UserManagedProjectsSerializer(managed_projects, many=True)
             response_data = {
                 'message': '已成功检索到用户管理的项目！',
@@ -140,14 +135,15 @@ class UserManagedProjectDetailView(APIView):
 
     @staticmethod
     def get_managed_project(user_id, project_id):
-        project = Project.objects.filter(id=project_id, project_creator_id=user_id).first()
+        # 从Member表里获取用户管理的项目，再从Project表里获取项目信息(项目创建者不变，转移队长后，更新在Member表里的is_leader字段)
+        project = Project.objects.get(  # get方法只能返回一个对象
+            Q(id=project_id) & Q(team__member__user_id=user_id) & Q(team__member__is_leader=True))
         if not project:
             raise NotFound("项目未发现或不是项目管理者！")
         return project
 
     def get(self, request, project_id):
         try:
-            print('request', request)
             user_id = request.user.id
             project = self.get_managed_project(user_id, project_id)
             serializer = UserManagedProjectDetailSerializer(project)
@@ -316,7 +312,7 @@ class UserJoinedProjectDetailView(APIView):
         except (Project.DoesNotExist, Member.DoesNotExist):
             raise NotFound("你还未加入该项目！！！")
 
-    def get(self, request,  project_id):
+    def get(self, request, project_id):
         try:
             user_id = request.user.id
             project = self.get_project(user_id, project_id)
@@ -372,6 +368,7 @@ class UserJoinedProjectDetailView(APIView):
                 "data": str(e)
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # 用户搜索
 class UserSearchView(APIView):

@@ -232,12 +232,6 @@ class ProjectDeleteSerializer(serializers.ModelSerializer):
 
 # 获取特定用户管理的所有项目序列化器
 class UserManagedProjectsSerializer(serializers.ModelSerializer):
-    """
-        项目封面(考虑流量，暂不获取)、项目名称、项目简介、成员数(从队伍成员表取，暂不获取)
-        以及一个”管理项目“的按钮（直接通过项目名称点进去即可） 和一个“删除项目“的按钮
-        “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
-    """
-
     # 支持多对多关系的序列化
     # model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
     # industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
@@ -263,12 +257,6 @@ class UserManagedProjectsSerializer(serializers.ModelSerializer):
 
 # 获取特定用户管理的具体项目序列化器
 class UserManagedProjectDetailSerializer(serializers.ModelSerializer):
-    """
-        项目封面(考虑流量，暂不获取)、项目名称、项目简介、成员数(从队伍成员表取，暂不获取)
-        以及一个”管理项目“的按钮（直接通过项目名称点进去即可） 和一个“删除项目“的按钮
-        “删除项目“ 需要再次弹框确认，才能进行删除（不常用，放到项目里边比较好）
-    """
-
     # 支持多对多关系的序列化
     project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
