@@ -189,6 +189,11 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
 # 项目更新序列化器
 class ProjectUpdateSerializer(serializers.ModelSerializer):
+    model = serializers.PrimaryKeyRelatedField(queryset=Model.objects.all(), many=True)
+    industry = serializers.PrimaryKeyRelatedField(queryset=Industry.objects.all(), many=True)
+    ai_tag = serializers.PrimaryKeyRelatedField(queryset=AITag.objects.all(), many=True)
+    project_images = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all(), many=True)
+
     class Meta:
         model = Project
         fields = '__all__'
@@ -286,12 +291,8 @@ class UserJoinedProjectDetailSerializer(my_mixins.MyModelSerializer, serializers
         fields = '__all__'
 
 
-# 获取项目成员列表序列化器（根据用户判断是否返回微信号,如果是在member里是项目成员，则返回wechat_id）
+# 获取项目成员列表序列化器
 class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
-    def __init__(self, *args, project_id=None, **kwargs):
-        self.project_id = project_id
-        super(ProjectMembersSerializer, self).__init__(*args, **kwargs)
-
     team_id = serializers.ReadOnlyField(source='team.id')
     team_name = serializers.ReadOnlyField(source='team.team_name')
     username = serializers.ReadOnlyField(source='user.username')
@@ -301,17 +302,8 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
     professional_career = serializers.ReadOnlyField(source='user.professional_career')
     location = serializers.ReadOnlyField(source='user.location')
     email = serializers.ReadOnlyField(source='user.email')
-    wechat_id = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
 
-    # TODO 查看特定项目的成员列表，如果是在member里是项目成员，则返回wechat_id
-    def get_wechat_id(self, instance):
-        # team = Team.objects.get(project_id=self.project_id)
-        # print(team.id, team.team_name)
-        # 获取当前登陆用户的user_id和team_id
-        member = Member.objects.get(user_id=instance.user_id, team_id=instance.team_id, member_status='正常')
-        print(member, instance.user.wechat_id)
-        return instance.user.wechat_id if member else None
 
     def get_profile_image(self, instance):
         return instance.user.profile_image.image_url if instance.user.profile_image else None
@@ -319,4 +311,28 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
     class Meta:
         model = Member
         fields = ['team_id', 'team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
-                  'professional_career', 'location', 'email', 'wechat_id', 'profile_image']
+                  'professional_career', 'location', 'email', 'profile_image']
+
+# 获取项目成员列表序列化器，有鉴权，返回微信号
+class ProjectTeamMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+    team_id = serializers.ReadOnlyField(source='team.id')
+    team_name = serializers.ReadOnlyField(source='team.team_name')
+    username = serializers.ReadOnlyField(source='user.username')
+    nickname = serializers.ReadOnlyField(source='user.nickname')
+    name = serializers.ReadOnlyField(source='user.name')
+    user_id = serializers.ReadOnlyField(source='user.id')
+    professional_career = serializers.ReadOnlyField(source='user.professional_career')
+    location = serializers.ReadOnlyField(source='user.location')
+    email = serializers.ReadOnlyField(source='user.email')
+    profile_image = serializers.SerializerMethodField()
+    wechat_id = serializers.ReadOnlyField(source='user.wechat_id')
+
+
+    def get_profile_image(self, instance):
+        return instance.user.profile_image.image_url if instance.user.profile_image else None
+
+
+    class Meta:
+        model = Member
+        fields = ['team_id', 'team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
+                  'professional_career', 'location', 'email', 'profile_image', 'wechat_id']

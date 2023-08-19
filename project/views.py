@@ -151,22 +151,53 @@ class ProjectFilterAndSearchView(APIView):
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# 查看特定项目的成员列表
+# 查看特定项目的成员列表，不需要鉴权
 class ProjectMembersView(APIView):
     def get(self, request, project_id):
         try:
             members = Member.objects.filter(team__project_id=project_id, member_status='正常')  # 包含队长
             # 队长排在第一位,其他队员按加入时间倒序排列(先加入的排在前面)
             members = members.order_by('-is_leader', 'join_date')
-            serializer = serializers.ProjectMembersSerializer(members, many=True, project_id=project_id)
+            serializer = serializers.ProjectMembersSerializer(members, many=True)
             response_data = {
                 "message": "成功获取项目成员列表！",
                 "data": serializer.data
             }
             return Response(response_data, status=status.HTTP_200_OK)
-        except Member.DoesNotExist:
+        except Exception as e:
             response_data = {
-                "message": "找不到指定项目！！！",
-                "data": None
+                "message": "查询错误。",
+                "data": str(e)
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+# 查看特定项目的成员列表，需要鉴权
+class ProjectTeamMembersView(APIView):
+    def get(self, request, project_id):
+        try:
+            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
+            # 检查用户是否在 Member 表中有匹配记录
+            user_in_team = Member.objects.filter(user_id=request.user, team__project_id=project_id, member_status='正常').exists()
+            print('user_in_team',user_in_team)
+            if not user_in_team:
+                response_data = {
+                    "message": "用户没有队内成员信息查看权限。",
+                    "data": None
+                }
+                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+            members = Member.objects.filter(team__project_id=project_id, member_status='正常')  # 包含队长
+            # 队长排在第一位,其他队员按加入时间倒序排列(先加入的排在前面)
+            members = members.order_by('-is_leader', 'join_date')
+            serializer = serializers.ProjectTeamMembersSerializer(members, many=True)
+            response_data = {
+                "message": "成功获取项目成员列表！",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                "message": "查询错误。",
+                "data": str(e)
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
