@@ -1,22 +1,20 @@
-# django
-from django.shortcuts import get_object_or_404
 # rest_framework
 from rest_framework import serializers
-from rest_framework.settings import api_settings
+
 # app
 from .models import Project
-from team.models import Member, Team
 from dim.models import Model, Industry, AITag
 from function.models import Image
+from team.models import Member, Team
+from user.models import User
+
+# common
 from common.mixins import my_mixins
 from common.utils.aliyun_green import AliyunModeration
 
 
 # 项目序列化器
 class ProjectSerializer(serializers.ModelSerializer):
-    # model_name = serializers.SerializerMethodField()
-    # industry_name = serializers.SerializerMethodField()
-    # ai_tag_name = serializers.SerializerMethodField()
     model = serializers.PrimaryKeyRelatedField(queryset=Model.objects.all(), many=True)
     industry = serializers.PrimaryKeyRelatedField(queryset=Industry.objects.all(), many=True)
     ai_tag = serializers.PrimaryKeyRelatedField(queryset=AITag.objects.all(), many=True)
@@ -27,15 +25,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
-
-    # def get_model_name(self, obj):
-    #     return obj.model.model_name
-    #
-    # def get_industry_name(self, obj):
-    #     return obj.industry.industry
-    #
-    # def get_ai_tag_name(self, obj):
-    #     return obj.ai_tag.ai_tag
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -102,16 +91,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def get_team(self, obj):
         return Team.objects.filter(project=obj).first()
 
-    # 根据组队状态过滤项目
-    # def to_representation(self, instance):
-    #     team = self.get_team(instance)
-    #     is_recruitment_open = team.is_recruitment_open if team else False
-    #     print("*" * 100, is_recruitment_open)
-    #     if not is_recruitment_open:
-    #         pass
-    #     data = super().to_representation(instance)
-    #     return data
-
 
 # 项目详情序列化器
 class ProjectDetailSerializer(serializers.ModelSerializer):
@@ -169,21 +148,13 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 # 项目创建序列化器
 class ProjectCreateSerializer(serializers.ModelSerializer):
+    # 校验项目名称是否违规
     def validate_project_name(self, value):
-        """
-        校验项目名称是否违规
-        @param value:
-        @return:
-        """
         AliyunModeration().validate_text_detection("ad_compliance_detection", value)
         return value
 
+    # 校验项目描述是否违规
     def validate_project_description(self, value):
-        """
-        校验项目描述是否违规
-        @param value:
-        @return:
-        """
         AliyunModeration().validate_text_detection("ad_compliance_detection", value)
         return value
 
@@ -233,9 +204,6 @@ class ProjectDeleteSerializer(serializers.ModelSerializer):
 # 获取特定用户管理的所有项目序列化器
 class UserManagedProjectsSerializer(serializers.ModelSerializer):
     # 支持多对多关系的序列化
-    # model = serializers.SlugRelatedField(many=True, read_only=True, slug_field='model_name')
-    # industry = serializers.SlugRelatedField(many=True, read_only=True, slug_field='industry')
-    # ai_tag = serializers.SlugRelatedField(many=True, read_only=True, slug_field='ai_tag')
     project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
     project_creator_name = serializers.CharField(source='project_creator.name', read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
@@ -318,8 +286,12 @@ class UserJoinedProjectDetailSerializer(my_mixins.MyModelSerializer, serializers
         fields = '__all__'
 
 
-# 获取项目成员列表序列化器
+# 获取项目成员列表序列化器（根据用户判断是否返回微信号,如果是在member里是项目成员，则返回wechat_id）
 class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+    def __init__(self, *args, project_id=None, **kwargs):
+        self.project_id = project_id
+        super(ProjectMembersSerializer, self).__init__(*args, **kwargs)
+
     team_id = serializers.ReadOnlyField(source='team.id')
     team_name = serializers.ReadOnlyField(source='team.team_name')
     username = serializers.ReadOnlyField(source='user.username')
@@ -329,7 +301,17 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
     professional_career = serializers.ReadOnlyField(source='user.professional_career')
     location = serializers.ReadOnlyField(source='user.location')
     email = serializers.ReadOnlyField(source='user.email')
+    wechat_id = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
+
+    # TODO 查看特定项目的成员列表，如果是在member里是项目成员，则返回wechat_id
+    def get_wechat_id(self, instance):
+        # team = Team.objects.get(project_id=self.project_id)
+        # print(team.id, team.team_name)
+        # 获取当前登陆用户的user_id和team_id
+        member = Member.objects.get(user_id=instance.user_id, team_id=instance.team_id, member_status='正常')
+        print(member, instance.user.wechat_id)
+        return instance.user.wechat_id if member else None
 
     def get_profile_image(self, instance):
         return instance.user.profile_image.image_url if instance.user.profile_image else None
@@ -337,4 +319,4 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
     class Meta:
         model = Member
         fields = ['team_id', 'team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
-                  'professional_career', 'location', 'email', 'profile_image']
+                  'professional_career', 'location', 'email', 'wechat_id', 'profile_image']

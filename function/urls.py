@@ -5,7 +5,6 @@ from rest_framework.routers import DefaultRouter
 # function
 from function import views
 
-
 router = DefaultRouter()
 
 urlpatterns = [
@@ -18,4 +17,3 @@ urlpatterns = [
     path('send_sms/', views.VerifCodeViewSet.as_view({'post': 'create'})),
     path('send_sms_test/', views.VerifCodeViewSet.as_view({'post': 'send_sms_test'})),
 ]
-
