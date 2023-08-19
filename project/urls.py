@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from project.views import ProjectViewSet, ProjectFilterAndSearchView, ProjectMembersView
+from project.views import ProjectViewSet, ProjectFilterAndSearchView, ProjectMembersView, ProjectTeamMembersView
 
 router = DefaultRouter()  # 可以处理视图的路由器
 router.register('', ProjectViewSet, 'project')  # 向路由器中注册视图集
@@ -12,5 +12,7 @@ urlpatterns = [
     path('filter-search', ProjectFilterAndSearchView.as_view(), name='project-filter-and-search'),
     # http://127.0.0.1:8000/api/projects/862c583f-511e-4e6a-8f8d-05128dabbc0d/members/
     path('<str:project_id>/members/', ProjectMembersView.as_view(), name='project-members'),
+    # http://127.0.0.1:8000/api/projects/862c583f-511e-4e6a-8f8d-05128dabbc0d/members/
+    path('<str:project_id>/team-members/', ProjectTeamMembersView.as_view(), name='project-members'),
 ]
 urlpatterns += router.urls
