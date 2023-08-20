@@ -61,7 +61,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # http://127.0.0.1:8000
-    path('', ProductFilterAndSearchView.as_view(), name='product-filter-and-search'),
+    # path('', ProductFilterAndSearchView.as_view(), name='product-filter-and-search'),
+    path('', ProductFilterAndSearchView.as_view({'get': 'search_filter_products'}), name='product-filter-and-search'),
 
     # http://127.0.0.1:8000/api/products/
     path('api/products/', include('product.urls'), name='product'),

@@ -10,6 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 
 # common
 from common.mixins import my_mixins
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 # 自定义分页器
 class CustomPagination(PageNumberPagination):
-    page_size = 1
+    page_size = 2
     page_size_query_param = 'page_size'
     max_page_size = 100
 
@@ -46,7 +47,7 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
         elif self.action == 'partial_update':  # 修改项目
             permission_classes = [IsAuthenticated]  # 需要项目创建者并且用户被认证 TODO 需要队长
         elif self.action == 'destroy':  # 删除项目
-            permission_classes = [IsProjectOwnerOrReadOnly, IsAuthenticated]  # 需要项目创建者并且用户被认证
+            permission_classes = [IsAuthenticated]  # 需要项目创建者并且用户被认证
         else:  # 其他操作
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         return [permission() for permission in permission_classes]
@@ -93,11 +94,13 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
 
 
 # 项目的过滤和搜索视图
-class ProjectFilterAndSearchView(APIView):
+class ProjectFilterAndSearchView(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
     pagination_class = CustomPagination  # 自定义分页器
+    permission_classes = [AllowAny]
 
     # 在搜索时使用已过滤的结果集进行搜索操作
-    def get(self, request, *args, **kwargs):
+    @action(methods=['GET'], detail=False)
+    def search_filter_projects(self, request, *args, **kwargs):
         try:
             keyword = self.request.GET.get('keyword')
             industry = self.request.GET.getlist('industry')
@@ -129,7 +132,9 @@ class ProjectFilterAndSearchView(APIView):
                 )
 
             queryset = queryset.order_by('-id')
-            serializer = serializers.ProjectDetailSerializer(queryset, many=True)
+            # 使用分页器的 paginate_queryset() 方法分页
+            paginated_queryset = self.paginate_queryset(queryset)
+            serializer = serializers.ProjectDetailSerializer(paginated_queryset, many=True)
 
             if serializer.data:
                 response_data = {
@@ -139,10 +144,10 @@ class ProjectFilterAndSearchView(APIView):
             else:
                 response_data = {
                     'message': '未检索到任何符合的项目！',
-                    'data': serializer.data
+                    'data': []
                 }
 
-            return Response(response_data, status=status.HTTP_200_OK)
+            return self.get_paginated_response(response_data)
         except Exception as e:
             response_data = {
                 'message': str(e),
@@ -170,6 +175,7 @@ class ProjectMembersView(APIView):
                 "data": str(e)
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
 
 # 查看特定项目的成员列表，需要鉴权
 class ProjectTeamMembersView(APIView):

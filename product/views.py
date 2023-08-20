@@ -355,11 +355,13 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
 
 
 # 产品的过滤和搜索视图
-class ProductFilterAndSearchView(APIView):
-    pagination_class = CustomPagination  # 自定义分页器
+class ProductFilterAndSearchView(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
+    pagination_class = CustomPagination
+    permission_classes = [AllowAny]
 
-    # 在搜索时使用已过滤的结果集进行搜索操作
-    def get(self, request, *args, **kwargs):
+    # 过滤产品（GET）
+    @action(methods=['GET'], detail=False)
+    def search_filter_products(self, request, *args, **kwargs):
         try:
             keyword = self.request.GET.get('keyword')
             industry = self.request.GET.getlist('industry')
@@ -387,7 +389,9 @@ class ProductFilterAndSearchView(APIView):
                 )
 
             queryset = queryset.order_by('-id')
-            serializer = ProductDetailSerializer(queryset, many=True)
+            # 使用分页器的 paginate_queryset() 方法分页
+            paginated_queryset = self.paginate_queryset(queryset)
+            serializer = ProductDetailSerializer(paginated_queryset, many=True)
 
             if serializer.data:
                 response_data = {
@@ -397,10 +401,10 @@ class ProductFilterAndSearchView(APIView):
             else:
                 response_data = {
                     'message': '未检索到任何符合的产品！',
-                    'data': serializer.data
+                    'data': []
                 }
 
-            return Response(response_data, status=status.HTTP_200_OK)
+            return self.get_paginated_response(response_data)
         except Exception as e:
             response_data = {
                 'message': str(e),
