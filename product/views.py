@@ -357,13 +357,7 @@ class ProductViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelVi
 # 产品的过滤和搜索视图
 class ProductFilterAndSearchView(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
     pagination_class = CustomPagination
-
-    def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
-            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
-        else:  # 对于其他请求方法，比如GET、PATCH等
-            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
-        return [permission() for permission in permission_classes]
+    permission_classes = [AllowAny]
 
     # 过滤产品（GET）
     @action(methods=['GET'], detail=False)

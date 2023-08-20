@@ -9,7 +9,7 @@ urlpatterns = [
     # 将router.urls添加到urlpatterns中
     path('', include(router.urls)),
     # 产品搜索
-    path('filter-search/', ProductFilterAndSearchView.as_view({'get': 'search_filter_products'}), name='product-filter-and-search'),
+    path('filter-search', ProductFilterAndSearchView.as_view({'get': 'search_filter_products'}), name='product-filter-and-search'),
     # 产品初次发布（POST），同时更新产品版本信息
     path('create_product_with_version/', ProductViewSet.as_view({'post': 'create_product_with_version'}), name='create_product_with_version'),
     # 更新产品信息（PUT），同时更新产品版本信息
