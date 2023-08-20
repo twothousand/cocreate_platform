@@ -158,6 +158,19 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         AliyunModeration().validate_text_detection("ad_compliance_detection", value)
         return value
 
+    # 同一个人，同一个名字的项目，不支持多次创建
+    def validate(self, attrs):
+        # 首先调用基类的 validate 方法获取验证通过的数据
+        validated_data = super().validate(attrs)
+
+        # 检查项目名称是否已经存在
+        project_name = validated_data.get('project_name')
+        project_creator = validated_data.get('project_creator')
+        if Project.objects.filter(project_name=project_name, project_creator=project_creator).exists():
+            raise serializers.ValidationError("您已经存在同名项目！！！")
+
+        return validated_data
+
     def create(self, validated_data):
         # 从验证数据中取出模型、行业、AI标签数据
         models_data = validated_data.pop('model', [])
@@ -304,7 +317,6 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
     email = serializers.ReadOnlyField(source='user.email')
     profile_image = serializers.SerializerMethodField()
 
-
     def get_profile_image(self, instance):
         return instance.user.profile_image.image_url if instance.user.profile_image else None
 
@@ -312,6 +324,7 @@ class ProjectMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSer
         model = Member
         fields = ['team_id', 'team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
                   'professional_career', 'location', 'email', 'profile_image']
+
 
 # 获取项目成员列表序列化器，有鉴权，返回微信号
 class ProjectTeamMembersSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
@@ -327,10 +340,8 @@ class ProjectTeamMembersSerializer(my_mixins.MyModelSerializer, serializers.Mode
     profile_image = serializers.SerializerMethodField()
     wechat_id = serializers.ReadOnlyField(source='user.wechat_id')
 
-
     def get_profile_image(self, instance):
         return instance.user.profile_image.image_url if instance.user.profile_image else None
-
 
     class Meta:
         model = Member
