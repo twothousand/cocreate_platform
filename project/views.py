@@ -33,8 +33,7 @@ class CustomPagination(PageNumberPagination):
 
 # 项目增删改查视图集
 class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
-    # queryset = Project.objects.all()
-    queryset = Project.objects.filter(team__is_recruitment_open=True)  # 只查询招募状态为True的项目
+    queryset = Project.objects.all()
     pagination_class = CustomPagination  # 自定义分页器
 
     def get_permissions(self):
@@ -45,7 +44,7 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
         if self.action == 'create':  # 创建项目
             permission_classes = [IsAuthenticated]  # 需要用户被认证
         elif self.action == 'partial_update':  # 修改项目
-            permission_classes = [IsProjectOwnerOrReadOnly, IsAuthenticated]  # 需要项目创建者并且用户被认证
+            permission_classes = [IsAuthenticated]  # 需要项目创建者并且用户被认证 TODO 需要队长
         elif self.action == 'destroy':  # 删除项目
             permission_classes = [IsProjectOwnerOrReadOnly, IsAuthenticated]  # 需要项目创建者并且用户被认证
         else:  # 其他操作
@@ -67,6 +66,7 @@ class ProjectViewSet(my_mixins.CustomResponseMixin, my_mixins.ListCreatRetrieveU
             return serializers.ProjectSerializer
 
     def list(self, request, *args, **kwargs):
+        queryset = Project.objects.filter(team__is_recruitment_open=True)  # 只查询招募状态为True的项目
         self.custom_message = "获取项目列表成功！"
         return super().list(request, *args, **kwargs)
 
@@ -106,7 +106,8 @@ class ProjectFilterAndSearchView(APIView):
             project_status = self.request.GET.get('project_status')
             model_name = self.request.GET.getlist('model_name')
 
-            queryset = Project.objects.all()
+            # queryset = Project.objects.all()
+            queryset = Project.objects.filter(team__is_recruitment_open=True)  # 只查询招募状态为True的项目
 
             # 应用过滤条件
             if project_status:
@@ -128,7 +129,6 @@ class ProjectFilterAndSearchView(APIView):
                 )
 
             queryset = queryset.order_by('-id')
-            # serializer = serializers.ProjectSerializer(queryset, many=True)
             serializer = serializers.ProjectDetailSerializer(queryset, many=True)
 
             if serializer.data:
