@@ -23,12 +23,7 @@ User = get_user_model()
 
 class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
     serializer_class = FeedbackSerializer
-    def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'DELETE']:  # 对于POST、PUT和DELETE请求
-            permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
-        else:  # 对于其他请求方法，比如GET、PATCH等
-            permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
-        return [permission() for permission in permission_classes]
+    permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
 
     # 创建产品反馈
     @transaction.atomic
@@ -36,8 +31,6 @@ class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelV
     def create_feedback(self, request, *args, **kwargs):
         try:
             feedback_data = request.data
-            user_id = request.user.id
-            current_user_instance = get_object_or_404(User, id=user_id)
             # 校验反馈信息是否内容合规
             s = aliyun_green.AliyunModeration()
             check_res = s.text_moderation("chat_detection",
@@ -50,7 +43,6 @@ class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelV
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
             feedback_instance = Feedback.objects.create(
-                user=current_user_instance,
                 feedback_type=feedback_data['feedback_type'],
                 feedback_email=feedback_data['feedback_email'],
                 feedback_content=feedback_data['feedback_content']
