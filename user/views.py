@@ -280,7 +280,7 @@ class UserJoinedProjectsView(APIView):
                     'message': '用户未加入任何项目！',
                     'data': None
                 }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response_data, status=status.HTTP_200_OK)
             # 查询与这些队伍关联的项目
             joined_projects = Project.objects.filter(team__id__in=team_ids)  # 通过team__id__in来筛选与给定队伍ID列表相关联的项目
 

@@ -17,7 +17,7 @@ User = get_user_model()
 # 反馈表
 class Feedback(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='反馈ID')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='关联用户')
+    # user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='关联用户')
     FEEDBACK_CHOICES = (
         ('意见建议', '意见建议'),
         ('加入我们', '加入我们'),
