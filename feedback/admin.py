@@ -3,8 +3,8 @@ from .models import Feedback
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'feedback_type', 'feedback_email', 'feedback_content')
-    list_filter = ('user', 'feedback_type', 'feedback_email')
+    list_display = ('id', 'feedback_type', 'feedback_email', 'feedback_content')
+    list_filter = ('feedback_type', 'feedback_email')
     list_per_page = 20
 
 
