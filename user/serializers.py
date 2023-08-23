@@ -27,6 +27,7 @@ from common.utils.aliyun_green import AliyunModeration
 from common.mixins import my_mixins
 # app
 from function.models import VerifCode, Image
+from project.serializers import ProjectUserReadOnlySerializer
 
 User = get_user_model()
 
@@ -115,6 +116,33 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
         # fields = ('id', )       # 临时添加字段也需要写在这里
         # exclude = ['id']  # 排除 id 字段
         # read_only_fields = ('id', "username")  # 指定字段为 read_only,
+
+
+class UserReadOnlySerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+    profile_image_url = serializers.SerializerMethodField(read_only=True)
+    # 嵌套序列化
+    create_projects = serializers.SerializerMethodField(read_only=True)
+    # join_projects = serializers.SerializerMethodField(read_only=True)
+
+    def get_profile_image_url(self, obj):
+        profile_image = obj.profile_image
+        return profile_image.image_url if profile_image else profile_image
+
+    def get_create_projects(self, obj):
+        create_projects = obj.project_set.all()
+        serializer = ProjectUserReadOnlySerializer(create_projects, many=True)
+        return serializer.data
+
+    # 未实现
+    # def get_join_projects(self, obj):
+    #     join_projects = obj.project_set.all()
+    #     serializer = ProjectUserReadOnlySerializer(join_projects, many=True)
+    #     return serializer.data
+
+    class Meta:
+        model = User
+        fields = ["id", "profile_image_url", "location", "biography", "nickname",
+                  "professional_career", "create_projects", "join_projects"]
 
 
 class UserUnActiveSerializer(serializers.ModelSerializer):

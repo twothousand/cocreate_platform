@@ -347,3 +347,7 @@ class ProjectTeamMembersSerializer(my_mixins.MyModelSerializer, serializers.Mode
         model = Member
         fields = ['team_id', 'team_name', 'username', 'is_leader', 'member_status', 'user_id', 'nickname', 'name',
                   'professional_career', 'location', 'email', 'profile_image', 'wechat_id']
+
+
+class ProjectUserReadOnlySerializer(serializers.ModelSerializer):
+    pass

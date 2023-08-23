@@ -12,6 +12,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 # app
@@ -60,7 +61,7 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         重写get_permissions，实例化并返回此视图需要的权限列表。
         @return: # 返回相应的权限列表
         """
-        if self.action == 'create':  # 如果操作是 'create' （对应POST请求，即注册）
+        if self.action in ['create', 'get_detail']:  # 如果操作是 'create' （对应POST请求，即注册）或 'detail'
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         else:  # 其他操作
             permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
@@ -69,6 +70,8 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'partial_update':
             return serializers.UserRegAndPwdChangeSerializer
+        elif self.action == "get_detail":
+            return serializers.UserReadOnlySerializer
         else:
             return serializers.UserSerializer
 
@@ -86,6 +89,13 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         else:
             self.custom_message = "用户信息修改成功"
         return super().update(request, *args, **kwargs)
+
+    @action(methods=["GET"], detail=True)
+    def get_detail(self, request, *args, **kwargs):
+        self.custom_message = "用户信息获取成功"
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     # @disallow_methods(['DELETE'])
     # @disallow_actions(['list'])
