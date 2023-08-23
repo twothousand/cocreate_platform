@@ -253,7 +253,7 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
                     'message': '用户已经在队伍中，无需继续申请。',
                     'data': None,
                 }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response_data, status=status.HTTP_200_OK)
 
             # 检查申请是否已经存在
             existing_application = Application.objects.filter(
