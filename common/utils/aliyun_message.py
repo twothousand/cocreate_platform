@@ -25,8 +25,8 @@ class AliyunSMS:
     access_key_id = ALIBABA_CLOUD_ACCESS_KEY_ID
     access_key_secret = ALIBABA_CLOUD_ACCESS_KEY_SECRET
     endpoint = "dysmsapi.aliyuncs.com"
-    sign_name = "阿里云短信测试"
-    template_code = "SMS_154950909"
+    sign_name = "奇想星球"
+    template_code = "SMS_283460112"  # 没有使用注册专用的短信模版，使用了更加通用的模板
 
     def __init__(self):
         self.config = Config(
