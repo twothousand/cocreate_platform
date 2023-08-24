@@ -17,6 +17,6 @@ router = DefaultRouter()  # 1.有根路由
 router.register(r'', views.MessageViewSet, 'message')  # 2.配置路由
 
 urlpatterns = [
-
+path('get_unread_message_count/', views.MessageQueryView.as_view({'get': 'get_unread_message_count'}), name='get_unread_message_count'),
 ]
 urlpatterns += router.urls
