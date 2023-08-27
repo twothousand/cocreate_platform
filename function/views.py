@@ -16,7 +16,7 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 # app
 from user.permissions import IsOwnerOrReadOnly
-from function.models import Image, VerifCode
+from function.models import Image, VerifCode, System
 from function import serializers
 # common
 from common.mixins import my_mixins
@@ -217,3 +217,35 @@ class VerifCodeViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatModelViewSe
             "mobile_phone": verif_code.mobile_phone
         }
         return Response(result, status=status.HTTP_200_OK)
+
+
+class SystemView(my_mixins.LoggerMixin, my_mixins.ListCreatRetrieveUpdateModelViewSet):
+    @action(detail=False, methods=['GET'])  # Use detail=False for list-level actions
+    def get_system_content(self, request):
+        try:
+            content_name_en = self.request.query_params.get('content_name_en')
+            system_page = self.request.query_params.get('system_page')
+            content_title = self.request.query_params.get('content_title')
+
+            queryset = System.objects.filter(is_deleted=False)
+
+            # 应用过滤条件
+            if content_name_en:
+                queryset = queryset.filter(content_name_en=content_name_en)
+            if system_page:
+                queryset = queryset.filter(system_page=system_page)
+            if content_title:
+                queryset = queryset.filter(content_title=content_title)
+
+            serialized_data = serializers.SystemSerializer(queryset, many=True).data  # Replace with your serializer
+            response_data = {
+                "message": "成功获取系统资料",
+                "data": serialized_data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                'message': '查询系统资料失败',
+                'data': {'errors': str(e)}
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

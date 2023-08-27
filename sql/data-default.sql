@@ -59,3 +59,21 @@ INSERT INTO `message_template`(`created_at`, `is_deleted`, `id`, `message_type`,
 
 -- image 默认头像（要更改确认后的）
 INSERT INTO `image` (`created_at`, `is_deleted`, `id`, `image_url`, `image_path`, `category`, `upload_user`, `updated_at`) VALUES ('2023-08-12 14:23:44.291232', 0, '61766174-6172-2d64-6566-61756c74fd67', 'https://cocreate-platform.oss-cn-hangzhou.aliyuncs.com/avatar/1691821423418_a1b9a3.png', 'avatar/1691821423418_a1b9a3.png', 'avatar', '1fe68988-6d71-4f3c-95c4-4833df2ab0bf', '2023-08-12 14:23:44.291297');
+
+-- system 系统资料
+INSERT INTO `system` (is_deleted,content_name,content_name_en,system_text,system_json,created_at,updated_at,content_title,system_page) VALUES
+	 (0,'网站简介','website_introduction','创造未来智能世界',NULL,'2023-08-27 15:17:21.377944000','2023-08-27 15:47:00.518690000','奇想星球','footer'),
+	 (0,'网络备案','network_filing','','{"link": "https://beian.miit.gov.cn/", "name": "浙ICP备2023023494号"}','2023-08-27 15:20:48.060185000','2023-08-27 15:46:55.690012000','版权信息','footer'),
+	 (0,'联系方式','contact_information','邮箱：2951121599@qq.com',NULL,'2023-08-27 15:22:15.425216000','2023-08-27 15:46:50.752543000','联系我们','footer'),
+	 (0,'友情链接','friendship_link','','[{"link": "https://datawhale.club/", "name": "Datawhale"}]','2023-08-27 15:28:09.160877000','2023-08-27 15:46:36.905194000','友情链接','footer'),
+	 (0,'关于我们图片','ours_picture','','[{"name": "ours", "image_url": "http://img.1aigc.cn/system/ours.png"}]','2023-08-27 15:30:08.344051000','2023-08-27 15:46:31.600144000','关于我们','aboutus'),
+	 (0,'关于我们文字','ours_text','**我们的故事**
+
+我们汇聚于 Datawhale 的 AIGC 应用开发课程，我们期待打造一个未来的平台，AIGC 共创，将我们连接在一起。
+
+我们深信，优秀固然重要，但与志同道合的伙伴们同行，我们将走得更远，迸发出更加耀眼的创意火花。
+
+我们希望在这个平台上，每个人都能找到归属感，不再孤单地面对挑战。我们渴望搭建起一个彼此鼓励、共同探索的共创社区，连接更多志趣相投的灵魂，让我们的智慧在交织中绽放。
+
+目前平台初步建立，如果有兴趣加入或者给我们反馈，请联系我们。',NULL,'2023-08-27 15:31:41.363807000','2023-08-27 15:46:25.736337000','关于我们','aboutus'),
+	 (0,'登录页图片','login_images','','[{"name": "ours", "image_url": "http://img.1aigc.cn/system/ours.png"}]','2023-08-27 15:33:59.765900000','2023-08-27 15:46:44.782536000',NULL,'login');

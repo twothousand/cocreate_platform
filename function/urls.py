@@ -16,4 +16,5 @@ urlpatterns = [
     # http://127.0.0.1:8000/api/users/sendsms/  # 发送短信验证码
     path('send_sms/', views.VerifCodeViewSet.as_view({'post': 'create'})),
     path('send_sms_test/', views.VerifCodeViewSet.as_view({'post': 'send_sms_test'})),
+    path('get_system_content/', views.SystemView.as_view({'get': 'get_system_content'}), name='get_system_content'),
 ]
