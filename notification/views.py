@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 
 # common
 from common.mixins import my_mixins
@@ -15,6 +16,13 @@ from common.utils.decorators import disallow_methods
 from notification.models import Message
 from notification.serializer import MessageSerializer
 from user.permissions import IsMessageReceiver
+
+
+# 自定义分页器
+class CustomPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 # Create your views here.
@@ -60,10 +68,13 @@ class MessageViewSet(my_mixins.CustomResponseMixin, my_mixins.RetrieveUpdateDest
 
 # 消息查询
 class MessageQueryView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [IsMessageReceiver, IsAuthenticated]
+    pagination_class = CustomPagination  # 自定义分页器
 
     @action(methods=['GET'], detail=True)
     def get_unread_message_count(self, request):
-        permission_classes = [IsAuthenticated]
         try:
             user = request.user
             unread_count_by_type = Message.objects.filter(receiver=user, is_read=False).values(
@@ -90,3 +101,34 @@ class MessageQueryView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModel
                 'data': {'errors': str(e)}
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(methods=['GET'], detail=True)
+    def get_message_by_type(self, request, *args, **kwargs):
+        """
+        获取所有未删除的消息通知列表
+        @param request:
+        @param args:
+        @param kwargs:
+        @return:
+        """
+        # 过滤消息，只获取当前用户作为接收者的消息
+        message_type = self.request.GET.get('message_type')
+        messages = Message.objects.filter(receiver=request.user, is_deleted=False, message_template__message_type=message_type).all()
+
+        # 使用 DRF 的内置分页
+        page = self.paginate_queryset(messages)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        # 如果没有分页（例如，分页被禁用），则直接返回所有消息
+        serializer = self.get_serializer(messages, many=True)
+        response_data = {
+            'message': '已成功获取消息(未分页)',
+            'data': serializer.data
+        }
+
+        # paginated_queryset = self.paginate_queryset(queryset)
+        # serializer = serializers.ProjectDetailSerializer(paginated_queryset, many=True)
+
+        return Response(response_data)
