@@ -1,6 +1,6 @@
 -- 插入测试数据 时间：2023-07-17
 -- dim_ai_tags
-INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at, is_deleted)
+INSERT INTO `dim_ai_tags` (id, ai_tag, created_at, updated_at, is_deleted)
 VALUES
   (1, 'AI教育', '2023-07-17 14:32:08.900601000', '2023-07-17 14:32:08.900676000', 0),
   (2, 'AI绘画', '2023-07-17 14:32:13.667446000', '2023-07-17 14:32:13.667520000', 0),
@@ -18,7 +18,7 @@ VALUES
   (14, 'AI其它', '2023-07-17 14:50:48.886520000', '2023-07-17 14:50:48.886627000', 0);
 
 -- dim_industry
-INSERT INTO cocreate_platform.dim_industry (id, industry, created_at, updated_at, is_deleted)
+INSERT INTO `dim_industry` (id, industry, created_at, updated_at, is_deleted)
 VALUES
   (1, '教育', '2023-07-17 14:31:57.960313000', '2023-07-17 14:31:57.960378000', 0),
   (2, '医疗', '2023-07-17 14:32:02.062589000', '2023-07-17 14:32:02.062708000', 0),
@@ -36,7 +36,7 @@ VALUES
   (14, '其它', '2023-07-17 15:34:14.097149000', '2023-07-17 15:34:14.097238000', 0);
 
 -- dim_model
-INSERT INTO cocreate_platform.dim_model (id, model_name, model_type, model_source, model_description, is_open_source, created_at, updated_at, is_deleted)
+INSERT INTO `dim_model` (id, model_name, model_type, model_source, model_description, is_open_source, created_at, updated_at, is_deleted)
 VALUES
   (1, 'GPT-3.5', 'LLM', 'OpenAI', 'OpenAI大模型', 0, '2023-07-17 14:31:50.794586000', '2023-07-17 15:19:31.550502000', 0),
   (2, 'GPT-4', 'LLM', 'OpenAI', 'OpenAI最新的大语言模型', 0, '2023-07-17 15:16:05.292728000', '2023-07-17 15:16:05.292820000', 0),
