@@ -8,7 +8,7 @@ from common.utils.aliyun_message import AliyunSMS
 # app
 from function.models import Image
 from function.models import VerifCode
-
+from function.models import System
 
 class ImageSerializer(serializers.ModelSerializer):
     TYPE_CHOICES = (
@@ -70,3 +70,10 @@ class VerifCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VerifCode
         fields = ['code_id', 'mobile_phone']
+
+
+class SystemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = System
+        fields = ('system_page', 'content_name', 'content_name_en', 'content_title', 'system_text', 'system_json',
+                  'updated_at')

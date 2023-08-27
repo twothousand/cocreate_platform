@@ -38,3 +38,23 @@ class Image(BaseModel):
         db_table = 'image'
         verbose_name = '图片'
         verbose_name_plural = verbose_name
+
+
+# 系统资料
+class System(BaseModel):
+    id = models.AutoField(primary_key=True, verbose_name='系统资料ID')
+    content_name = models.CharField(max_length=50, verbose_name='系统资料名称')
+    content_name_en = models.CharField(max_length=50, verbose_name='系统资料名称(英文)')
+    content_title = models.CharField(max_length=100, blank=True, null=True, verbose_name='系统资料标题')
+    system_page = models.CharField(max_length=100, blank=True, null=True, verbose_name='系统页面')
+    system_text = models.TextField(blank=True, null=True, verbose_name='系统资料(文本类型)')  # 存储网页内容，包括Markdown格式和普通文本
+    system_json = models.JSONField(blank=True, null=True, verbose_name='系统资料(json类型)')  # 存储JSON信息，图片等
+    updated_at = models.DateTimeField(auto_now=True)  # 记录网页最后更新时间
+
+    def __str__(self):
+        return str(self.content_name)  # 显示对象时返回资料名字
+
+    class Meta:
+        db_table = 'system'
+        verbose_name = '系统资料表'
+        verbose_name_plural = verbose_name

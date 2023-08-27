@@ -1,6 +1,6 @@
 -- 插入测试数据 时间：2023-07-17
 -- dim_ai_tags
-INSERT INTO cocreate_platform.dim_ai_tags (id, ai_tag, created_at, updated_at, is_deleted)
+INSERT INTO `dim_ai_tags` (id, ai_tag, created_at, updated_at, is_deleted)
 VALUES
   (1, 'AI教育', '2023-07-17 14:32:08.900601000', '2023-07-17 14:32:08.900676000', 0),
   (2, 'AI绘画', '2023-07-17 14:32:13.667446000', '2023-07-17 14:32:13.667520000', 0),
@@ -18,7 +18,7 @@ VALUES
   (14, 'AI其它', '2023-07-17 14:50:48.886520000', '2023-07-17 14:50:48.886627000', 0);
 
 -- dim_industry
-INSERT INTO cocreate_platform.dim_industry (id, industry, created_at, updated_at, is_deleted)
+INSERT INTO `dim_industry` (id, industry, created_at, updated_at, is_deleted)
 VALUES
   (1, '教育', '2023-07-17 14:31:57.960313000', '2023-07-17 14:31:57.960378000', 0),
   (2, '医疗', '2023-07-17 14:32:02.062589000', '2023-07-17 14:32:02.062708000', 0),
@@ -36,7 +36,7 @@ VALUES
   (14, '其它', '2023-07-17 15:34:14.097149000', '2023-07-17 15:34:14.097238000', 0);
 
 -- dim_model
-INSERT INTO cocreate_platform.dim_model (id, model_name, model_type, model_source, model_description, is_open_source, created_at, updated_at, is_deleted)
+INSERT INTO `dim_model` (id, model_name, model_type, model_source, model_description, is_open_source, created_at, updated_at, is_deleted)
 VALUES
   (1, 'GPT-3.5', 'LLM', 'OpenAI', 'OpenAI大模型', 0, '2023-07-17 14:31:50.794586000', '2023-07-17 15:19:31.550502000', 0),
   (2, 'GPT-4', 'LLM', 'OpenAI', 'OpenAI最新的大语言模型', 0, '2023-07-17 15:16:05.292728000', '2023-07-17 15:16:05.292820000', 0),
@@ -59,3 +59,21 @@ INSERT INTO `message_template`(`created_at`, `is_deleted`, `id`, `message_type`,
 
 -- image 默认头像（要更改确认后的）
 INSERT INTO `image` (`created_at`, `is_deleted`, `id`, `image_url`, `image_path`, `category`, `upload_user`, `updated_at`) VALUES ('2023-08-12 14:23:44.291232', 0, '61766174-6172-2d64-6566-61756c74fd67', 'https://cocreate-platform.oss-cn-hangzhou.aliyuncs.com/avatar/1691821423418_a1b9a3.png', 'avatar/1691821423418_a1b9a3.png', 'avatar', '1fe68988-6d71-4f3c-95c4-4833df2ab0bf', '2023-08-12 14:23:44.291297');
+
+-- system 系统资料
+INSERT INTO `system` (is_deleted,content_name,content_name_en,system_text,system_json,created_at,updated_at,content_title,system_page) VALUES
+	 (0,'网站简介','website_introduction','创造未来智能世界',NULL,'2023-08-27 15:17:21.377944000','2023-08-27 15:47:00.518690000','奇想星球','footer'),
+	 (0,'网络备案','network_filing','','{"link": "https://beian.miit.gov.cn/", "name": "浙ICP备2023023494号"}','2023-08-27 15:20:48.060185000','2023-08-27 15:46:55.690012000','版权信息','footer'),
+	 (0,'联系方式','contact_information','邮箱：2951121599@qq.com',NULL,'2023-08-27 15:22:15.425216000','2023-08-27 15:46:50.752543000','联系我们','footer'),
+	 (0,'友情链接','friendship_link','','[{"link": "https://datawhale.club/", "name": "Datawhale"}]','2023-08-27 15:28:09.160877000','2023-08-27 15:46:36.905194000','友情链接','footer'),
+	 (0,'关于我们图片','ours_picture','','[{"name": "ours", "image_url": "http://img.1aigc.cn/system/ours.png"}]','2023-08-27 15:30:08.344051000','2023-08-27 15:46:31.600144000','关于我们','aboutus'),
+	 (0,'关于我们文字','ours_text','**我们的故事**
+
+我们汇聚于 Datawhale 的 AIGC 应用开发课程，我们期待打造一个未来的平台，AIGC 共创，将我们连接在一起。
+
+我们深信，优秀固然重要，但与志同道合的伙伴们同行，我们将走得更远，迸发出更加耀眼的创意火花。
+
+我们希望在这个平台上，每个人都能找到归属感，不再孤单地面对挑战。我们渴望搭建起一个彼此鼓励、共同探索的共创社区，连接更多志趣相投的灵魂，让我们的智慧在交织中绽放。
+
+目前平台初步建立，如果有兴趣加入或者给我们反馈，请联系我们。',NULL,'2023-08-27 15:31:41.363807000','2023-08-27 15:46:25.736337000','关于我们','aboutus'),
+	 (0,'登录页图片','login_images','','[{"name": "ours", "image_url": "http://img.1aigc.cn/system/ours.png"}]','2023-08-27 15:33:59.765900000','2023-08-27 15:46:44.782536000',NULL,'login');
