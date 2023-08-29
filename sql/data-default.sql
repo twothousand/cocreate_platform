@@ -48,15 +48,15 @@ VALUES
   (8, '其它', '其它', '其它', '其它', 0, '2023-07-17 15:29:53.547488000', '2023-07-17 15:29:53.547604000', 0);
   
 -- message_template 消息模版
-INSERT INTO `message_template` (created_at,is_deleted,id,message_type,message_template) VALUES
-	 ('2023-08-07 15:53:26.137578000',0,'01904ad9d6b8464d80e11f8962e72ab0','team_member_removal','你已被抱出项目 {project_name}'),
-	 ('2023-08-07 15:53:26.116634000',0,'4ea3fa63c6df41f4bb4779caa9dcc5a8','product_reply','{sender_nickname}回复了你的评论'),
-	 ('2023-08-07 15:53:26.106662000',0,'5bfdf28d52414acbb9dcb8a56f35bb9a','product_favorite','{sender_nickname}收藏了你的产品{product_name}'),
-	 ('2023-08-07 15:53:26.111680000',0,'83e51cd76cf14bbf8801511b974ddb8e','product_comment','{sender_nickname}评论了你的产品'),
-	 ('2023-08-07 15:53:26.121621000',0,'a40a0cb6851540b88c9ba7e205fbae6b','team_application','{sender_nickname}申请加入你的队伍 {project_name}'),
-	 ('2023-08-07 15:53:26.126608000',0,'c346c84f3ec6489e8a5848b7000afc91','team_audit_result','你的申请已通过，欢迎加入 {project_name}'),
-	 ('2023-08-07 15:53:26.132614000',0,'e0c2a4f76ebd42d6bbc77cee21c0b5d4','team_leader_transfer','你已成为{project_name} 项目的队长'),
-	 ('2023-08-07 15:53:26.101676000',0,'f7395bcd530b4b7aa212d70e2df398ca','product_like','{sender_nickname}赞了你的产品{product_name}');
+INSERT INTO `message_template` (created_at,is_deleted,id,message_type,message_template,message_category) VALUES
+	 ('2023-08-07 15:53:26.137578000',0,'01904ad9d6b8464d80e11f8962e72ab0','team_member_removal','你已被抱出项目 {project_name}','team'),
+	 ('2023-08-07 15:53:26.116634000',0,'4ea3fa63c6df41f4bb4779caa9dcc5a8','product_reply','{sender_nickname}回复了你的评论','reply'),
+	 ('2023-08-07 15:53:26.106662000',0,'5bfdf28d52414acbb9dcb8a56f35bb9a','product_favorite','{sender_nickname}收藏了你的产品{product_name}','like_collete'),
+	 ('2023-08-07 15:53:26.111680000',0,'83e51cd76cf14bbf8801511b974ddb8e','product_comment','{sender_nickname}评论了你的产品','reply'),
+	 ('2023-08-07 15:53:26.121621000',0,'a40a0cb6851540b88c9ba7e205fbae6b','team_application','{sender_nickname}申请加入你的队伍 {project_name}','team'),
+	 ('2023-08-07 15:53:26.126608000',0,'c346c84f3ec6489e8a5848b7000afc91','team_audit_result','你的申请已通过，欢迎加入 {project_name}','team'),
+	 ('2023-08-07 15:53:26.132614000',0,'e0c2a4f76ebd42d6bbc77cee21c0b5d4','team_leader_transfer','你已成为{project_name} 项目的队长','team'),
+	 ('2023-08-07 15:53:26.101676000',0,'f7395bcd530b4b7aa212d70e2df398ca','product_like','{sender_nickname}赞了你的产品{product_name}','like_collete');
 -- image 默认头像（要更改确认后的）
 INSERT INTO `image` (`created_at`, `is_deleted`, `id`, `image_url`, `image_path`, `category`, `upload_user`, `updated_at`) VALUES ('2023-08-12 14:23:44.291232', 0, '61766174-6172-2d64-6566-61756c74fd67', 'https://cocreate-platform.oss-cn-hangzhou.aliyuncs.com/avatar/1691821423418_a1b9a3.png', 'avatar/1691821423418_a1b9a3.png', 'avatar', '1fe68988-6d71-4f3c-95c4-4833df2ab0bf', '2023-08-12 14:23:44.291297');
 
