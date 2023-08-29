@@ -78,12 +78,12 @@ class MessageQueryView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModel
         try:
             user = request.user
             unread_count_by_type = Message.objects.filter(receiver=user, is_read=False).values(
-                'message_template__message_type').annotate(unread_count=Count('id'))
+                'message_template__message_category').annotate(unread_count=Count('id'))
 
             total_unread_count = sum(item['unread_count'] for item in unread_count_by_type)
 
             message_type_data = {
-                item['message_template__message_type']: item['unread_count']
+                item['message_template__message_category']: item['unread_count']
                 for item in unread_count_by_type
             }
 
@@ -114,6 +114,37 @@ class MessageQueryView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModel
         # 过滤消息，只获取当前用户作为接收者的消息
         message_type = self.request.GET.get('message_type')
         messages = Message.objects.filter(receiver=request.user, is_deleted=False, message_template__message_type=message_type).all()
+
+        # 使用 DRF 的内置分页
+        page = self.paginate_queryset(messages)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        # 如果没有分页（例如，分页被禁用），则直接返回所有消息
+        serializer = self.get_serializer(messages, many=True)
+        response_data = {
+            'message': '已成功获取消息(未分页)',
+            'data': serializer.data
+        }
+
+        # paginated_queryset = self.paginate_queryset(queryset)
+        # serializer = serializers.ProjectDetailSerializer(paginated_queryset, many=True)
+
+        return Response(response_data)
+
+    @action(methods=['GET'], detail=True)
+    def get_message_by_category(self, request, *args, **kwargs):
+        """
+        获取所有未删除的消息通知列表
+        @param request:
+        @param args:
+        @param kwargs:
+        @return:
+        """
+        # 过滤消息，只获取当前用户作为接收者的消息
+        message_category = self.request.GET.get('message_category')
+        messages = Message.objects.filter(receiver=request.user, is_deleted=False, message_template__message_category=message_category).all()
 
         # 使用 DRF 的内置分页
         page = self.paginate_queryset(messages)

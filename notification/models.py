@@ -31,10 +31,20 @@ class MessageTemplate(BaseModel):
     # message_template.save()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='消息模板ID')
     message_type = models.CharField(choices=MESSAGE_TYPE, max_length=30, verbose_name="消息类型")
+    MESSAGE_CATEGORY = [
+        ("team", "组队"),
+        ("like_collete", "点赞收藏"),
+        ("reply", "回复"),
+        ("sys_msg", "系统消息"),
+    ]
+    message_category = models.CharField(choices=MESSAGE_CATEGORY, max_length=30, verbose_name="消息大类")
     message_template = models.TextField(max_length=1000, null=False, verbose_name="消息模板")
 
     def get_message_type(self):
         return self.message_type
+
+    def get_message_category(self):
+        return self.message_category
 
     @classmethod
     def get_all_message_templates(cls):
