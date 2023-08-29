@@ -19,5 +19,6 @@ router.register(r'', views.MessageViewSet, 'message')  # 2.配置路由
 urlpatterns = [
 path('get_unread_message_count/', views.MessageQueryView.as_view({'get': 'get_unread_message_count'}), name='get_unread_message_count'),
 path('get_message_by_type/', views.MessageQueryView.as_view({'get': 'get_message_by_type'}), name='get_message_by_type'),
+path('get_message_by_category/', views.MessageQueryView.as_view({'get': 'get_message_by_category'}), name='get_message_by_category'),
 ]
 urlpatterns += router.urls
