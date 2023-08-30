@@ -24,7 +24,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class VerifCodeSerializer(serializers.ModelSerializer):
-    code_id = serializers.SerializerMethodField()
+    # code_id = serializers.SerializerMethodField()
 
     def validate_mobile_phone(self, value):
         """
@@ -59,17 +59,17 @@ class VerifCodeSerializer(serializers.ModelSerializer):
         code = "".join([str(random.choice(range(10))) for _ in range(6)])
         return code
 
-    def get_code_id(self, obj):
-        """
-        将id映射为code_id输出给前端
-        @param obj:
-        @return:
-        """
-        return int(obj.id)
+    # def get_code_id(self, obj):
+    #     """
+    #     将id映射为code_id输出给前端
+    #     @param obj:
+    #     @return:
+    #     """
+    #     return int(obj.id)
 
     class Meta:
         model = VerifCode
-        fields = ['code_id', 'mobile_phone']
+        fields = ['mobile_phone']
 
 
 class SystemSerializer(serializers.ModelSerializer):
