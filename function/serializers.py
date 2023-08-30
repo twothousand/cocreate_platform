@@ -2,9 +2,11 @@
 import random
 # rest_framework
 from rest_framework import serializers
+
 # common
 from common.utils import re_utils
 from common.utils.aliyun_message import AliyunSMS
+from common.mixins import my_mixins
 # app
 from function.models import Image
 from function.models import VerifCode
@@ -23,7 +25,7 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class VerifCodeSerializer(serializers.ModelSerializer):
+class VerifCodeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     # code_id = serializers.SerializerMethodField()
 
     def validate_mobile_phone(self, value):
