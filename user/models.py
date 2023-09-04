@@ -40,6 +40,10 @@ class User(AbstractUser, BaseModel):
     def get_nickname(self):
         return self.nickname
 
+    @classmethod
+    def is_exists_username(cls, username):
+        return cls.filter(username=username).exists()
+
     def __str__(self):
         return f"用户名: {str(self.username)}"
 

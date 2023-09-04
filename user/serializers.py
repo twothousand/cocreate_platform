@@ -162,12 +162,15 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
         校验手机号码是否有效
         """
         res = re_utils.validate_phone(phone=value)
+        request = self.context.get("request", None)
+
         if not res:
             raise serializers.ValidationError("无效的手机号码")
 
-        request = self.context.get("request", None)
-        if request.method.lower() == "patch" and value != request.user.username:
-            raise serializers.ValidationError("请使用账号绑定的手机号码进行验证")
+        # 修改密码
+        if request.method.lower() == "patch":
+            if value != request.user.username:
+                raise serializers.ValidationError("请使用账号绑定的手机号码进行验证")
         return value
 
     def validate_nickname(self, value):

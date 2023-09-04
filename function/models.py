@@ -11,9 +11,16 @@ from common.mixins.base_model import BaseModel
 
 class VerifCode(BaseModel):
     """验证码模型"""
+
+    class OperateType(models.TextChoices):
+        """操作类型"""
+        REGISTER = ('register', '注册')
+        OTHER = ('other', '其它')
+
     id = models.AutoField(primary_key=True, verbose_name='验证码ID')
     mobile_phone = models.CharField(verbose_name="手机号码", max_length=11, null=False)
     verification_code = models.CharField(verbose_name="验证码", max_length=6)
+    operate_type = models.CharField(max_length=32, choices=OperateType.choices, default=OperateType.OTHER, verbose_name='操作类型')
 
     class Meta:
         db_table = 'verifcode'

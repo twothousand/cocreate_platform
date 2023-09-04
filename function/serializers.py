@@ -1,5 +1,7 @@
 # 系统模块
 import random
+# django
+from django.contrib.auth import get_user_model
 # rest_framework
 from rest_framework import serializers
 
@@ -11,6 +13,9 @@ from common.mixins import my_mixins
 from function.models import Image
 from function.models import VerifCode
 from function.models import System
+
+User = get_user_model()
+
 
 class ImageSerializer(serializers.ModelSerializer):
     TYPE_CHOICES = (
@@ -38,6 +43,15 @@ class VerifCodeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializ
         if not res:
             return serializers.ValidationError("无效的手机号码")
         return value
+
+    def validate(self, data):
+        operate_type = data.get('operate_type')
+        mobile_phone = data.get('mobile_phone')
+        if operate_type == VerifCode.OperateType.REGISTER:
+            if User.is_exists_username(username=mobile_phone):
+                raise serializers.ValidationError({"mobile_phone": "该手机号码已注册"})
+
+        return data
 
     def create(self, validated_data):
         # 随机生成六位数验证码
@@ -71,7 +85,7 @@ class VerifCodeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializ
 
     class Meta:
         model = VerifCode
-        fields = ['mobile_phone']
+        fields = ['mobile_phone', 'operate_type']
 
 
 class SystemSerializer(serializers.ModelSerializer):
