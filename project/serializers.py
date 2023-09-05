@@ -350,4 +350,8 @@ class ProjectTeamMembersSerializer(my_mixins.MyModelSerializer, serializers.Mode
 
 
 class ProjectUserReadOnlySerializer(serializers.ModelSerializer):
-    pass
+    project_images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+
+    class Meta:
+        model = Project
+        fields = ["id", "project_name", "project_description", "project_creator", "project_images"]

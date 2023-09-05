@@ -81,3 +81,9 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+
+
+class ProductUserReadOnlySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["id", "product_name", "product_description", "promotional_image"]

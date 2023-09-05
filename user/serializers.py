@@ -19,7 +19,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
 
-
 # common
 from common.utils import re_utils, time_utils
 from common import constant
@@ -27,7 +26,9 @@ from common.utils.aliyun_green import AliyunModeration
 from common.mixins import my_mixins
 # app
 from function.models import VerifCode, Image
+from product.models import Product
 from project.serializers import ProjectUserReadOnlySerializer
+from product.serializers import ProductUserReadOnlySerializer
 
 User = get_user_model()
 
@@ -44,8 +45,8 @@ def check_verif_code(mobile_phone: str, verification_code: str) -> (bool, dict):
     """
     result = {}
     res = VerifCode.filter(
-            verification_code=verification_code,
-            mobile_phone=mobile_phone
+        verification_code=verification_code,
+        mobile_phone=mobile_phone
     ).order_by('-created_at')
     if res.exists():  # 验证码存在
         obj = res[0]
@@ -112,7 +113,8 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = User  # 具体对哪个表进行序列化
-        fields = ["id", "username", "email", "profile_image_url", "profile_image", "location", "biography", "nickname", "professional_career", "wechat_id"]
+        fields = ["id", "username", "email", "profile_image_url", "profile_image", "location", "biography", "nickname",
+                  "professional_career", "wechat_id"]
         # fields = ('id', )       # 临时添加字段也需要写在这里
         # exclude = ['id']  # 排除 id 字段
         # read_only_fields = ('id', "username")  # 指定字段为 read_only,
@@ -120,29 +122,34 @@ class UserSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
 
 class UserReadOnlySerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     profile_image_url = serializers.SerializerMethodField(read_only=True)
-    # 嵌套序列化
     create_projects = serializers.SerializerMethodField(read_only=True)
-    # join_projects = serializers.SerializerMethodField(read_only=True)
+    join_projects = serializers.SerializerMethodField(read_only=True)
 
     def get_profile_image_url(self, obj):
         profile_image = obj.profile_image
-        return profile_image.image_url if profile_image else profile_image
+        return profile_image.image_url if profile_image else None
 
     def get_create_projects(self, obj):
-        create_projects = obj.project_set.all()
+        create_projects = obj.project_set.filter(project_creator=obj)
         serializer = ProjectUserReadOnlySerializer(create_projects, many=True)
         return serializer.data
 
-    # 未实现
-    # def get_join_projects(self, obj):
-    #     join_projects = obj.project_set.all()
-    #     serializer = ProjectUserReadOnlySerializer(join_projects, many=True)
+    def get_join_projects(self, obj):
+        join_projects = obj.project_set.exclude(project_creator=obj)
+        serializer = ProjectUserReadOnlySerializer(join_projects, many=True)
+        return serializer.data
+
+    # TODO 获取他人发布的产品
+    # def get_publish_products(self, obj):
+    #     publish_products = Product.objects.filter(project__project_creator=obj)
+    #     serializer = ProductUserReadOnlySerializer(publish_products, many=True)
     #     return serializer.data
 
     class Meta:
         model = User
         fields = ["id", "profile_image_url", "location", "biography", "nickname",
                   "professional_career", "create_projects", "join_projects"]
+        # "professional_career", "create_projects", "join_projects", "get_publish_products"]
 
 
 class UserUnActiveSerializer(serializers.ModelSerializer):
@@ -191,7 +198,8 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
             raise serializers.ValidationError({"password": "密码长度需要在6到18位之间"})
 
         # 校验验证码
-        res, result = check_verif_code(mobile_phone=data.get('username'), verification_code=data.get('verification_code'))
+        res, result = check_verif_code(mobile_phone=data.get('username'),
+                                       verification_code=data.get('verification_code'))
         if not res:
             raise serializers.ValidationError({"verification_code": result["error"]})
 
@@ -243,6 +251,7 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
                 'write_only': True
             },
         }
+
 
 # 用户搜索序列化器
 class UserSearchSerializer(serializers.ModelSerializer):
