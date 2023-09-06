@@ -35,7 +35,7 @@ class AliyunSMS:
             endpoint=self.endpoint
         )
 
-    def send_msg(self, mobile_phone: str, verification_code: str):
+    def send_msg(self, mobile_phone: str, verification_code: str, **kargs):
         """
         发送验证码
         @param mobile_phone: 手机号
