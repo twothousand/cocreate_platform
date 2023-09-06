@@ -13,10 +13,11 @@ from common.mixins import my_mixins
 from common.utils.decorators import disallow_methods
 
 # app
-from notification.models import Message
+from notification.models import Message, MessageTemplate
 from notification.serializer import MessageSerializer
 from user.permissions import IsMessageReceiver
 
+from collections import defaultdict
 
 # 自定义分页器
 class CustomPagination(PageNumberPagination):
@@ -77,20 +78,29 @@ class MessageQueryView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModel
     def get_unread_message_count(self, request):
         try:
             user = request.user
+            all_message_categories = MessageTemplate.get_all_message_categories()
+            message_type_data = defaultdict(int)  # 初始化一个默认值为0的字典
+
             unread_count_by_type = Message.objects.filter(receiver=user, is_read=False).values(
                 'message_template__message_category').annotate(unread_count=Count('id'))
+            for category in all_message_categories:
+                for item in unread_count_by_type:
+                    if item['message_template__message_category'] == category:
+                        message_type_data[category] = item['unread_count']
+                    else:
+                        message_type_data[category] = 0
 
             total_unread_count = sum(item['unread_count'] for item in unread_count_by_type)
 
-            message_type_data = {
-                item['message_template__message_category']: item['unread_count']
-                for item in unread_count_by_type
-            }
+            # message_type_data = {
+            #     item['message_template__message_category']: item['unread_count']
+            #     for item in unread_count_by_type
+            # }
 
             response_data = {
                 'message': '成功获取未读消息数量',
                 'data': {'total': total_unread_count,
-                        'unread_message_count_by_type': message_type_data
+                        'unread_message_count_by_type': dict(message_type_data)
                          }
             }
             return Response(response_data, status=status.HTTP_200_OK)

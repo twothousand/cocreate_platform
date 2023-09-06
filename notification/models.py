@@ -47,6 +47,10 @@ class MessageTemplate(BaseModel):
         return self.message_category
 
     @classmethod
+    def get_all_message_categories(cls):
+        return [category for category, _ in cls.MESSAGE_CATEGORY]
+
+    @classmethod
     def get_all_message_templates(cls):
         return cls.objects.all()
 
