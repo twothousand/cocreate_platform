@@ -33,7 +33,7 @@ class MessageTemplate(BaseModel):
     message_type = models.CharField(choices=MESSAGE_TYPE, max_length=30, verbose_name="消息类型")
     MESSAGE_CATEGORY = [
         ("team", "组队"),
-        ("like_collete", "点赞收藏"),
+        ("like_collect", "点赞收藏"),
         ("reply", "回复"),
         ("sys_msg", "系统消息"),
     ]
