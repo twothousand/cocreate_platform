@@ -83,7 +83,7 @@ class Member(BaseModel):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     def __str__(self):
-        return f"成员ID: {self.id}"
+        return f"成员表ID: {self.id}"
 
     class Meta:
         db_table = 'team_members'

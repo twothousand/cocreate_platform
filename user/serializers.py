@@ -18,6 +18,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # django库
 from django.contrib.auth import get_user_model
+from django.db.models import Prefetch
 
 # common
 from common.utils import re_utils, time_utils
@@ -27,8 +28,10 @@ from common.mixins import my_mixins
 # app
 from function.models import VerifCode, Image
 from product.models import Product
+from project.models import Project
 from project.serializers import ProjectUserReadOnlySerializer
 from product.serializers import ProductUserReadOnlySerializer
+from team.models import Team
 
 User = get_user_model()
 
@@ -135,7 +138,9 @@ class UserReadOnlySerializer(my_mixins.MyModelSerializer, serializers.ModelSeria
         return serializer.data
 
     def get_join_projects(self, obj):
-        join_projects = obj.project_set.exclude(project_creator=obj)
+        members_prefetch = Prefetch('member_set')
+        teams_prefetch = Prefetch('team', queryset=Team.objects.prefetch_related(members_prefetch))
+        join_projects = Project.objects.prefetch_related(teams_prefetch).exclude(project_creator=obj)
         serializer = ProjectUserReadOnlySerializer(join_projects, many=True)
         return serializer.data
 
