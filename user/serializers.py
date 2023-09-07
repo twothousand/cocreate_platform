@@ -127,6 +127,7 @@ class UserReadOnlySerializer(my_mixins.MyModelSerializer, serializers.ModelSeria
     profile_image_url = serializers.SerializerMethodField(read_only=True)
     create_projects = serializers.SerializerMethodField(read_only=True)
     join_projects = serializers.SerializerMethodField(read_only=True)
+    publish_products = serializers.SerializerMethodField(read_only=True)
 
     def get_profile_image_url(self, obj):
         profile_image = obj.profile_image
@@ -145,16 +146,25 @@ class UserReadOnlySerializer(my_mixins.MyModelSerializer, serializers.ModelSeria
         return serializer.data
 
     # TODO 获取他人发布的产品
-    # def get_publish_products(self, obj):
-    #     publish_products = Product.objects.filter(project__project_creator=obj)
-    #     serializer = ProductUserReadOnlySerializer(publish_products, many=True)
-    #     return serializer.data
+    def get_publish_products(self, obj):
+        # 使用Prefetch对象来预取与特定用户相关的项目
+        project_of_specific_creator = Prefetch(
+            'project',
+            queryset=Project.objects.filter(project_creator=obj)
+        )
+
+        # 使用prefetch_related方法从Product模型获取与特定项目创建者相关的产品。
+        products_of_specific_creator = Product.objects.prefetch_related(project_of_specific_creator).filter(
+            project__project_creator=obj)
+
+        serializer = ProductUserReadOnlySerializer(products_of_specific_creator, many=True)
+        return serializer.data
 
     class Meta:
         model = User
         fields = ["id", "profile_image_url", "location", "biography", "nickname",
-                  "professional_career", "create_projects", "join_projects"]
-        # "professional_career", "create_projects", "join_projects", "get_publish_products"]
+                  # "professional_career", "create_projects", "join_projects"]
+        "professional_career", "create_projects", "join_projects", "publish_products"]
 
 
 class UserUnActiveSerializer(serializers.ModelSerializer):
