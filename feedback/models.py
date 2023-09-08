@@ -22,7 +22,7 @@ class Feedback(BaseModel):
         ('意见建议', '意见建议'),
         ('加入我们', '加入我们'),
     )
-    feedback_email = models.CharField(max_length=50, blank=True, verbose_name='联系方式')
+    feedback_contact = models.CharField(max_length=100, blank=True, verbose_name='联系方式')
     feedback_type = models.CharField(max_length=50, choices=FEEDBACK_CHOICES, verbose_name='反馈类型', default="意见建议")
     feedback_content = models.TextField(blank=False, verbose_name='反馈内容')
 

@@ -44,7 +44,7 @@ class FeedbackViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelV
 
             feedback_instance = Feedback.objects.create(
                 feedback_type=feedback_data['feedback_type'],
-                feedback_email=feedback_data['feedback_email'],
+                feedback_contact=feedback_data['feedback_contact'],
                 feedback_content=feedback_data['feedback_content']
             )
             feedback_serializer = FeedbackSerializer(feedback_instance)
