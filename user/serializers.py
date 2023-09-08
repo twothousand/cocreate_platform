@@ -31,7 +31,7 @@ from product.models import Product
 from project.models import Project
 from project.serializers import ProjectUserReadOnlySerializer
 from product.serializers import ProductUserReadOnlySerializer
-from team.models import Team
+from team.models import Team, Member
 
 User = get_user_model()
 
@@ -139,9 +139,22 @@ class UserReadOnlySerializer(my_mixins.MyModelSerializer, serializers.ModelSeria
         return serializer.data
 
     def get_join_projects(self, obj):
-        members_prefetch = Prefetch('member_set')
+        # 使用Prefetch对象来预取与特定用户相关的队伍成员
+        members_prefetch = Prefetch('member_set', queryset=Member.objects.filter(user=obj))
+
+        # 使用Prefetch对象来预取与特定成员相关的队伍
         teams_prefetch = Prefetch('team', queryset=Team.objects.prefetch_related(members_prefetch))
-        join_projects = Project.objects.prefetch_related(teams_prefetch).exclude(project_creator=obj)
+
+        # 使用prefetch_related方法从Project模型获取与特定用户相关的项目。
+        # 同时，使用exclude方法排除由该用户创建的项目。
+        join_projects = (
+            Project.objects
+            .prefetch_related(teams_prefetch)
+            .filter(team__member__user=obj)
+            .exclude(project_creator=obj)
+            .distinct()
+        )
+
         serializer = ProjectUserReadOnlySerializer(join_projects, many=True)
         return serializer.data
 

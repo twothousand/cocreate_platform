@@ -84,6 +84,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 
 class ProductUserReadOnlySerializer(serializers.ModelSerializer):
+    promotional_image = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image_url')
+    
     class Meta:
         model = Product
         fields = ["id", "product_name", "product_description", "promotional_image"]
