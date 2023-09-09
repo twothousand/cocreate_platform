@@ -9,12 +9,28 @@ from rest_framework import serializers
 # app
 from apps.notification.models import Message
 from apps.user.serializers import UserHyperlinkSerializer
+from apps.product.models import Product
+from apps.project.models import Project
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'product_name']  # 选择要包含的字段
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'project_name']  # 选择要包含的字段
 
 
 class MessageSerializer(serializers.ModelSerializer):
     message_type = serializers.SerializerMethodField()
     message = serializers.SerializerMethodField()
     sender = UserHyperlinkSerializer()
+    product = ProductSerializer()  # 嵌套产品序列化器
+    project = ProjectSerializer()  # 嵌套项目序列化器
 
     class Meta:
         model = Message

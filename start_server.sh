@@ -52,20 +52,25 @@ NO_COLOR='\033[0m'
 # 生成静态文件
 python manage.py collectstatic --noinput
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Django project started successfully.${NO_COLOR}"
+    echo -e "${GREEN}Django 静态文件生成成功.${NO_COLOR}"
 else
-    echo -e "${RED}Failed to start Django project. Aborting.${NO_COLOR}"
+    echo -e "${RED}Django 静态文件生成失败. 中断...${NO_COLOR}"
     exit 1
 fi
 
 python manage.py makemigrations && python manage.py migrate
-
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}Django make migrations 成功.${NO_COLOR}"
+else
+    echo -e "${RED}Django make migrations 失败. 中断...${NO_COLOR}"
+    exit 1
+fi
 # 用gunicorn启动django项目
 gunicorn -c gunicorn_config.py cocreate_platform.wsgi:application -D
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Django project started successfully.${NO_COLOR}"
+    echo -e "${GREEN}Django 启动成功.${NO_COLOR}"
 else
-    echo -e "${RED}Failed to start Django project. Aborting.${NO_COLOR}"
+    echo -e "${RED}Django 启动失败. 中断...${NO_COLOR}"
     exit 1
 fi
 

@@ -99,4 +99,6 @@ venv/
 # migrations
 !**/migrations/__init__.py
 **/migrations/
+!apps/**/migrations/__init__.py
+apps/**/migrations/
 
