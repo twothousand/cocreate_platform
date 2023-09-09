@@ -11,8 +11,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import time
+from dotenv import load_dotenv
 from datetime import timedelta
 from pathlib import Path
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,17 +28,17 @@ SECRET_KEY = 'django-insecure-)km-62r9w*s#ka(+e6m81nnteakm8l*m80l#i8sxa6ks9nxf2@
 
 # ================================================== 阿里云服务配置 ==================================================
 # TODO: 换成自己的
-IMG_DOMAIN = "1aigc.cn"
-ALIBABA_CLOUD_ACCESS_KEY_ID = ""
-ALIBABA_CLOUD_ACCESS_KEY_SECRET = ""
-ALIBABA_OSS_BUCKET_NAME = "cocreate-platform"
-ALIBABA_OSS_ENDPOINT = "https://oss-cn-hangzhou.aliyuncs.com"
+IMG_DOMAIN = os.getenv('IMG_DOMAIN')
+ALIBABA_CLOUD_ACCESS_KEY_ID = os.getenv('ALIBABA_CLOUD_ACCESS_KEY_ID')
+ALIBABA_CLOUD_ACCESS_KEY_SECRET = os.getenv('ALIBABA_CLOUD_ACCESS_KEY_SECRET')
+ALIBABA_OSS_BUCKET_NAME = os.getenv('ALIBABA_OSS_BUCKET_NAME')
+ALIBABA_OSS_ENDPOINT = os.getenv('ALIBABA_OSS_ENDPOINT')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = eval(os.getenv('DEBUG'))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = eval(os.getenv('ALLOWED_HOSTS'))
 AUTH_USER_MODEL = "user.User"  # 覆盖掉django自带的用户模型
 
 # 定义app
@@ -121,12 +124,11 @@ WSGI_APPLICATION = 'cocreate_platform.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cocreate_platform',  # 数据库名称
-        'USER': 'root',  # 用户名
-        # 'PASSWORD': '1qaz',  # 密码
-        'PASSWORD': '123456',  # 密码
-        'HOST': '127.0.0.1',
-        'PORT': 3306,
+        'NAME': os.getenv("MYSQL_DATABASE_NAME"),  # 数据库名称
+        'USER': os.getenv("MYSQL_DATABASE_USERNAME"),  # 用户名
+        'PASSWORD': os.getenv("MYSQL_DATABASE_PASSWORD"),  # 密码
+        'HOST': os.getenv("MYSQL_DATABASE_HOST"),
+        'PORT': os.getenv("MYSQL_DATABASE_PORT"),
     }
 }
 
