@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-)km-62r9w*s#ka(+e6m81nnteakm8l*m80l#i8sxa6ks9nxf2@
 # ================================================== 阿里云服务配置 ==================================================
 # TODO: 换成自己的
 IMG_DOMAIN = "1aigc.cn"
-ALIBABA_CLOUD_ACCESS_KEY_ID = "LTAI5t6ZJRB5ReJR3CUeD6uZ"
-ALIBABA_CLOUD_ACCESS_KEY_SECRET = "cPMzPB9aZobw8R2vPV4VuxaWFhhO7d"
+ALIBABA_CLOUD_ACCESS_KEY_ID = ""
+ALIBABA_CLOUD_ACCESS_KEY_SECRET = ""
 ALIBABA_OSS_BUCKET_NAME = "cocreate-platform"
 ALIBABA_OSS_ENDPOINT = "https://oss-cn-hangzhou.aliyuncs.com"
 
