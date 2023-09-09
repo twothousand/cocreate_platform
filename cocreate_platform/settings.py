@@ -25,11 +25,11 @@ SECRET_KEY = 'django-insecure-)km-62r9w*s#ka(+e6m81nnteakm8l*m80l#i8sxa6ks9nxf2@
 
 # ================================================== 阿里云服务配置 ==================================================
 # TODO: 换成自己的
-IMG_DOMAIN = ""
-ALIBABA_CLOUD_ACCESS_KEY_ID = ""
-ALIBABA_CLOUD_ACCESS_KEY_SECRET = ""
-ALIBABA_OSS_BUCKET_NAME = ""
-ALIBABA_OSS_ENDPOINT = ""
+IMG_DOMAIN = "1aigc.cn"
+ALIBABA_CLOUD_ACCESS_KEY_ID = "LTAI5t6ZJRB5ReJR3CUeD6uZ"
+ALIBABA_CLOUD_ACCESS_KEY_SECRET = "cPMzPB9aZobw8R2vPV4VuxaWFhhO7d"
+ALIBABA_OSS_BUCKET_NAME = "cocreate-platform"
+ALIBABA_OSS_ENDPOINT = "https://oss-cn-hangzhou.aliyuncs.com"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -53,14 +53,14 @@ INSTALLED_APPS = [
     'drf_yasg',  # Swagger
     'drf_api_logger',
     'django_apscheduler',  # 定时器
-    'user',  # 用户模块
-    'project',  # 项目模块
-    'team',  # 组队模块
-    'product',  # 产品模块
-    'dim',  # 维度模块
-    'feedback',  # 反馈模块
-    'function',  # 功能模块
-    'notification',  # 通知模块
+    'apps.user',  # 用户模块
+    'apps.project',  # 项目模块
+    'apps.team',  # 组队模块
+    'apps.product',  # 产品模块
+    'apps.dim',  # 维度模块
+    'apps.feedback',  # 反馈模块
+    'apps.function',  # 功能模块
+    'apps.notification',  # 通知模块
 ]
 
 # rest_framework 配置
@@ -241,7 +241,7 @@ SIMPLE_JWT = {
 #     ('Mary', 'mary@example.com'),
 # ]
 
-BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
+BASE_LOG_DIR = os.path.join(BASE_DIR, "./logs")
 if not os.path.exists(BASE_LOG_DIR):
     # 检查日志文件
     os.mkdir(BASE_LOG_DIR)

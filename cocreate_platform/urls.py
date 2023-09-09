@@ -26,7 +26,7 @@ from drf_yasg.views import get_schema_view
 # drf_api_logger
 from drf_api_logger import API_LOGGER_SIGNAL
 # app库
-from product.views import ProductFilterAndSearchView
+from apps.product.views import ProductFilterAndSearchView
 # settings
 from cocreate_platform.settings import BASE_LOG_DIR
 # scheduler
@@ -65,28 +65,28 @@ urlpatterns = [
     path('', ProductFilterAndSearchView.as_view({'get': 'search_filter_products'}), name='product-filter-and-search'),
 
     # http://127.0.0.1:8000/api/products/
-    path('api/products/', include('product.urls'), name='product'),
+    path('api/products/', include('apps.product.urls'), name='product'),
 
     # http://127.0.0.1:8000/api/users/xxx
-    path('api/users/', include('user.urls'), name='user'),
+    path('api/users/', include('apps.user.urls'), name='user'),
 
     # http://127.0.0.1:8000/api/projects/xxx
-    path('api/projects/', include('project.urls'), name='project'),
+    path('api/projects/', include('apps.project.urls'), name='project'),
 
     # http://127.0.0.1:8000/api/teams/xxx
-    path('api/teams/', include('team.urls'), name='team'),
+    path('api/teams/', include('apps.team.urls'), name='team'),
 
     # http://127.0.0.1:8000/api/dim/xxx
-    path('api/dim/', include('dim.urls'), name='dim'),
+    path('api/dim/', include('apps.dim.urls'), name='dim'),
 
     # http://127.0.0.1:8000/api/feedback/xxx
-    path('api/feedback/', include('feedback.urls'), name='feedback'),
+    path('api/feedback/', include('apps.feedback.urls'), name='feedback'),
 
     # http://127.0.0.1:8000/api/function/xxx
-    path('api/function/', include('function.urls'), name='function'),
+    path('api/function/', include('apps.function.urls'), name='function'),
 
     # http://127.0.0.1:8000/api/notification/xxx
-    path('api/notification/', include('notification.urls'), name='notification'),
+    path('api/notification/', include('apps.notification.urls'), name='notification'),
 
     # http://127.0.0.1:8000/swagger/   swagger API 文档
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
