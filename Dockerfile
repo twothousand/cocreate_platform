@@ -16,7 +16,7 @@ WORKDIR $APP_HOME
 
 # 将当前目录加入到工作目录中（. 表示当前目录）
 ADD . $APP_HOME
-RUN pip install -r /apps/requirements.txt
+RUN pip install -r $APP_HOME/requirements.txt
 RUN pip install gunicorn
 
 # 给start.sh可执行权限
