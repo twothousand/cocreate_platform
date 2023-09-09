@@ -2,7 +2,7 @@ FROM alpine:3.13
 LABEL authors="puppet"
 
 # 容器默认时区为UTC，如需使用上海时间请启用以下时区设置命令
-# RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
+RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
 
 # 使用 HTTPS 协议访问容器云调用证书安装
 RUN apk add ca-certificates
@@ -14,14 +14,10 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositorie
 && rm -rf /var/cache/apk/* \
 
 # 容器内创建 myproject 文件夹
-ENV APP_HOME=/var/www/admin/cocreate_platform
-RUN mkdir -p $APP_HOME
-WORKDIR $APP_HOME
-
+ENV APP_HOME=/app
 # 将当前目录加入到工作目录中（. 表示当前目录）
-ADD . $APP_HOME
-RUN pip install -r $APP_HOME/requirements.txt
-RUN pip install gunicorn
+COPY . $APP_HOME
+WORKDIR $APP_HOME
 
 # 2.升级pip
 # 安装依赖到指定的/install文件夹
@@ -30,7 +26,7 @@ RUN pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 && pip config set global.trusted-host mirrors.cloud.tencent.com \
 && pip install --upgrade pip \
 # pip install scipy 等数学包失败，可使用 apk add py3-scipy 进行， 参考安装 https://pkgs.alpinelinux.org/packages?name=py3-scipy&branch=v3.13
-&& pip install --user -r requirements.txt
+&& pip install --user -r $APP_HOME/requirements.txt
 
 # 给start.sh可执行权限
 RUN chmod +x ./start_server.sh
