@@ -11,7 +11,7 @@ RUN apk add ca-certificates
 # 选用国内镜像源以提高下载速度
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
 && apk add --update --no-cache python3 py3-pip \
-&& rm -rf /var/cache/apk/* \
+&& rm -rf /var/cache/apk/* 
 
 # 容器内创建 myproject 文件夹
 ENV APP_HOME=/app
