@@ -11,7 +11,7 @@ from apps.notification.models import Message
 from apps.user.serializers import UserHyperlinkSerializer
 from apps.product.models import Product
 from apps.project.models import Project
-
+from apps.team.models import Application
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,10 +31,17 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = UserHyperlinkSerializer()
     product = ProductSerializer()  # 嵌套产品序列化器
     project = ProjectSerializer()  # 嵌套项目序列化器
+    application_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
         exclude = ['message_template', 'is_deleted', 'is_read']
+
+    def get_application_id(self, obj):
+        if obj.message_template.message_category == 'team' and obj.message_template.message_type == 'team_application':
+            team_application = Application.objects.filter(project_id=obj.project.id, user_id=obj.sender.id).last()
+            return team_application.id if team_application else None
+        return None
 
     def validate(self, attrs):
         request = self.context['request']
