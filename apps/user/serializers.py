@@ -297,7 +297,13 @@ class UserSearchSerializer(serializers.ModelSerializer):
 
 class UserHyperlinkSerializer(serializers.HyperlinkedModelSerializer):
     user_detail = serializers.HyperlinkedIdentityField(view_name='user-detail')
+    profile_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'nickname', 'user_detail')
+        fields = ('id', 'nickname', 'user_detail', 'profile_image_url')
+
+    def get_profile_image_url(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.image_url
+        return None
