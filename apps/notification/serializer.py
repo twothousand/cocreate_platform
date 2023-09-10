@@ -37,12 +37,16 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         exclude = ['message_template', 'is_deleted']
 
-
     def get_application(self, obj):
         if obj.message_template.message_category == 'team' and obj.message_template.message_type == 'team_application':
-            team_application = Application.objects.filter(project_id=obj.project.id, user_id=obj.sender.id).last()
-            if team_application:
-                return {'id': team_application.id, 'status': team_application.status}
+            project_id = obj.project.id if obj.project else None
+            sender_id = obj.sender.id if obj.sender else None
+
+            if project_id and sender_id:
+                team_application = Application.objects.filter(project_id=project_id, user_id=sender_id).last()
+                if team_application:
+                    return {'id': team_application.id, 'status': team_application.status,
+                            'application_msg': team_application.application_msg}
         return None
 
     def validate(self, attrs):
