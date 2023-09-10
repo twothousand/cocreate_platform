@@ -301,7 +301,7 @@ class UserHyperlinkSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'nickname', 'user_detail', 'profile_image_url')
+        fields = ('id', 'nickname', 'professional_career', 'location', 'user_detail', 'profile_image_url')
 
     def get_profile_image_url(self, obj):
         if obj.profile_image:

@@ -359,7 +359,6 @@ class TeamApplicationView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMo
             # 获取申请表中的User实例
             application_user_instance = get_object_or_404(User, id=application_instance.user_id)
             # 项目
-            print('team_instance.project',team_instance.project)
             project_instance = team_instance.project
             # 获取消息模板
             message_template_instance = MessageTemplate.objects.filter(message_type='team_audit_result').first()
@@ -739,6 +738,20 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
             existing_member.leave_date = date.today()
             existing_member.save()
 
+            # 队长
+            team_leader_member = Member.objects.filter(team=team_instance, is_leader=True).first()
+            team_leader_instance = team_leader_member.user if team_leader_member else None
+            # 项目
+            project_instance = team_instance.project
+            # 获取消息模板
+            message_template_instance = MessageTemplate.objects.filter(message_type='team_leave').first()
+
+            # 创建消息
+            message = Message()
+            mesage_data = {"sender": current_user_instance, "receiver": team_leader_instance,
+                           "message_template": message_template_instance, "project": project_instance}
+            message.create_message(mesage_data)
+
             # 序列化并返回数据
             serializer = self.get_serializer(existing_member)
             response_data = {
@@ -834,6 +847,18 @@ class TeamMemberViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateMode
                 join_date=date.today(),
                 member_status='正常'
             )
+
+            # 项目
+            project_instance = team_instance.project
+            # 获取消息模板
+            message_template_instance = MessageTemplate.objects.filter(message_type='team_invite').first()
+
+            # 创建消息
+            message = Message()
+            mesage_data = {"sender": current_user_instance, "receiver": member_instance,
+                           "message_template": message_template_instance, "project": project_instance}
+            message.create_message(mesage_data)
+
             serializer = self.get_serializer(new_member)
 
             response_data = {
