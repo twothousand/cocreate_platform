@@ -30,7 +30,7 @@ from apps.product.views import ProductFilterAndSearchView
 # settings
 from cocreate_platform.settings import BASE_LOG_DIR
 # scheduler
-# from function.task import scheduler
+from apps.function.task import scheduler
 
 logger = logging.getLogger('drf_api_logger')
 
