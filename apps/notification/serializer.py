@@ -37,7 +37,8 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         exclude = ['message_template', 'is_deleted']
 
-    def get_appication(self, obj):
+
+    def get_application(self, obj):
         if obj.message_template.message_category == 'team' and obj.message_template.message_type == 'team_application':
             team_application = Application.objects.filter(project_id=obj.project.id, user_id=obj.sender.id).last()
             if team_application:
