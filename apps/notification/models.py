@@ -21,6 +21,8 @@ class MessageTemplate(BaseModel):
         ("product_comment", "产品评论"),
         ("product_reply", "产品回复"),
         ("team_application", "组队申请"),
+        ("team_invite", "邀请加入"),
+        ("team_leave", "队员离开"),
         ("team_audit_result", "组队审核结果"),
         ("team_leader_transfer", "队长转让"),
         ("team_member_removal", "删除队员"),

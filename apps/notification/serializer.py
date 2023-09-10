@@ -31,16 +31,17 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = UserHyperlinkSerializer()
     product = ProductSerializer()  # 嵌套产品序列化器
     project = ProjectSerializer()  # 嵌套项目序列化器
-    application_id = serializers.SerializerMethodField()
+    appication = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        exclude = ['message_template', 'is_deleted', 'is_read']
+        exclude = ['message_template', 'is_deleted']
 
-    def get_application_id(self, obj):
+    def get_appication(self, obj):
         if obj.message_template.message_category == 'team' and obj.message_template.message_type == 'team_application':
             team_application = Application.objects.filter(project_id=obj.project.id, user_id=obj.sender.id).last()
-            return team_application.id if team_application else None
+            if team_application:
+                return {'id': team_application.id, 'status': team_application.status}
         return None
 
     def validate(self, attrs):
