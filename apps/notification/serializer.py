@@ -31,7 +31,7 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = UserHyperlinkSerializer()
     product = ProductSerializer()  # 嵌套产品序列化器
     project = ProjectSerializer()  # 嵌套项目序列化器
-    appication = serializers.SerializerMethodField()
+    application = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
