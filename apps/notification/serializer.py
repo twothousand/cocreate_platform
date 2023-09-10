@@ -54,7 +54,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return attrs
 
     def get_message_type(self, obj):
-        return obj.get_message_type_display()
+        return obj.message_template.message_type
 
     def get_message(self, obj):
         # 获取message_type
