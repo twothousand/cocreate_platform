@@ -81,7 +81,7 @@ class MessageQueryView(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModel
             all_message_categories = MessageTemplate.get_all_message_categories()
             message_type_data = defaultdict(int)  # 初始化一个默认值为0的字典
 
-            unread_count_by_type = Message.objects.filter(receiver=user, is_read=False).values(
+            unread_count_by_type = Message.objects.filter(receiver=user, is_deleted=False, is_read=False).values(
                 'message_template__message_category').annotate(unread_count=Count('id'))
             for category in all_message_categories:
                 for item in unread_count_by_type:
