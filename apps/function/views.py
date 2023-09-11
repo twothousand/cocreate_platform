@@ -5,10 +5,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # django
 from django.db import transaction
 from django.contrib.auth import get_user_model
+
 # app
 from apps.user.permissions import IsOwnerOrReadOnly
 from apps.function.models import Image, VerifCode, System
@@ -199,7 +201,7 @@ class ImageViewSet(my_mixins.LoggerMixin, my_mixins.CreatRetrieveUpdateModelView
 
 class VerifCodeViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatModelViewSet):
     serializer_class = serializers.VerifCodeSerializer
-    # throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
+    throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
     permission_classes = [AllowAny, ]
     custom_message = "验证码发送成功！"
 
