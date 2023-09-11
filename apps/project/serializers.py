@@ -149,12 +149,12 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 class ProjectCreateSerializer(serializers.ModelSerializer):
     # 校验项目名称是否违规
     def validate_project_name(self, value):
-        AliyunModeration().validate_text_detection("ad_compliance_detection", value)
+        AliyunModeration().validate_text_detection("pgc_detection", value)
         return value
 
     # 校验项目描述是否违规
     def validate_project_description(self, value):
-        AliyunModeration().validate_text_detection("ad_compliance_detection", value)
+        AliyunModeration().validate_text_detection("pgc_detection", value)
         return value
 
     # 同一个人，同一个名字的项目，不支持多次创建
@@ -201,6 +201,16 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
 # 项目更新序列化器
 class ProjectUpdateSerializer(serializers.ModelSerializer):
+    # 校验项目名称是否违规
+    def validate_project_name(self, value):
+        AliyunModeration().validate_text_detection("pgc_detection", value)
+        return value
+
+    # 校验项目描述是否违规
+    def validate_project_description(self, value):
+        AliyunModeration().validate_text_detection("pgc_detection", value)
+        return value
+
     model = serializers.PrimaryKeyRelatedField(queryset=Model.objects.all(), many=True)
     industry = serializers.PrimaryKeyRelatedField(queryset=Industry.objects.all(), many=True)
     ai_tag = serializers.PrimaryKeyRelatedField(queryset=AITag.objects.all(), many=True)
