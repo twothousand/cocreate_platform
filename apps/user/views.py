@@ -61,15 +61,17 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         重写get_permissions，实例化并返回此视图需要的权限列表。
         @return: # 返回相应的权限列表
         """
-        if self.action in ['create', 'get_detail']:  # 如果操作是 'create' （对应POST请求，即注册）或 'detail'
+        if self.action in ['create', 'get_detail', 'reset_password']:  # 如果操作是 'create' （对应POST请求，即注册）或 'detail'
             permission_classes = [AllowAny]  # 允许任何人，不需要身份验证
         else:  # 其他操作
             permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]  # 需要用户被认证
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action == 'create' or self.action == 'partial_update':
-            return serializers.UserRegAndPwdChangeSerializer
+        if self.action in ['create']:
+            return serializers.UserRegSerializer
+        elif self.action in ['partial_update', 'reset_password']:
+            return serializers.UserPwdChangeSerializer
         elif self.action == "get_detail":
             return serializers.UserReadOnlySerializer
         else:
@@ -84,9 +86,9 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        if str(request.method).lower() == "patch":
+        if self.action == "partial_update":
             self.custom_message = "用户密码修改成功"
-        else:
+        elif self.action == "update":
             self.custom_message = "用户信息修改成功"
         return super().update(request, *args, **kwargs)
 
@@ -96,6 +98,21 @@ class UserViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatRetrieveUpdateMo
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    @action(methods=["post"], detail=False)
+    def reset_password(self, request, *args, **kwargs):
+        # 首先，用你的序列化器验证提交的数据
+        serializer = serializers.UserPwdChangeSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        # 数据验证成功后，根据手机号查找用户
+        user = User.objects.get(username=serializer.validated_data["username"])
+
+        # 使用serializer的update方法更新密码
+        serializer.update(user, serializer.validated_data)
+
+        self.custom_message = "密码重置成功"
+        return Response(status=200)
 
     # @disallow_methods(['DELETE'])
     # @disallow_actions(['list'])

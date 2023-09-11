@@ -184,7 +184,7 @@ class UserUnActiveSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'is_active')  # 临时添加字段也需要写在这里
 
 
-class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+class UserRegSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
     """
     用户注册和修改密码Serializer
     """
@@ -215,13 +215,17 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
         AliyunModeration().validate_text_detection("nickname_detection", value)
         return value
 
+    def validate_password(self, value):
+        # 校验密码
+        if not (6 <= len(value) <= 18):
+            raise serializers.ValidationError("密码长度需要在6到18位之间")
+
+        return value
+
     def validate(self, data):
         """
         数据校验
         """
-        # 校验密码
-        if not (6 <= len(data.get('password')) <= 18):
-            raise serializers.ValidationError({"password": "密码长度需要在6到18位之间"})
 
         # 校验验证码
         res, result = check_verif_code(mobile_phone=data.get('username'),
@@ -241,21 +245,8 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
         @return:
         """
         # 调用父类方法
-        user = super(UserRegAndPwdChangeSerializer, self).create(validated_data=validated_data)
+        user = super(UserRegSerializer, self).create(validated_data=validated_data)
         # 调用User父类中的存储密码的方法
-        user.set_password(validated_data["password"])
-        user.save()
-        return user
-
-    def update(self, instance, validated_data):
-        """
-        修改密码PATCH方法
-        @param instance:
-        @param validated_data:
-        @return:
-        """
-        # 调用父类方法
-        user = super(UserRegAndPwdChangeSerializer, self).update(instance=instance, validated_data=validated_data)
         user.set_password(validated_data["password"])
         user.save()
         return user
@@ -273,6 +264,80 @@ class UserRegAndPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.Mod
                     )
                 ],
             },
+            'password': {
+                'write_only': True
+            },
+        }
+
+
+class UserPwdChangeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializer):
+    """
+    用户注册和修改密码Serializer
+    """
+    username = serializers.CharField(max_length=11)
+    verification_code = serializers.CharField(max_length=6, write_only=True)  # write_only=True表示不会序列化输出给前端
+
+    def validate_username(self, value):
+        """
+        校验手机号码是否有效
+        """
+        res = re_utils.validate_phone(phone=value)
+        request = self.context.get("request", None)
+
+        if not res:
+            raise serializers.ValidationError("无效的手机号码")
+
+        # 修改密码
+        if request.method.lower() == "patch":
+            if value != request.user.username:
+                raise serializers.ValidationError("请使用账号绑定的手机号码进行验证")
+
+        # 忘记密码
+        if request.method.lower() == "post":
+            pass
+
+        return value
+
+    def validate_password(self, value):
+        # 校验密码
+        if not (6 <= len(value) <= 18):
+            raise serializers.ValidationError("密码长度需要在6到18位之间")
+
+        return value
+
+    def validate(self, data):
+        """
+        数据校验
+        """
+        # 校验验证码
+        res, result = check_verif_code(mobile_phone=data.get('username'),
+                                       verification_code=data.get('verification_code'))
+        if not res:
+            raise serializers.ValidationError({"verification_code": result["error"]})
+
+        # 弹出无用字段
+        data.pop('verification_code')
+
+        return data
+
+    def update(self, instance, validated_data):
+        """
+        修改密码PATCH方法
+        @param instance:
+        @param validated_data:
+        @return:
+        """
+        # 调用父类方法
+        user = super(UserPwdChangeSerializer, self).update(instance=instance, validated_data=validated_data)
+        user.set_password(validated_data["password"])
+        user.save()
+        return user
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password', 'verification_code']
+
+        extra_kwargs = {
             'password': {
                 'write_only': True
             },

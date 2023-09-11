@@ -15,6 +15,7 @@ class VerifCode(BaseModel):
     class OperateType(models.TextChoices):
         """操作类型"""
         REGISTER = ('register', '注册')
+        RESET_PASSWORD = ('reset_password', '更新密码')
         OTHER = ('other', '其它')
 
     id = models.AutoField(primary_key=True, verbose_name='验证码ID')

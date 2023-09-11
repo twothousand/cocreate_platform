@@ -50,6 +50,9 @@ class VerifCodeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializ
         if operate_type == VerifCode.OperateType.REGISTER:
             if User.is_exists_username(username=mobile_phone):
                 raise serializers.ValidationError({"mobile_phone": "该手机号码已注册"})
+        elif operate_type == VerifCode.OperateType.RESET_PASSWORD:
+            if not User.is_exists_username(username=mobile_phone):
+                raise serializers.ValidationError({"mobile_phone": "该手机号码未注册"})
 
         return data
 
