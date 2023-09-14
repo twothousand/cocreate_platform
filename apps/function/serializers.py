@@ -67,7 +67,7 @@ class VerifCodeSerializer(my_mixins.MyModelSerializer, serializers.ModelSerializ
             verif_code = super(VerifCodeSerializer, self).create(validated_data=validated_data)
             return verif_code
         else:
-            return serializers.ValidationError(res)
+            raise serializers.ValidationError({"error": [res["error"]]})
 
     @staticmethod
     def get_random_code():

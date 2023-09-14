@@ -46,7 +46,7 @@ class Application(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='项目')
     team = models.ForeignKey(Team, on_delete=models.CASCADE, verbose_name='队伍')
-    application_msg = models.CharField(max_length=255, verbose_name='申请消息')
+    application_msg = models.CharField(max_length=1000, verbose_name='申请消息')
     STATUS_CHOICES = (
         ('待审核', '待审核'),
         ('拒绝', '拒绝'),

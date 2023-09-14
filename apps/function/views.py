@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import ValidationError
 # django
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -204,6 +205,14 @@ class VerifCodeViewSet(my_mixins.CustomResponseMixin, my_mixins.CreatModelViewSe
     throttle_classes = [AnonRateThrottle, ]  # 限流，限制验证码发送频率
     permission_classes = [AllowAny, ]
     custom_message = "验证码发送成功！"
+
+    def create(self, request, *args, **kwargs):
+        try:
+            res = super(VerifCodeViewSet, self).create(request, *args, **kwargs)
+            return res
+        except ValidationError as e:
+            self.custom_message = e.detail["error"]
+            raise e  # 重新抛出异常
 
     def send_sms_test(self, request, *args, **kwargs):
         mobile_phone = request.data.get("mobile_phone")

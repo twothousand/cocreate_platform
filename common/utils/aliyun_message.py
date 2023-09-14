@@ -55,6 +55,7 @@ class AliyunSMS:
         runtime = RuntimeOptions()
         logger_mobile_phone = sanitize_phone_number(mobile_phone)
         # 发送短信
+        res = None
         try:
             res = client.send_sms_with_options(send_sms_request, runtime)
             logger.info("AliyunSMS::send_msg, mobile_phone=%s, response=%s" % (logger_mobile_phone, res))
